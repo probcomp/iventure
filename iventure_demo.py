@@ -177,9 +177,7 @@ class VentureMagics(Magics):
     def _cmd_table(self, args):
         table = args
         qt = bql_quote_name(table)
-        sys.stderr.write('execute %r\n' % ('PRAGMA table_info(%s)' % (qt,),))
         cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (table,))
-        sys.stderr.write('description %r\n' % (cursor.description,))
         return bqu.cursor_to_df(cursor)
 
     def _cmd_population(self, args):
