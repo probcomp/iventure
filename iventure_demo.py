@@ -71,8 +71,8 @@ class VentureMagics(Magics):
 
         cgpm_registry = {
             'venturescript': self._VsCGpm,
-            'linreg': LinearRegression,
-            'forest': RandomForest,
+            'linear_regression': LinearRegression,
+            'random_forest': RandomForest,
         }
         mm = CGPM_Metamodel(cgpm_registry)
         bayesdb_register_metamodel(self._bdb, mm)
