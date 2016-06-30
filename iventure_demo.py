@@ -186,10 +186,12 @@ class VentureMagics(Magics):
             raise ValueError('No such population: %r' % (population,))
         population_id = bayesdb_get_population(self._bdb, population)
         cursor = self._bdb.sql_execute('''
-            SELECT 'variable', name, stattype AS value FROM bayesdb_variable
+            SELECT 'variable' AS type, name, stattype AS value
+                FROM bayesdb_variable
                 WHERE population_id = :population_id
             UNION
-            SELECT 'generator', name, metamodel AS value FROM bayesdb_generator
+            SELECT 'generator' AS type, name, metamodel AS value
+                FROM bayesdb_generator
                 WHERE population_id = :population_id
         ''', {'population_id': population_id})
         return bqu.cursor_to_df(cursor)
