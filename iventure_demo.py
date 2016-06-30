@@ -169,8 +169,8 @@ class VentureMagics(Magics):
         tokens = args.split()   # XXX
         if len(tokens) != 2:
             sys.stderr.write('Usage: .nullify <table> <value>')
-        table = args[0]
-        expression = args[1]
+        table = tokens[0]
+        expression = tokens[1]
         value = self._bdb.execute('SELECT %s' % (expression,)).fetchvalue()
         bqu.nullify(self._bdb, table, value)
 
