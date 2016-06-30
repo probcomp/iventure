@@ -1,0 +1,30 @@
+2016-06-30 PPAML PI meeting demo
+
+Usage: create an ipython notebook in this directory and do
+
+%load_ext iventure_demo
+
+Then you can
+
+%bayesdb foo.bdb
+
+to open a bdb file,
+
+%mml create population ...
+
+or
+
+%%mml
+drop population xyz;
+create population xyz for t (...);
+
+to do MML stuff,
+
+%bql estimate mutual information of x with y within xyz;
+
+or
+
+%%bql
+create temp table depprobs as
+    estimate dependence probability from pairwise variables of xyz;
+.plot select * from depprobs
