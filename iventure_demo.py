@@ -74,7 +74,7 @@ class VentureMagics(Magics):
             'linear_regression': LinearRegression,
             'random_forest': RandomForest,
         }
-        mm = CGPM_Metamodel(cgpm_registry)
+        mm = CGPM_Metamodel(cgpm_registry, multithread=1)
         bayesdb_register_metamodel(self._bdb, mm)
 
     def _VsCGpm(self, outputs, inputs, rng, *args, **kwds):
