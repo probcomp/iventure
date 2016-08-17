@@ -89,7 +89,7 @@ class VentureMagics(Magics):
             crosscat = ccme.MultiprocessingEngine(cpu_count=None)
         else:
             import crosscat.LocalEngine as ccle
-            crosscat = ccle.LocalEngine(seed=args.seed)
+            crosscat = ccle.LocalEngine()
         metamodel = CrosscatMetamodel(crosscat)
         bayesdb_register_metamodel(self._bdb, metamodel)
 
