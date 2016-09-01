@@ -18,6 +18,10 @@ import StringIO
 import argparse
 import sys
 
+import matplotlib.pyplot as plt
+import matplotlib.cm
+import matplotlib.colors
+
 import bdbcontrib.bql_utils as bqu
 import venture.shortcuts as vs
 
@@ -270,14 +274,12 @@ class VentureMagics(Magics):
 
 def scatter(df, ax=None):
     """Scatter the data points coloring by the classes."""
-    import matplotlib.pyplot as plt
-    import matplotlib.cm
-    import matplotlib.colors
     if ax is None:
         fig, ax = plt.subplots()
-    colors = 'b'
-    if df.shape[1] == 3:
-        # raise ValueError('Exactly 3 columns required for scatter.')
+    # If three columns, use last column as the labels for colors.
+    if df.shape[1] == 2:
+        ax.scatter(df.iloc[:,0], df.iloc[:,1], color='b')
+    elif df.shape[1] == 3:
         # Convert classes to integers.
         classes = df.iloc[:,2]
         unique = set(classes)
@@ -288,8 +290,15 @@ def scatter(df, ax=None):
         norm = matplotlib.colors.Normalize(
             vmin=min(classes), vmax=max(classes))
         mapper = matplotlib.cm.ScalarMappable(cmap=cmap, norm=norm)
-        colors = mapper.to_rgba(classes)
-    ax.scatter(df.iloc[:,0], df.iloc[:,1], color=colors)
+        for label, code in codes.iteritems():
+            points = df[df.iloc[:,2] == label]
+            color = mapper.to_rgba(code)
+            ax.scatter(
+                points.iloc[:,0], points.iloc[:,1], color=color, label=label)
+        ax.legend(framealpha=0, loc='best')
+    else:
+        raise ValueError(
+            'Only two or three columns allowed, received: %s' % df.columns)
     ax.grid()
     return fig
 
