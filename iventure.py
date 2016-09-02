@@ -14,6 +14,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import itertools
 import StringIO
 import argparse
 import sys
@@ -21,6 +22,7 @@ import sys
 import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.colors
+import pandas as pd
 
 import bdbcontrib.bql_utils as bqu
 import venture.shortcuts as vs
@@ -273,11 +275,17 @@ class VentureMagics(Magics):
         df = bqu.cursor_to_df(cursor)
         scatter(df)
 
+    def _cmd_hist(self, query):
+        cursor = self._bdb.execute(query)
+        df = bqu.cursor_to_df(cursor)
+        hist(df)
+
     _CMDS = {
         'bar': _cmd_bar,
         'csv': _cmd_csv,
         'heatmap': _cmd_heatmap,
         'histogram': _cmd_histogram,
+        'hist': _cmd_hist,
         'nullify': _cmd_nullify,
         'plot': _cmd_plot,
         'population': _cmd_population,
@@ -285,35 +293,117 @@ class VentureMagics(Magics):
         'table': _cmd_table,
     }
 
+
 def scatter(df, ax=None):
-    """Scatter the data points coloring by the classes."""
+    """Scatter the NUMERICAL data points in df.
+
+    If df has two columns, then a regular scatter plot is produced. If df has
+    three columns, then the final column is used as the label for each data
+    point.
+    """
     if ax is None:
         fig, ax = plt.subplots()
-    # If three columns, use last column as the labels for colors.
-    if df.shape[1] == 2:
-        ax.scatter(df.iloc[:,0], df.iloc[:,1], color='b')
-    elif df.shape[1] == 3:
-        # Convert classes to integers.
-        classes = df.iloc[:,2]
-        unique = set(classes)
-        codes = {u:i for i,u in enumerate(unique)}
-        classes = [codes[c] for c in classes]
-        # Get the colors.
-        cmap = matplotlib.cm.jet
-        norm = matplotlib.colors.Normalize(
-            vmin=min(classes), vmax=max(classes))
-        mapper = matplotlib.cm.ScalarMappable(cmap=cmap, norm=norm)
-        for label, code in codes.iteritems():
-            points = df[df.iloc[:,2] == label]
-            color = mapper.to_rgba(code)
-            ax.scatter(
-                points.iloc[:,0], points.iloc[:,1], color=color, label=label)
-        ax.legend(framealpha=0, loc='best')
-    else:
-        raise ValueError(
-            'Only two or three columns allowed, received: %s' % df.columns)
+    if df.shape[1] not in [2, 3]:
+        raise ValueError('Only two or three columns allowed: %s' % df.columns)
+    labels, colors = _retrieve_labels_colors(
+        df.iloc[:,2] if df.shape[1] == 3 else [0] * len(df))
+    for label, color in zip(labels, colors):
+        points = _filter_points(df, labels, label)
+        ax.scatter(points.iloc[:,0], points.iloc[:,1], color=color, label=label)
+    ax.set_xlabel(df.columns[0], fontweight='bold')
+    ax.set_ylabel(df.columns[1], fontweight='bold')
     ax.grid()
+    # Plot the legend.
+    if len(labels) > 1:
+        _plot_legend(fig, ax)
     return fig
+
+
+def hist(df, ax=None):
+    """Histogram the NOMINAL data points in df.
+
+    If df has one column, then a regular histogram is produced. If df has two
+    columns, then the final column is used as the label for each data point.
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+    if df.shape[1] not in [1, 2]:
+        raise ValueError('Only one or two columns allowed: %s' % df.columns)
+    # Retrieve the nominal values, sorted by overall frequency.
+    nominals = df.iloc[:,0].value_counts().index.tolist()
+    # Retrieve the labels.
+    labels, colors = _retrieve_labels_colors(
+        df.iloc[:,1] if df.shape[1] == 2 else [0] * len(df))
+    # Compute the offset for each label.
+    offset = len(labels)/2 + len(labels) % 2
+    width = 0.25
+    # Compute the distance between the bars based on the number of labels.
+    spacing = len(labels) / 3 + 1
+    indices = range(0, spacing*len(nominals), spacing)
+    assert len(indices) == len(nominals)
+    # Histogram each series.
+    for i, (label, color) in enumerate(zip(labels, colors)):
+        points = _filter_points(df, labels, label)
+        raw_counts = points.iloc[:,0].value_counts()
+        counts = [raw_counts.get(n, 0) for n in nominals]
+        ax.barh(
+            [index - 0.2*offset + i*width for index in indices],
+            counts, width, color=color, alpha=.7, label=label)
+    # Fix up the axes and their labels.
+    ax.set_xlabel('Frequency', fontweight='bold')
+    ax.set_ylabel(df.columns[0], fontweight='bold')
+    ax.set_yticks(indices)
+    ax.set_yticklabels(nominals, fontweight='bold')
+    # Fix up the x-axis.
+    largest = ax.get_xlim()[1]
+    ax.set_xlim([0, 1.1*largest])
+    ax.grid()
+    # Plot the legend.
+    if len(labels) > 1:
+        _plot_legend(fig, ax)
+    return fig
+
+
+def hist2(df, ax=None):
+    """Convenience wrapper for hist the labels are in unique columns."""
+    return hist(_unroll_dataframe(df), ax=ax)
+
+
+def scatter2(df, ax=None):
+    """Convenience wrapper for scatter the labels are in unique columns."""
+    return scatter(_unroll_dataframe(df), ax=ax)
+
+
+def _plot_legend(fig, ax):
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), framealpha=0)
+
+
+def _unroll_dataframe(df):
+    if len(df.columns) == 0:
+        raise ValueError('At least one column required: %s' % df.columns)
+    new_df = pd.concat(
+        [pd.DataFrame([[value, col] for value in df[col]])
+        for col in df.columns])
+    new_df.columns = ['value', 'label']
+    return new_df
+
+
+def _filter_points(df, labels, label):
+    return df[df.iloc[:,-1]==label] if len(labels) > 1 else df
+
+
+def _retrieve_labels_colors(items):
+    # Extract unique labels.
+    labels = set(items)
+    # Retrieve the colors.
+    mapper = matplotlib.cm.ScalarMappable(
+        cmap=matplotlib.cm.jet,
+        norm=matplotlib.colors.Normalize(vmin=0, vmax=len(labels)-1))
+    colors = mapper.to_rgba(xrange(len(labels)))
+    return labels, colors
+
 
 def load_ipython_extension(ipython):
     ipython.register_magics(VentureMagics)
