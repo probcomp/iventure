@@ -179,7 +179,7 @@ class VentureMagics(Magics):
                     return
                 out = StringIO.StringIO()
                 ok = False
-            out.write(line)
+            out.write('%s ' % (line, ))
             if out.getvalue() and bql_string_complete_p(out.getvalue()):
                 ok = True
         try:
