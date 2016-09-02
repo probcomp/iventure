@@ -122,7 +122,7 @@ class VentureMagics(Magics):
         return bqu.cursor_to_df(cursor)
 
     @line_cell_magic
-    def bql(self, line, cell=None):
+    def mml(self, line, cell=None):
         if cell is None:
             ucmds = [line]
         else:
@@ -150,6 +150,23 @@ class VentureMagics(Magics):
         if bql_q:
             return self._bql(bql_q)
 
+    @line_cell_magic
+    def bql(self, line, cell=None):
+        if cell is None:
+            ucmds = [line]
+        else:
+            ucmds = cell.split(';')
+        cmds = [ucmd.encode('US-ASCII').strip() for ucmd in ucmds]
+        result = None
+        for cmd in cmds:
+            if cmd.isspace() or len(cmd) == 0:
+                continue
+            if cmd.startswith('.'):
+                result = self._cmd(cmd)
+            else:
+                result = self._bql([cmd])
+        return result
+
     def _bql(self, lines):
         out = StringIO.StringIO()
         ok = False
@@ -173,20 +190,16 @@ class VentureMagics(Magics):
             return bqu.cursor_to_df(cursor)
 
     def _cmd(self, cmd):
-        assert cmd.startswith('.')
+        assert cmd[0] == '.'
         sp = cmd.find(' ')
         if sp == -1:
             sp = len(cmd)
-        if cmd[1:sp] not in self._CMDS:
-            sys.stderr.write('Unknown command: %s\n' % (cmd[1:sp],))
+        dot_command = cmd[1:sp].strip()
+        if dot_command not in self._CMDS:
+            sys.stderr.write('Unknown command: %s\n' % (dot_command,))
             return
         args = cmd[min(sp + 1, len(cmd)):]
-        return self._CMDS[cmd[1:sp]](self, args)
-
-    @line_cell_magic
-    def mml(self, line, cell=None):
-        # XXX Kludge!
-        return self.bql(line, cell)
+        return self._CMDS[dot_command](self, args)
 
     def _cmd_csv(self, args):
         tokens = args.split()   # XXX
