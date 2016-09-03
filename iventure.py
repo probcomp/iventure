@@ -371,16 +371,6 @@ def hist(df, ax=None, normed=None):
     return fig
 
 
-def hist2(df, ax=None):
-    """Convenience wrapper for hist the labels are in unique columns."""
-    return hist(_unroll_dataframe(df), ax=ax)
-
-
-def scatter2(df, ax=None):
-    """Convenience wrapper for scatter the labels are in unique columns."""
-    return scatter(_unroll_dataframe(df), ax=ax)
-
-
 def _plot_legend(fig, ax):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
