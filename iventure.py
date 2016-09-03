@@ -119,9 +119,21 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def sql(self, line, cell=None):
-        query = line if cell is None else cell
-        cursor = self._bdb.sql_execute(query)
-        return bqu.cursor_to_df(cursor)
+        if cell is None:
+            ucmds = [line]
+        else:
+            ucmds = cell.split(';')
+        cmds = [ucmd.encode('US-ASCII').strip() for ucmd in ucmds]
+        cursor = None
+        for cmd in cmds:
+            if cmd.isspace() or len(cmd) == 0:
+                continue
+            if cmd.startswith('.'):
+                self._cmd(cmd, sql=True)
+                cursor = None
+            else:
+                cursor = self._bdb.sql_execute(cmd)
+        return bqu.cursor_to_df(cursor) if cursor else None
 
     @line_cell_magic
     def mml(self, line, cell=None):
@@ -191,7 +203,7 @@ class VentureMagics(Magics):
         else:
             return bqu.cursor_to_df(cursor)
 
-    def _cmd(self, cmd):
+    def _cmd(self, cmd, sql=None):
         assert cmd[0] == '.'
         sp = cmd.find(' ')
         if sp == -1:
@@ -200,8 +212,8 @@ class VentureMagics(Magics):
         if dot_command not in self._CMDS:
             sys.stderr.write('Unknown command: %s\n' % (dot_command,))
             return
-        args = cmd[min(sp + 1, len(cmd)):]
-        return self._CMDS[dot_command](self, args)
+        query = cmd[min(sp + 1, len(cmd)):]
+        return self._CMDS[dot_command](self, query, sql=sql)
 
     def _cmd_csv(self, args):
         tokens = args.split()   # XXX
@@ -246,43 +258,37 @@ class VentureMagics(Magics):
 
     # Plotting.
 
-    def _cmd_bar(self, query):
+    def _cmd_bar(self, query, sql=None):
         import bdbcontrib.plot_utils as bpu
-        cursor = self._bdb.execute(query)
-        df = bqu.cursor_to_df(cursor)
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
         bpu.barplot(self._bdb, df)
 
-    def _cmd_heatmap(self, query):
+    def _cmd_heatmap(self, query, sql=None):
         import bdbcontrib.plot_utils as bpu
-        cursor = self._bdb.execute(query)
-        df = bqu.cursor_to_df(cursor)
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
         bpu.heatmap(df)
 
-    def _cmd_histogram(self, query):
+    def _cmd_plot(self, query, sql=None):
         import bdbcontrib.plot_utils as bpu
-        cursor = self._bdb.execute(query)
-        df = bqu.cursor_to_df(cursor)
-        bpu.histogram(self._bdb, df)
-
-    def _cmd_plot(self, query):
-        import bdbcontrib.plot_utils as bpu
-        cursor = self._bdb.execute(query)
-        df = bqu.cursor_to_df(cursor)
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
         bpu.pairplot(self._bdb, df)
 
-    def _cmd_scatter(self, query):
-        cursor = self._bdb.execute(query)
-        df = bqu.cursor_to_df(cursor)
+    def _cmd_scatter(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
         scatter(df)
 
-    def _cmd_hist(self, query):
-        cursor = self._bdb.execute(query)
-        df = bqu.cursor_to_df(cursor)
+    def _cmd_hist(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
         hist(df)
 
-    def _cmd_histn(self, query):
-        cursor = self._bdb.execute(query)
-        df = bqu.cursor_to_df(cursor)
+    def _cmd_histn(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
         hist(df, normed=True)
 
     _CMDS = {
