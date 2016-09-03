@@ -280,12 +280,18 @@ class VentureMagics(Magics):
         df = bqu.cursor_to_df(cursor)
         hist(df)
 
+    def _cmd_histn(self, query):
+        cursor = self._bdb.execute(query)
+        df = bqu.cursor_to_df(cursor)
+        hist(df, normed=True)
+
     _CMDS = {
         'bar': _cmd_bar,
         'csv': _cmd_csv,
         'heatmap': _cmd_heatmap,
         'histogram': _cmd_histogram,
         'hist': _cmd_hist,
+        'histn': _cmd_histn,
         'nullify': _cmd_nullify,
         'plot': _cmd_plot,
         'population': _cmd_population,
@@ -319,7 +325,7 @@ def scatter(df, ax=None):
     return fig
 
 
-def hist(df, ax=None):
+def hist(df, ax=None, normed=None):
     """Histogram the NOMINAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two
@@ -345,7 +351,8 @@ def hist(df, ax=None):
     for i, (label, color) in enumerate(zip(labels, colors)):
         points = _filter_points(df, labels, label)
         raw_counts = points.iloc[:,0].value_counts()
-        counts = [raw_counts.get(n, 0) for n in nominals]
+        normalizer = float(sum(raw_counts)) if normed else 1.
+        counts = [raw_counts.get(n, 0) / normalizer for n in nominals]
         ax.barh(
             [index - 0.2*offset + i*width for index in indices],
             counts, width, color=color, alpha=.7, label=label)
