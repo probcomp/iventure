@@ -291,6 +291,16 @@ class VentureMagics(Magics):
         df = bqu.cursor_to_df(c)
         hist(df, normed=True)
 
+    def _cmd_histogram(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
+        histogram(df)
+
+    def _cmd_histogramn(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
+        histogram(df, normed=True)
+
     _CMDS = {
         'bar': _cmd_bar,
         'csv': _cmd_csv,
@@ -298,6 +308,8 @@ class VentureMagics(Magics):
         'histogram': _cmd_histogram,
         'hist': _cmd_hist,
         'histn': _cmd_histn,
+        'histogram': _cmd_histogram,
+        'histogramn': _cmd_histogramn,
         'nullify': _cmd_nullify,
         'plot': _cmd_plot,
         'population': _cmd_population,
@@ -370,6 +382,35 @@ def hist(df, ax=None, normed=None):
     # Fix up the x-axis.
     largest = ax.get_xlim()[1]
     ax.set_xlim([0, 1.1*largest])
+    ax.grid()
+    # Plot the legend.
+    if len(labels) > 1:
+        _plot_legend(fig, ax)
+    return fig
+
+
+def histogram(df, ax=None, normed=None):
+    """Histogram the NUMERICAL data points in df.
+
+    If df has one column, then a regular histogram is produced. If df has two
+    columns, then the final column is used as the label for each data point.
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+    if df.shape[1] not in [1, 2]:
+        raise ValueError('Only one or two columns allowed: %s' % df.columns)
+    labels, colors = _retrieve_labels_colors(
+        df.iloc[:,1] if df.shape[1] == 2 else [0] * len(df))
+    data = [df[df.iloc[:,1]==l].iloc[:,0].values for l in labels]\
+        if df.shape[1] == 2 else df.iloc[:,0]
+    import IPython.core.d
+    ax.hist(data, 10, normed=normed, histtype='bar', color=colors, label=labels)
+    # Fix up the axes and their labels.
+    ax.set_ylabel('Frequency', fontweight='bold')
+    ax.set_xlabel(df.columns[0], fontweight='bold')
+    # Fix up the y-axis.
+    largest = ax.get_ylim()[1]
+    ax.set_ylim([0, 1.1*largest])
     ax.grid()
     # Plot the legend.
     if len(labels) > 1:
