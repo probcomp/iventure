@@ -146,7 +146,7 @@ class VentureMagics(Magics):
         bql_q = []
         for cmd in cmds:
             assert not cmd_q or not bql_q
-            if cmd.isspace():
+            if cmd.isspace() or not cmd:
                 continue
             if cmd_q:
                 self._cmd(cmd_q)
