@@ -212,8 +212,11 @@ class VentureMagics(Magics):
         if dot_command not in self._CMDS:
             sys.stderr.write('Unknown command: %s\n' % (dot_command,))
             return
-        query = cmd[min(sp + 1, len(cmd)):]
-        return self._CMDS[dot_command](self, query, sql=sql)
+        args = cmd[min(sp + 1, len(cmd)):]
+        if dot_command in self._CMDS:
+            return self._CMDS[dot_command](self, args)
+        else:
+            return self._PLTS[dot_command](self, args, sql=sql)
 
     def _cmd_csv(self, args):
         tokens = args.split()   # XXX
@@ -302,19 +305,22 @@ class VentureMagics(Magics):
         histogram(df, normed=True)
 
     _CMDS = {
-        'bar': _cmd_bar,
         'csv': _cmd_csv,
+        'nullify': _cmd_nullify,
+        'population': _cmd_population,
+        'table': _cmd_table,
+    }
+
+    _PLTS = {
+        'bar': _cmd_bar,
         'heatmap': _cmd_heatmap,
         'histogram': _cmd_histogram,
         'hist': _cmd_hist,
         'histn': _cmd_histn,
         'histogram': _cmd_histogram,
         'histogramn': _cmd_histogramn,
-        'nullify': _cmd_nullify,
         'plot': _cmd_plot,
-        'population': _cmd_population,
         'scatter': _cmd_scatter,
-        'table': _cmd_table,
     }
 
 
