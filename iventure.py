@@ -209,14 +209,14 @@ class VentureMagics(Magics):
         if sp == -1:
             sp = len(cmd)
         dot_command = cmd[1:sp].strip()
-        if dot_command not in self._CMDS:
-            sys.stderr.write('Unknown command: %s\n' % (dot_command,))
-            return
         args = cmd[min(sp + 1, len(cmd)):]
         if dot_command in self._CMDS:
             return self._CMDS[dot_command](self, args)
-        else:
+        elif dot_command in self._PLTS:
             return self._PLTS[dot_command](self, args, sql=sql)
+        else:
+            sys.stderr.write('Unknown command: %s\n' % (dot_command,))
+            return
 
     def _cmd_csv(self, args):
         tokens = args.split()   # XXX
@@ -409,7 +409,6 @@ def histogram(df, ax=None, normed=None):
         df.iloc[:,1] if df.shape[1] == 2 else [0] * len(df))
     data = [df[df.iloc[:,1]==l].iloc[:,0].values for l in labels]\
         if df.shape[1] == 2 else df.iloc[:,0]
-    import IPython.core.d
     ax.hist(data, 10, normed=normed, histtype='bar', color=colors, label=labels)
     # Fix up the axes and their labels.
     ax.set_ylabel('Frequency', fontweight='bold')
