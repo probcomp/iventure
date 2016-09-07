@@ -235,7 +235,7 @@ class VentureMagics(Magics):
         table = tokens[0]
         expression = tokens[1]
         value = self._bdb.execute('SELECT %s' % (expression,)).fetchvalue()
-        bqu.nullify(self._bdb, table, value)
+        return bqu.nullify(self._bdb, table, value)
 
     def _cmd_table(self, args):
         table = args
