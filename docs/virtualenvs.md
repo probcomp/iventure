@@ -63,8 +63,7 @@ $ source .pyenv2.7.6/bin/activate
 For each cloned repository $REPO, build the repository.
 
 ```
-$ cd $SHOME/$REPO
-$ python setup.py build
+$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx; do cd $SHOME/$REPO; python setup.py build; cd ..; done
 ````
 
 Do not use `python setup.py install`, because it invokes `pip` in unpredictable
@@ -102,8 +101,7 @@ $ source .pyenv2.7.6/bin/activate
 For each cloned repository $R, run the test suite (may take a while).
 
 ```
-$ cd $SHOME/$R
-$ ./check.sh
+$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx; do cd $SHOME/$REPO; ./check.sh; cd ..; done
 ```
 
 #### Create a new UNIX group `$G` for `$SHOME` and its subdirectories, and
