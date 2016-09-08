@@ -18,6 +18,7 @@ import itertools
 import StringIO
 import argparse
 import sys
+import getpass
 
 import matplotlib.pyplot as plt
 import matplotlib.cm
@@ -59,6 +60,8 @@ from IPython.core.magic import line_cell_magic
 from IPython.core.magic import line_magic
 from IPython.core.magic import magics_class
 
+from sessions import Session, TextLogger, LogEntry
+
 @magics_class
 class VentureMagics(Magics):
     def __init__(self, shell):
@@ -68,8 +71,21 @@ class VentureMagics(Magics):
         self._ripl = vs.make_ripl()
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
+        username = getpass.getuser()
+        self.session = Session(username, [TextLogger()]) # TODO add SQLLogger
 
     @line_cell_magic
+    def venturescript_logged(self, line, cell=None:
+        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        output = None # TODO is there output that we should fetch?
+        exception = None
+        try:
+            self.venturescript(line, cell)
+        except:
+            exception = traceback.format_exc()
+            raise
+        self.session.log(LogEntry('venturescript', input, output, exception))
+
     def venturescript(self, line, cell=None):
         script = line if cell is None else cell
         # XXX Whattakludge!
@@ -77,6 +93,17 @@ class VentureMagics(Magics):
         self._ripl.execute_program(script)
 
     @line_magic
+    def bayesdb_logged(self, line):
+        input = line
+        output = None # TODO is there output that we should fetch?
+        exception = None
+        try:
+            self.bayesdb(line)
+        except:
+            exception = traceback.format_exc()
+            raise
+        self.session.log(LogEntry('bayesdb', input, output, exception))
+
     def bayesdb(self, line):
         parser = argparse.ArgumentParser()
         parser.add_argument('path', help='Path of bdb file.')
@@ -118,6 +145,17 @@ class VentureMagics(Magics):
         return VsCGpm(outputs, inputs, rng, *args, **kwds)
 
     @line_cell_magic
+    def sql_logged(self, line, cell=None):
+        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        output = None # TODO is there output that we should fetch?
+        exception = None
+        try:
+            output = self.sql(line, cell)
+        except:
+            exception = traceback.format_exc()
+            raise
+        self.session.log(LogEntry('sql', input, output, exception))
+
     def sql(self, line, cell=None):
         if cell is None:
             ucmds = [line]
@@ -136,6 +174,17 @@ class VentureMagics(Magics):
         return bqu.cursor_to_df(cursor) if cursor else None
 
     @line_cell_magic
+    def mml_logged(self, line, cell=None):
+        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        output = None # TODO is there output that we should fetch?
+        exception = None
+        try:
+            output = self.mml(line, cell)
+        except:
+            exception = traceback.format_exc()
+            raise
+        self.session.log(LogEntry('mml', input, output, exception))
+
     def mml(self, line, cell=None):
         if cell is None:
             ucmds = [line]
@@ -165,6 +214,17 @@ class VentureMagics(Magics):
             return self._bql(bql_q)
 
     @line_cell_magic
+    def bql_logged(self, line, cell=None):
+        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        output = None # TODO is there output that we should fetch?
+        exception = None
+        try:
+            output = self.bql(line, cell)
+        except:
+            exception = traceback.format_exc()
+            raise
+        self.session.log(LogEntry('bql', input, output, exception))
+
     def bql(self, line, cell=None):
         if cell is None:
             ucmds = [line]
