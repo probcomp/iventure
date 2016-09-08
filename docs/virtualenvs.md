@@ -78,12 +78,12 @@ match the actual `build/` directories produced in the previous step.
 
 ```
 $ echo '
-export PYTHONPATH="${PYTHONPATH:+${PYTHONPATH}:}/$SHOME/bayeslite-apsw/build/lib.linux-x86_64-2.7"
-export PYTHONPATH=$PYTHONPATH:/$SHOME/bayeslite/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/bdbcontrib/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/cgpm/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/crosscat/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/Venturecxx/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${SHOME}/bayeslite-apsw/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/bayeslite/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/bdbcontrib/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/cgpm/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/crosscat/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/Venturecxx/build/lib.linux-x86_64-2.7
 
 export BAYESDB_DISABLE_VERSION_CHECK=1
 export BAYESDB_WIZARD_MODE=1
