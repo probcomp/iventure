@@ -12,8 +12,7 @@ class TextLogger(object):
 
     def new_session(self, username, session_id):
         home = os.path.expanduser("~")
-        self.filename = os.path.join(home, '_'.join(username, session_id, '.txt'))
-        print "session filename " + self.filename
+        self.filename = os.path.join(home, '_'.join([session_id, '.txt']))
 
     def _write_entry(self, f, label, entry):
         f.write(':' + label + ':' + entry + '\n')
@@ -36,15 +35,15 @@ class Session(object):
         self.loggers = loggers
         self.counter = 0
         rand = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
-        self.session_id = username + '_' + datetime.datetime.now().isoformat() + '_' + rand
+        session_id = username + '_' + datetime.datetime.now().isoformat() + '_' + rand
         for logger in self.loggers:
-            logger.new_session(session_id)
-        print "session ID", session_id
+            logger.new_session(username, session_id)
+        print "Session ID", session_id
 
     def log(self, entry):
         self.counter += 1
         time = datetime.datetime.now().isoformat()
         for logger in self.loggers:
-            logger.log(time, counter, entry)
+            logger.log(time, self.counter, entry)
 
 
