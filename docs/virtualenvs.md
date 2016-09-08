@@ -69,8 +69,7 @@ $ python setup.py build
 Do not use `python setup.py install`, because it invokes `pip` in unpredictable
 ways. The required dependencies have already been installed.
 
-#### Link the probcomp repositories to the virtualenv and configure some
-global flags.
+#### Link the probcomp repositories to the virtualenv and configure some flags.
 
 Run the following command to append the repositories to `PYTHONPATH`. Note that
 it might be necessary to change the `build/lib .linux-x86_64-2.7` suffix to
