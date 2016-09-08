@@ -18,8 +18,7 @@ is being referenced.
 
 ```
 $ source .pyenv2.7.6/bin/activate
-$ which python
-$SHOME/.pyenv2.7.6/bin/python
+$ which python # should return $SHOME/.pyenv2.7.6/bin/python
 ```
 
 #### Install python requirements from `pip`, using the `requirements.txt` file
