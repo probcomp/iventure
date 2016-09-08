@@ -1,8 +1,9 @@
 # Setting up a shared python virtualenv with group permissions.
 
-#### Create a fresh directory called `$SHOME` (for shared home).
+#### Create a fresh directory and store its path in `$SHOME` (for shared home).
 
 ```
+export SHOME=/path/to/my/dir
 $ mkdir $SHOME
 ```
 
