@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# !/usr/bin/env python
 
 #   Copyright (c) 2010-2016, MIT Probabilistic Computing Project
 #
@@ -136,12 +137,11 @@ class IVentureManager(object):
     # `usr_prefix` is the prefix for users created by this manager.
 
     CONFIG = {
-        'dir_root': os.path.join('/','scratch','iventure'),
-        'dir_venv': os.path.join('/','scratch','iventure', '.pyenv2.7.6'),
-        'grp_unix': 'iventure',
+        'dir_root': os.path.join('/','scratch','pp_iventure'),
+        'dir_venv': os.path.join('/','scratch','pp_iventure', '.pyenv2.7.6'),
+        'grp_unix': 'pp_iventure',
         'usr_prefix': 'pp_',
     }
-
 
     def __init__( self, dir_root=None, dir_venv=None, grp_unix=None,
             usr_prefix=None):
@@ -185,6 +185,5 @@ class IVentureManager(object):
     def server_stop(self, username):
         jupyter_server_stop(username)
 
-
 manager = IVentureManager()
-manager.user_create('pp_marcoct')
+# manager.user_create('pp_marcoct')
