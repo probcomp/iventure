@@ -82,16 +82,16 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def venturescript(self, line, cell=None):
-        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
         try:
             # TODO is there no output we should capture?
             self._venturescript_bare(line, cell)
         except:
             exception = traceback.format_exc()
-            self.session.log(LogEntry('venturescript', input, None, exception))
+            self.session.log(LogEntry('venturescript', raw, None, exception))
             raise
         else:
-            self.session.log(LogEntry('venturescript', input, None, None))
+            self.session.log(LogEntry('venturescript', raw, None, None))
 
     def _venturescript_bare(self, line, cell=None):
         script = line if cell is None else cell
@@ -101,16 +101,16 @@ class VentureMagics(Magics):
 
     @line_magic
     def bayesdb(self, line):
-        input = line
+        raw = line
         try:
             # TODO is there no output we should capture?
             self._bayesdb_bare(line)
         except:
             exception = traceback.format_exc()
-            self.session.log(LogEntry('bayesdb', input, None, exception))
+            self.session.log(LogEntry('bayesdb', raw, None, exception))
             raise
         else:
-            self.session.log(LogEntry('bayesdb', input, None, None))
+            self.session.log(LogEntry('bayesdb', raw, None, None))
 
     def _bayesdb_bare(self, line):
         parser = argparse.ArgumentParser()
@@ -154,15 +154,15 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def sql(self, line, cell=None):
-        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
         try:
             output = self._sql_bare(line, cell)
         except:
             exception = traceback.format_exc()
-            self.session.log(LogEntry('sql', input, None, exception))
+            self.session.log(LogEntry('sql', raw, None, exception))
             raise
         else:
-            self.session.log(LogEntry('sql', input, output, None))
+            self.session.log(LogEntry('sql', raw, output, None))
 
     def _sql_bare(self, line, cell=None):
         if cell is None:
@@ -183,20 +183,20 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def mml(self, line, cell=None):
-        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
         try:
             output = self._mml_bare(line, cell)
         except (BQLError, BQLParseError) as e:
             exception = traceback.format_exc()
-            self.session.log(LogEntry('mml', input, None, exception))
+            self.session.log(LogEntry('mml', raw, None, exception))
             # Do not print entire stack trace (do not re-raise exception)
             sys.stderr.write('%s' % (e,))
         except:
             exception = traceback.format_exc()
-            self.session.log(LogEntry('mml', input, None, exception))
+            self.session.log(LogEntry('mml', raw, None, exception))
             raise
         else:
-            self.session.log(LogEntry('mml', input, output, None))
+            self.session.log(LogEntry('mml', raw, output, None))
 
     def _mml_bare(self, line, cell=None):
         if cell is None:
@@ -228,20 +228,20 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def bql(self, line, cell=None):
-        input = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
         try:
             output = self._bql_bare(line, cell)
         except (BQLError, BQLParseError) as e:
             exception = traceback.format_exc()
-            self.session.log(LogEntry('bql', input, None, exception))
+            self.session.log(LogEntry('bql', raw, None, exception))
             # Do not print entire stack trace (do not re-raise exception)
             sys.stderr.write('%s' % (e,))
         except:
             exception = traceback.format_exc()
-            self.session.log(LogEntry('bql', input, None, exception))
+            self.session.log(LogEntry('bql', raw, None, exception))
             raise
         else:
-            self.session.log(LogEntry('bql', input, output, None))
+            self.session.log(LogEntry('bql', raw, output, None))
 
     def _bql_bare(self, line, cell=None):
         if cell is None:
