@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# !/usr/bin/env python
 
 #   Copyright (c) 2010-2016, MIT Probabilistic Computing Project
 #
@@ -159,7 +159,6 @@ class IVentureManager(object):
         self.grp_unix = grp_unix
         self.usr_prefix = usr_prefix
 
-
     def user_create(self, username):
         if not str.startswith(username, self.usr_prefix):
             raise ValueError(
@@ -185,5 +184,28 @@ class IVentureManager(object):
     def server_stop(self, username):
         jupyter_server_stop(username)
 
-manager = IVentureManager()
-# manager.user_create('pp_marcoct')
+
+if __name__ == '__main__':
+
+    import argparse
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers()
+
+    parser_user_create = subparsers.add_parser('user_create')
+    parser_user_create.add_argument('username', type=str)
+    parser_user_create.set_defaults(
+        func=lambda args: IVentureManager().user_create(args.username))
+
+    parser_server_start = subparsers.add_parser('server_start')
+    parser_server_start.add_argument('username', type=str)
+    parser_server_start.set_defaults(
+        func=lambda args: IVentureManager().server_start(args.username))
+
+    parser_server_stop = subparsers.add_parser('server_stop')
+    parser_server_stop.add_argument('username', type=str)
+    parser_server_stop.set_defaults(
+        func=lambda args: IVentureManager().server_stop(args.username))
+
+    args = parser.parse_args()
+    args.func(args)
