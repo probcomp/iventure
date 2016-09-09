@@ -35,31 +35,21 @@ def ivdb_initialize_schema(db):
     db.execute('''
         CREATE TABLE users (
             username    TEXT COLLATE NOCASE NOT NULL PRIMARY KEY,
-            port        INTEGER NOT NULL UNIQUE
     );''')
     db.execute('''
         CREATE TABLE servers (
             username    TEXT COLLATE NOCASE NOT NULL,
-            port        INTEGER NOT NULL,
+            port        INTEGER NOT NULL UNIQUE,
             pid         INTEGER NOT NULL UNIQUE,
             PRIMARY KEY (username),
-            FOREIGN KEY (username, port) REFERENCES users(username, port)
+            FOREIGN KEY (username) REFERENCES users(username)
     );''',)
 
 
 def ivdb_create_user(db, username):
-    port = ivdb_generate_port(db)
     db.execute('''
-        INSERT INTO users VALUES (?, ?)
-    ''', (username, port,))
-
-
-def ivdb_has_user(db, username):
-    result = db.execute('''
-        SELECT username FROM users WHERE username = ?
-    ''', (username, )).fetchall()
-    assert len(result) in [0,1]
-    return len(result) == 1
+        INSERT INTO users VALUES ?
+    ''', (username,))
 
 
 def ivdb_delete_user(db, username):
@@ -70,30 +60,39 @@ def ivdb_delete_user(db, username):
     ''', (username,))
 
 
-def ivdb_generate_port(db):
-    # Port numbers start at 60,000 and go upwards.
-    cursor = db.execute('''
-        SELECT port FROM users ORDER BY port ASC;
-    ''').fetchall()
-    ports = set([c[0] for c in cursor])
-    if ports:
-        assert min(ports) >= 60000
-    # Generate the first available port.
-    for i in xrange(60000, 70000):
-        if i not in ports:
-            result = i
-            break
-    else:
-        raise ValueError('No port available!')
-    return result
+def ivdb_has_user(db, username):
+    result = db.execute('''
+        SELECT username FROM users WHERE username = ?
+    ''', (username, )).fetchall()
+    assert len(result) in [0,1]
+    return len(result) == 1
+
+
+def ivdb_has_user_session(db, username):
+    result = db.execute('''
+        SELECT username FROM servers WHERE username = ?
+    ''', (username, )).fetchall()
+    assert len(result) in [0,1]
+    return len(result) == 1
+
 
 def ivdb_user_port(db, username):
     if not ivdb_has_user(db, username):
         raise ValueError('No such user: %s.' % (username),)
     cursor = db.execute('''
-        SELECT port FROM users WHERE username = ?
+        SELECT port FROM servers WHERE username = ?
     ''', (username,))
     return next(cursor)[0]
+
+
+def ivdb_user_pid(db, username):
+    if not ivdb_has_user(db, username):
+        raise ValueError('No such user: %s.' % (username),)
+    cursor = db.execute('''
+        SELECT pid FROM servers WHERE username = ?
+    ''', (username,))
+    return next(cursor)[0]
+
 
 
 if __name__ == '__main__':
