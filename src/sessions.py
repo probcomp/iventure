@@ -59,7 +59,7 @@ class Session(object):
         self.loggers = loggers
         self.counter = 0
         # XXX Global random state!
-        rand = ''.join(random.choice('0123456789ABCDEF') for i in xrange(16))
+        rand = str(random.choice('0123456789ABCDEF'))
         session_id = \
             username + '_' + datetime.datetime.now().isoformat() + '_' + rand
         for logger in self.loggers:
