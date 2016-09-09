@@ -12,7 +12,7 @@ class TextLogger(object):
 
     def new_session(self, username, session_id):
         home = os.path.expanduser("~")
-        self.filename = os.path.join(home, '_'.join([session_id, '.txt']))
+        self.filename = os.path.join(home, 'iventure_logs', session_id + '.txt')
 
     def _write_entry(self, f, label, entry):
         f.write(':' + label + ':' + entry + '\n')
