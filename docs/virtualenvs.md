@@ -1,8 +1,9 @@
 # Setting up a shared python virtualenv with group permissions.
 
-#### Create a fresh directory called `$SHOME` (for shared home).
+#### Create a fresh directory and store its path in `$SHOME` (for shared home).
 
 ```
+export SHOME=/path/to/my/dir
 $ mkdir $SHOME
 ```
 
@@ -62,8 +63,7 @@ $ source .pyenv2.7.6/bin/activate
 For each cloned repository $REPO, build the repository.
 
 ```
-$ cd $SHOME/$REPO
-$ python setup.py build
+$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx; do cd $SHOME/$REPO; python setup.py build; cd ..; done
 ````
 
 Do not use `python setup.py install`, because it invokes `pip` in unpredictable
@@ -77,12 +77,12 @@ match the actual `build/` directories produced in the previous step.
 
 ```
 $ echo '
-export PYTHONPATH="${PYTHONPATH:+${PYTHONPATH}:}/$SHOME/bayeslite-apsw/build/lib.linux-x86_64-2.7"
-export PYTHONPATH=$PYTHONPATH:/$SHOME/bayeslite/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/bdbcontrib/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/cgpm/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/crosscat/build/lib.linux-x86_64-2.7
-export PYTHONPATH=$PYTHONPATH:/$SHOME/Venturecxx/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${SHOME}/bayeslite-apsw/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/bayeslite/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/bdbcontrib/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/cgpm/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/crosscat/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${SHOME}/Venturecxx/build/lib.linux-x86_64-2.7
 
 export BAYESDB_DISABLE_VERSION_CHECK=1
 export BAYESDB_WIZARD_MODE=1
@@ -100,8 +100,7 @@ $ source .pyenv2.7.6/bin/activate
 For each cloned repository $R, run the test suite (may take a while).
 
 ```
-$ cd $SHOME/$R
-$ ./check.sh
+$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx; do cd $SHOME/$REPO; ./check.sh; cd ..; done
 ```
 
 #### Create a new UNIX group `$G` for `$SHOME` and its subdirectories, and
