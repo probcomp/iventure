@@ -23,27 +23,27 @@ In the Jupyter notebook, load up extension in the first cell:
 ```
 #### Write MML programs
 ```
-%mml create population ...
+%mml CREATE POPULATION ...
 ```
 or, for multi-line schemas.
 ```
 %%mml
-drop population xyz;
-create population xyz for t (...);
+DROP POPULATION xyz;
+CREATE POPULATION xyz for t (...);
 ```
 #### Write BQL programs
 ```
-%bql estimate mutual information of x with y within xyz;
+%bql ESTIMULATE MUTUAL INFORMATION OF  x WITH y WITHIN xyz;
 ```
 or, for multi-line queries
 ```
 %%bql
-create temp table depprobs as
-    estimate dependence probability from pairwise variables of xyz;
-.plot select * from depprobs
+CREATE TEMP TABLE depprobs AS
+    ESTIMATE DEPENDENCE PROBABILITY FROM PARIWSE VARIABLES OF xyz;
+.plot SELECT * FROM depprobs
 ```
 
 ### Examples
-For a big example including complex venturescript/mml models, please visit
-[gpmcc](satellites/satellites_mml.ipynb).
+
+Please see https://github.com/probcomp/iventure-notebooks.
 
