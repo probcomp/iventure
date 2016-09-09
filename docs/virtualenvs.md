@@ -14,24 +14,20 @@ $ cd $SHOME
 $ virtualenv -p /usr/bin/python .pyenv2.7.6
 ```
 
-#### Activate the virtual environment, and ensure the right python interpreter
-is being referenced.
+#### Activate the virtual environment, and ensure the right python interpreter is being referenced.
 
 ```
 $ source .pyenv2.7.6/bin/activate
 $ which python # should return $SHOME/.pyenv2.7.6/bin/python
 ```
 
-#### Install python requirements from `pip`, using the `requirements.txt` file
-from this directory (may take a while).
+#### Install python requirements from `pip`, using the `requirements.txt` file from this directory (may take a while).
 
 ```
 $ pip install -r /path/to/requirements.txt
 ```
 
-#### [Optional] Link `matplotlib` libraries for the nicer `Qt` backend to
-the virtualenv. This step will only work if the `python-qt4` is installed
-system-wide.
+#### [Optional] Link `matplotlib` libraries for the nicer `Qt` backend to the virtualenv. This step will only work if the `python-qt4` is installed system-wide.
 
 ```
 $ cd .pyenv2.7.6/lib/python2.7/site-packages
@@ -63,7 +59,10 @@ $ source .pyenv2.7.6/bin/activate
 For each cloned repository $REPO, build the repository.
 
 ```
-$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx; do cd $SHOME/$REPO; python setup.py build; cd ..; done
+$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx;
+    do cd $SHOME/$REPO;
+    python setup.py build; cd ..;
+    done
 ````
 
 Do not use `python setup.py install`, because it invokes `pip` in unpredictable
@@ -97,14 +96,19 @@ Reactivate the virtualenv.
 $ source .pyenv2.7.6/bin/activate
 ```
 
-For each cloned repository $R, run the test suite (may take a while).
+For each cloned repository $R, run the test suite (optional, may take a while).
 
 ```
-$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx; do cd $SHOME/$REPO; ./check.sh; cd ..; done
+$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx;
+    do cd $SHOME/$REPO;
+    ./check.sh; cd ..;
+    done
 ```
 
-#### Create a new UNIX group `$G` for `$SHOME` and its subdirectories, and
-add yourself to the group.
+#### Create a new UNIX group `$G` for `$SHOME` and its subdirectories, and add yourself to the group.
+
+The purpose of the group `$G` is to control the file/access permissions for all
+users which are managed by `iventure_manager.py`.
 
 ```
 $ addgroup $G
