@@ -80,9 +80,15 @@ class VentureMagics(Magics):
         self.session = Session(
             username, [TextLogger()], 'iventure_logs')
 
+    def _retrieve_raw(self, line, cell=None):
+        return '\n'.join([
+            line if line is not None else '',
+            cell if cell is not None else ''
+        ])
+
     @line_cell_magic
     def venturescript(self, line, cell=None):
-        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = self._retrieve_raw(line, cell)
         try:
             # TODO is there no output we should capture?
             self._venturescript_bare(line, cell)
@@ -104,13 +110,14 @@ class VentureMagics(Magics):
         raw = line
         try:
             # TODO is there no output we should capture?
-            self._bayesdb_bare(line)
+            output = self._bayesdb_bare(line)
         except:
             exception = traceback.format_exc()
             self.session.log(LogEntry('bayesdb', raw, None, exception))
             raise
         else:
             self.session.log(LogEntry('bayesdb', raw, None, None))
+            return output
 
     def _bayesdb_bare(self, line):
         parser = argparse.ArgumentParser()
@@ -146,6 +153,7 @@ class VentureMagics(Magics):
         }
         mm = CGPM_Metamodel(cgpm_registry, multiprocess=args.j)
         bayesdb_register_metamodel(self._bdb, mm)
+        return 'Loaded: %s' % (self._path)
 
     def _VsCGpm(self, outputs, inputs, rng, *args, **kwds):
         if 'source' not in kwds:
@@ -154,7 +162,7 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def sql(self, line, cell=None):
-        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = self._retrieve_raw(line, cell)
         try:
             output = self._sql_bare(line, cell)
         except:
@@ -163,6 +171,7 @@ class VentureMagics(Magics):
             raise
         else:
             self.session.log(LogEntry('sql', raw, output, None))
+            return output
 
     def _sql_bare(self, line, cell=None):
         if cell is None:
@@ -183,7 +192,7 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def mml(self, line, cell=None):
-        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = self._retrieve_raw(line, cell)
         try:
             output = self._mml_bare(line, cell)
         except (BQLError, BQLParseError) as e:
@@ -197,6 +206,7 @@ class VentureMagics(Magics):
             raise
         else:
             self.session.log(LogEntry('mml', raw, output, None))
+            return output
 
     def _mml_bare(self, line, cell=None):
         if cell is None:
@@ -228,7 +238,7 @@ class VentureMagics(Magics):
 
     @line_cell_magic
     def bql(self, line, cell=None):
-        raw = '\n'.join([line if line is not None else '', cell if cell is not None else ''])
+        raw = self._retrieve_raw(line, cell)
         try:
             output = self._bql_bare(line, cell)
         except (BQLError, BQLParseError) as e:
@@ -242,6 +252,7 @@ class VentureMagics(Magics):
             raise
         else:
             self.session.log(LogEntry('bql', raw, output, None))
+            return output
 
     def _bql_bare(self, line, cell=None):
         if cell is None:
@@ -295,8 +306,8 @@ class VentureMagics(Magics):
             return
         table = tokens[0]
         path = tokens[1]
-        bayesdb_read_csv_file(self._bdb, table, path, header=True,
-            create=True, ifnotexists=False)
+        bayesdb_read_csv_file(
+            self._bdb, table, path, header=True, create=True, ifnotexists=False)
 
     def _cmd_nullify(self, args):
         tokens = args.split()   # XXX
