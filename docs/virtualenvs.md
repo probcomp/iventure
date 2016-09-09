@@ -47,6 +47,20 @@ $ git clone git@github.com:probcomp/crosscat.git
 $ git clone git@github.com:probcomp/Venturecxx.git
 ```
 
+Two repositories require checking out non-default branches.
+
+```
+$ cd $SHOME/bayeslite
+$ git fetch
+$ git checkout 20160801-fsaad-syntax-bonanza
+
+$ cd $SHOME/crosscat
+$ git fetch
+$ git checkout 20160907-fsaad-progress-hack
+```
+
+The default `master` branch suffices for the rest of the repositories.
+
 #### Build the probcomp repositories.
 
 First prevent python from generating `.pyc` files.
