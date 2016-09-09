@@ -76,7 +76,9 @@ class VentureMagics(Magics):
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
         username = getpass.getuser()
-        self.session = Session(username, [TextLogger()]) # TODO add SQLLogger
+        # TODO add SQLLogger
+        self.session = Session(
+            username, [TextLogger()], 'iventure_logs')
 
     @line_cell_magic
     def venturescript(self, line, cell=None):

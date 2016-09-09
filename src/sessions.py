@@ -27,16 +27,18 @@ LogEntry = namedtuple('LogEntry', ['type', 'input', 'output', 'exception'])
 
 class TextLogger(object):
 
-    def new_session(self, username, session_id):
+    def new_session(self, username, session_id, root):
         # XXX Is username being used?
         home = os.path.expanduser('~')
-        self.filename = os.path.join(home, 'iventure_logs', session_id + '.txt')
+        if not os.path.exists(os.path.join(home, root)):
+            os.mkdir(os.path.join(home, root))
+        self.filename = os.path.join(home, root, session_id + '.txt')
 
     def _write_entry(self, f, label, entry):
         f.write(':' + label + ':' + entry + '\n')
 
     def log(self, time, counter, entry):
-        with open(self.filename, 'a') as f:
+        with open(self.filename, 'wa') as f:
             f.write('---\n')
             self._write_entry(f, 'TIME', time)
             self._write_entry(f, 'COUNTER', str(counter))
@@ -53,7 +55,7 @@ class TextLogger(object):
 
 class Session(object):
 
-    def __init__(self, username, loggers):
+    def __init__(self, username, loggers, root):
         self.loggers = loggers
         self.counter = 0
         # XXX Global random state!
@@ -61,7 +63,7 @@ class Session(object):
         session_id = \
             username + '_' + datetime.datetime.now().isoformat() + '_' + rand
         for logger in self.loggers:
-            logger.new_session(username, session_id)
+            logger.new_session(username, session_id, root)
         print 'session_id: %s' % (session_id,)
 
     def log(self, entry):
