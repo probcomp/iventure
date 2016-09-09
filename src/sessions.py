@@ -38,7 +38,7 @@ class TextLogger(object):
         f.write(':' + label + ':' + entry + '\n')
 
     def log(self, time, counter, entry):
-        with open(self.filename, 'wa') as f:
+        with open(self.filename, 'a') as f:
             f.write('---\n')
             self._write_entry(f, 'TIME', time)
             self._write_entry(f, 'COUNTER', str(counter))
