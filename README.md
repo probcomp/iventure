@@ -1,4 +1,4 @@
-## Interactive Venturescript, Metamodeling Language, and Bayesian Query Language Environment
+## Interactive Environment For Probabilistic Programming in Venturescript, Metamodeling Language, and Bayesian Query Language
 
 ## Installing
 
