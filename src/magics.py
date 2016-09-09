@@ -78,7 +78,7 @@ class VentureMagics(Magics):
         username = getpass.getuser()
         # TODO add SQLLogger
         self.session = Session(
-            username, [TextLogger()], 'iventure_logs')
+            username, [TextLogger()], '.iventure_logs')
 
     def _retrieve_raw(self, line, cell=None):
         return '\n'.join([
