@@ -46,4 +46,3 @@ CREATE TEMP TABLE depprobs AS
 ### Examples
 
 Please see https://github.com/probcomp/iventure-notebooks.
-
