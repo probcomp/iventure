@@ -14,16 +14,16 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import itertools
 import StringIO
 import argparse
-import sys
 import getpass
+import itertools
+import sys
 import traceback
 
-import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.colors
+import matplotlib.pyplot as plt
 import pandas as pd
 
 import bdbcontrib.bql_utils as bqu
@@ -61,7 +61,10 @@ from IPython.core.magic import line_cell_magic
 from IPython.core.magic import line_magic
 from IPython.core.magic import magics_class
 
-from sessions import Session, TextLogger, LogEntry
+from iventure.sessions import LogEntry
+from iventure.sessions import Session
+from iventure.sessions import TextLogger
+
 
 @magics_class
 class VentureMagics(Magics):
