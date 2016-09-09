@@ -185,6 +185,20 @@ class IVentureManager(object):
         jupyter_server_stop(username)
 
 
+    def server_status(self, username):
+        pids = jupyter_find_pid_port(username)
+        if not pids:
+            print 'No active servers for: %s' % (username,)
+        else:
+            print 'User %s has servers at [(pids, ports)]: %s.'\
+            % (username, pids,)
+
+
+    def server_restart(self, username):
+        self.server_stop(username)
+        self.server_start(username)
+
+
 if __name__ == '__main__':
 
     import argparse
@@ -206,6 +220,16 @@ if __name__ == '__main__':
     parser_server_stop.add_argument('username', type=str)
     parser_server_stop.set_defaults(
         func=lambda args: IVentureManager().server_stop(args.username))
+
+    parser_server_status = subparsers.add_parser('server_status')
+    parser_server_status.add_argument('username', type=str)
+    parser_server_status.set_defaults(
+        func=lambda args: IVentureManager().server_status(args.username))
+
+    parser_restart = subparsers.add_parser('server_restart')
+    parser_restart.add_argument('username', type=str)
+    parser_restart.set_defaults(
+        func=lambda args: IVentureManager().server_restart(args.username))
 
     args = parser.parse_args()
     args.func(args)
