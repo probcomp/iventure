@@ -91,13 +91,14 @@ class VentureMagics(Magics):
         raw = self._retrieve_raw(line, cell)
         try:
             # TODO is there no output we should capture?
-            self._venturescript_bare(line, cell)
+            output = self._venturescript_bare(line, cell)
         except:
             exception = traceback.format_exc()
             self.session.log(LogEntry('venturescript', raw, None, exception))
             raise
         else:
-            self.session.log(LogEntry('venturescript', raw, None, None))
+            self.session.log(LogEntry('venturescript', raw, output, None))
+            return output
 
     def _venturescript_bare(self, line, cell=None):
         script = line if cell is None else cell
