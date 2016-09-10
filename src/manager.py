@@ -51,6 +51,21 @@ def jupyter_config_create(username, venv, prefix=None):
         shell=True)
     process.wait()
 
+    # XXX For demo
+    process = subprocess.Popen(
+        'sudo -iu %s sh -c "'
+            ' mkdir -p ~/.ipython/profile_default/startup;'
+            ' cd ~/.ipython/profile_default/startup;'
+            ' echo import warnings >> disable_warnings.py;'
+            ' echo \'warnings.filterwarnings(\\"ignore\\")\' >> disable_warnings.py;'
+            '"' % (username),
+        shell=True)
+    process.wait()
+
+# import warnings
+# warnings.filterwarnings('ignore')
+
+
     # Add lines to the configuration file.
     # XXX TODO: This function must be modified when nginx is used.
     process = subprocess.Popen(
