@@ -116,7 +116,7 @@ class VentureMagics(Magics):
             self.session.log(LogEntry('bayesdb', raw, None, exception))
             raise
         else:
-            self.session.log(LogEntry('bayesdb', raw, None, None))
+            self.session.log(LogEntry('bayesdb', raw, output, None))
             return output
 
     def _bayesdb_bare(self, line):
