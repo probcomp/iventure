@@ -112,7 +112,7 @@ Reactivate the virtualenv.
 $ source .pyenv2.7.6/bin/activate
 ```
 
-For each cloned repository $R, run the test suite (optional, may take a while).
+For each cloned repository, run the test suite (optional, may take a while).
 
 ```
 $ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx;
