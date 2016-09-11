@@ -45,11 +45,21 @@ class TextLogger(object):
             self._write_entry(f, 'TYPE', entry.type)
             self._write_entry(f, 'INPUT', entry.input)
             self._write_entry(
-                f, 'OUTPUT',
-                '' if entry.output is None else entry.output.to_string())
+                f, 'OUTPUT', self._convert_output(entry.output))
             self._write_entry(
-                f, 'EXCEPTION',
-                '' if entry.exception is None else entry.exception)
+                f, 'EXCEPTION', self._convert_exception(entry.exception))
+
+    def _convert_output(self, output):
+        try:
+            return output.to_string()
+        except AttributeError:
+            try:
+                return str(output)
+            except:
+                return ''
+
+    def _convert_exception(self, exception):
+        return '' if exception is None else exception
 
 # TODO implement DBLogger which takes a .db file as input
 
