@@ -68,6 +68,7 @@ from iventure.sessions import TextLogger
 
 @magics_class
 class VentureMagics(Magics):
+
     def __init__(self, shell):
         super(VentureMagics, self).__init__(shell)
         self._bdb = None
@@ -86,41 +87,32 @@ class VentureMagics(Magics):
             cell if cell is not None else ''
         ])
 
-    @line_cell_magic
-    def venturescript(self, line, cell=None):
-        raw = self._retrieve_raw(line, cell)
-        try:
-            # TODO is there no output we should capture?
-            output = self._venturescript_bare(line, cell)
-        except:
-            exception = traceback.format_exc()
-            self.session.log(LogEntry('venturescript', raw, None, exception))
-            raise
-        else:
-            self.session.log(LogEntry('venturescript', raw, output, None))
-            return output
 
-    def _venturescript_bare(self, line, cell=None):
+    def logged_cell(func):
+        def logged_cell_wrapper(self, line, cell=None):
+            raw = self._retrieve_raw(line, cell)
+            try:
+                output = func(self, line, cell)
+            except:
+                exception = traceback.format_exc()
+                self.session.log(LogEntry(func.__name__, raw, None, exception))
+                raise
+            else:
+                self.session.log(LogEntry(__name__, raw, output, None))
+                return output
+        return logged_cell_wrapper
+
+    @logged_cell
+    @line_magic
+    def venturescript(self, line, cell=None):
         script = line if cell is None else cell
         # XXX Whattakludge!
         self._venturescript.append(script)
         self._ripl.execute_program(script)
 
+    @logged_cell
     @line_magic
-    def bayesdb(self, line):
-        raw = line
-        try:
-            # TODO is there no output we should capture?
-            output = self._bayesdb_bare(line)
-        except:
-            exception = traceback.format_exc()
-            self.session.log(LogEntry('bayesdb', raw, None, exception))
-            raise
-        else:
-            self.session.log(LogEntry('bayesdb', raw, output, None))
-            return output
-
-    def _bayesdb_bare(self, line):
+    def bayesdb(self, line, cell=None):
         parser = argparse.ArgumentParser()
         parser.add_argument('path', help='Path of bdb file.')
         parser.add_argument('-j', action='store_true', help='Multiprocessing.')
@@ -161,20 +153,9 @@ class VentureMagics(Magics):
             kwds['source'] = '\n'.join(self._venturescript)
         return VsCGpm(outputs, inputs, rng, *args, **kwds)
 
+    @logged_cell
     @line_cell_magic
     def sql(self, line, cell=None):
-        raw = self._retrieve_raw(line, cell)
-        try:
-            output = self._sql_bare(line, cell)
-        except:
-            exception = traceback.format_exc()
-            self.session.log(LogEntry('sql', raw, None, exception))
-            raise
-        else:
-            self.session.log(LogEntry('sql', raw, output, None))
-            return output
-
-    def _sql_bare(self, line, cell=None):
         if cell is None:
             ucmds = [line]
         else:
@@ -191,25 +172,9 @@ class VentureMagics(Magics):
                 cursor = self._bdb.sql_execute(cmd)
         return bqu.cursor_to_df(cursor) if cursor else None
 
+    @logged_cell
     @line_cell_magic
     def mml(self, line, cell=None):
-        raw = self._retrieve_raw(line, cell)
-        try:
-            output = self._mml_bare(line, cell)
-        except (BQLError, BQLParseError) as e:
-            exception = traceback.format_exc()
-            self.session.log(LogEntry('mml', raw, None, exception))
-            # Do not print entire stack trace (do not re-raise exception)
-            sys.stderr.write('%s' % (e,))
-        except:
-            exception = traceback.format_exc()
-            self.session.log(LogEntry('mml', raw, None, exception))
-            raise
-        else:
-            self.session.log(LogEntry('mml', raw, output, None))
-            return output
-
-    def _mml_bare(self, line, cell=None):
         if cell is None:
             ucmds = [line]
         else:
@@ -237,25 +202,9 @@ class VentureMagics(Magics):
         if bql_q:
             return self._bql(bql_q)
 
+    @logged_cell
     @line_cell_magic
     def bql(self, line, cell=None):
-        raw = self._retrieve_raw(line, cell)
-        try:
-            output = self._bql_bare(line, cell)
-        except (BQLError, BQLParseError) as e:
-            exception = traceback.format_exc()
-            self.session.log(LogEntry('bql', raw, None, exception))
-            # Do not print entire stack trace (do not re-raise exception)
-            sys.stderr.write('%s' % (e,))
-        except:
-            exception = traceback.format_exc()
-            self.session.log(LogEntry('bql', raw, None, exception))
-            raise
-        else:
-            self.session.log(LogEntry('bql', raw, output, None))
-            return output
-
-    def _bql_bare(self, line, cell=None):
         if cell is None:
             ucmds = [line]
         else:
