@@ -103,7 +103,7 @@ class VentureMagics(Magics):
         return logged_cell_wrapper
 
     @logged_cell
-    @line_magic
+    @line_cell_magic
     def venturescript(self, line, cell=None):
         script = line if cell is None else cell
         # XXX Whattakludge!
@@ -134,6 +134,14 @@ class VentureMagics(Magics):
         metamodel = CrosscatMetamodel(crosscat)
         bayesdb_register_metamodel(self._bdb, metamodel)
 
+
+        # Small hack for the VsCGpm, which takes in the venturescript source
+        # from %venturescript cells!
+        def _VsCGpm(outputs, inputs, rng, *args, **kwds):
+            if 'source' not in kwds:
+                kwds['source'] = '\n'.join(self._venturescript)
+            return VsCGpm(outputs, inputs, rng, *args, **kwds)
+
         # Register cgpm.
         cgpm_registry = {
             'factor_analysis': FactorAnalysis,
@@ -141,17 +149,12 @@ class VentureMagics(Magics):
             'multivariate_kde': MultivariateKde,
             'multivariate_knn': MultivariateKnn,
             'random_forest': RandomForest,
-            'venturescript': self._VsCGpm,
+            'venturescript': _VsCGpm,
             'inline_venturescript': InlineVsCGpm,
         }
         mm = CGPM_Metamodel(cgpm_registry, multiprocess=args.j)
         bayesdb_register_metamodel(self._bdb, mm)
         return 'Loaded: %s' % (self._path)
-
-    def _VsCGpm(self, outputs, inputs, rng, *args, **kwds):
-        if 'source' not in kwds:
-            kwds['source'] = '\n'.join(self._venturescript)
-        return VsCGpm(outputs, inputs, rng, *args, **kwds)
 
     @logged_cell
     @line_cell_magic
