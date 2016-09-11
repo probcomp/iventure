@@ -172,6 +172,10 @@ class IVentureManager(object):
         print 'Creating UNIX user: %s' % (username,)
         unix_user_create(username, os.path.join(self.dir_root, username))
 
+        # Add user to sahred `grp_unix`.
+        print 'Adding user to group: %s' % (self.grp_unix,)
+        unix_user_addgroup(username, self.grp_unix)
+
         # TODO Prepare the jupyter server configruation.
         print 'Creating a jupyter configuration file.'
         jupyter_config_create(username, self.dir_venv)
