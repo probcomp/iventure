@@ -34,9 +34,6 @@ class TextLogger(object):
             os.mkdir(os.path.join(home, root))
         self.filename = os.path.join(home, root, session_id + '.txt')
 
-    def _write_entry(self, f, label, entry):
-        f.write(':' + label + ':' + entry + '\n')
-
     def log(self, time, counter, entry):
         with open(self.filename, 'a') as f:
             f.write('---\n')
@@ -48,6 +45,9 @@ class TextLogger(object):
                 f, 'OUTPUT', self._convert_output(entry.output))
             self._write_entry(
                 f, 'EXCEPTION', self._convert_exception(entry.exception))
+
+    def _write_entry(self, f, label, entry):
+        f.write(':' + label + ':' + entry + '\n')
 
     def _convert_output(self, output):
         try:
