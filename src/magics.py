@@ -311,12 +311,6 @@ class VentureMagics(Magics):
 
     # Plotting.
 
-    def _cmd_bar(self, query, sql=None):
-        import bdbcontrib.plot_utils as bpu
-        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        bar(self._bdb, df)
-
     def _cmd_heatmap(self, query, sql=None):
         import bdbcontrib.plot_utils as bpu
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
@@ -328,6 +322,11 @@ class VentureMagics(Magics):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
         bpu.pairplot(self._bdb, df)
+
+    def _cmd_bar(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
+        bar(df)
 
     def _cmd_scatter(self, query, sql=None):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
@@ -422,6 +421,7 @@ def bar(df, ax=None):
 
     ax.set_xlabel(df.columns[0])
     ax.set_ylabel(df.columns[1])
+    ax.grid()
 
     return fig
 
@@ -485,7 +485,9 @@ def histogram(df, ax=None, normed=None):
         df.iloc[:,1] if df.shape[1] == 2 else [0] * len(df))
     data = [df[df.iloc[:,1]==l].iloc[:,0].values for l in labels]\
         if df.shape[1] == 2 else df.iloc[:,0]
-    ax.hist(data, 10, normed=normed, histtype='bar', color=colors, label=labels)
+    ax.hist(
+        data, 10, normed=normed, histtype='bar', color=colors, label=labels,
+        alpha=0.7)
     # Fix up the axes and their labels.
     ax.set_ylabel('Frequency', fontweight='bold')
     ax.set_xlabel(df.columns[0], fontweight='bold')
