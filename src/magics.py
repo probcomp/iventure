@@ -311,6 +311,12 @@ class VentureMagics(Magics):
 
     # Plotting.
 
+    def _cmd_bar(self, query, sql=None):
+        import bdbcontrib.plot_utils as bpu
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
+        bar(self._bdb, df)
+
     def _cmd_heatmap(self, query, sql=None):
         import bdbcontrib.plot_utils as bpu
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
