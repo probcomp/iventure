@@ -253,6 +253,10 @@ class VentureMagics(Magics):
             return
 
     def _cmd_csv(self, args):
+        '''Creates a table from a csv file.
+
+        Usage: .csv <table> </path/to/data.csv>
+        '''
         tokens = args.split()   # XXX
         if len(tokens) != 2:
             sys.stderr.write('Usage: .csv <table> </path/to/data.csv>\n')
@@ -263,6 +267,10 @@ class VentureMagics(Magics):
             self._bdb, table, path, header=True, create=True, ifnotexists=False)
 
     def _cmd_nullify(self, args):
+        '''Convert <value> in <table> to SQL NULL.
+
+        Usage: .nullify <table> <value>
+        '''
         tokens = args.split()   # XXX
         if len(tokens) != 2:
             sys.stderr.write('Usage: .nullify <table> <value>')
@@ -272,12 +280,20 @@ class VentureMagics(Magics):
         return bqu.nullify(self._bdb, table, value)
 
     def _cmd_table(self, args):
+        '''Returns a table of the PRAGMA schema of <table>.
+
+        Usage: .table <table>
+        '''
         table = args
         qt = bql_quote_name(table)
         cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (table,))
         return bqu.cursor_to_df(cursor)
 
     def _cmd_population(self, args):
+        '''Returns a table of the variables and metamodels for <population>.
+
+        Usage: .population <population>
+        '''
         population = args
         if not bayesdb_has_population(self._bdb, population):
             raise ValueError('No such population: %r' % (population,))
@@ -299,7 +315,7 @@ class VentureMagics(Magics):
         import bdbcontrib.plot_utils as bpu
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
-        bpu.barplot(self._bdb, df)
+        bar(self._bdb, df)
 
     def _cmd_heatmap(self, query, sql=None):
         import bdbcontrib.plot_utils as bpu
@@ -312,6 +328,11 @@ class VentureMagics(Magics):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
         bpu.pairplot(self._bdb, df)
+
+    def _cmd_bar(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = bqu.cursor_to_df(c)
+        bar(df)
 
     def _cmd_scatter(self, query, sql=None):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
@@ -383,6 +404,33 @@ def scatter(df, ax=None):
     return fig
 
 
+def bar(df, ax=None):
+    """Histogram the NOMINAL data points in df.
+
+    If df has one column, then a regular histogram is produced. If df has two
+    columns, then the final column is used as the label for each data point.
+    """
+    if df.shape[1] != 2:
+        raise ValueError('Only one or two columns allowed: %s.' % (df.columns,))
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    xlabels = df.ix[:,0].values
+    if len(set(xlabels)) != len(xlabels):
+        raise ValueError('Unique nominal values required: %s.' % (xlabels,))
+
+    ax.bar([x - .5 for x in xrange(df.shape[0])], df.ix[:, 1].values, alpha=0.7)
+
+    ax.set_xticks(range(df.shape[0]))
+    ax.set_xticklabels(xlabels, rotation=90)
+    ax.set_xlim([-1, df.shape[0] - .5])
+
+    ax.set_xlabel(df.columns[0])
+    ax.set_ylabel(df.columns[1])
+    ax.grid()
+
+    return fig
+
 def hist(df, ax=None, normed=None):
     """Histogram the NOMINAL data points in df.
 
@@ -443,7 +491,9 @@ def histogram(df, ax=None, normed=None):
         df.iloc[:,1] if df.shape[1] == 2 else [0] * len(df))
     data = [df[df.iloc[:,1]==l].iloc[:,0].values for l in labels]\
         if df.shape[1] == 2 else df.iloc[:,0]
-    ax.hist(data, 10, normed=normed, histtype='bar', color=colors, label=labels)
+    ax.hist(
+        data, 10, normed=normed, histtype='bar', color=colors, label=labels,
+        alpha=0.7)
     # Fix up the axes and their labels.
     ax.set_ylabel('Frequency', fontweight='bold')
     ax.set_xlabel(df.columns[0], fontweight='bold')
