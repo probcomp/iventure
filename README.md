@@ -8,7 +8,7 @@ $ python setup.py build
 ```
 
 Make sure to add `iventure` to your `PYTHONPATH`. The two key source files are
-`magics.py`, which provides Jupyter ntoebook cell magics, and `manager.py`,
+`magics.py`, which provides Jupyter notebook cell magics, and `manager.py`,
 which provides server management for Jupyter kernels.
 
 ## Magics Usage
