@@ -51,6 +51,7 @@ from cgpm.kde.mvkde import MultivariateKde
 from cgpm.knn.mvknn import MultivariateKnn
 from cgpm.regressions.forest import RandomForest
 from cgpm.regressions.linreg import LinearRegression
+from cgpm.regressions.ols import OrdinaryLeastSquares
 from cgpm.venturescript.vscgpm import VsCGpm
 from cgpm.venturescript.vsinline import InlineVsCGpm
 
@@ -148,6 +149,7 @@ class VentureMagics(Magics):
             'linear_regression': LinearRegression,
             'multivariate_kde': MultivariateKde,
             'multivariate_knn': MultivariateKnn,
+            'ordinary_least_squares': OrdinaryLeastSquares,
             'random_forest': RandomForest,
             'venturescript': _VsCGpm,
             'inline_venturescript': InlineVsCGpm,
