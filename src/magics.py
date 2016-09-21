@@ -313,12 +313,6 @@ class VentureMagics(Magics):
 
     # Plotting.
 
-    def _cmd_bar(self, query, sql=None):
-        import bdbcontrib.plot_utils as bpu
-        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        bar(self._bdb, df)
-
     def _cmd_heatmap(self, query, sql=None):
         import bdbcontrib.plot_utils as bpu
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
@@ -388,10 +382,12 @@ def scatter(df, ax=None):
     three columns, then the final column is used as the label for each data
     point.
     """
-    if ax is None:
-        fig, ax = plt.subplots()
     if df.shape[1] not in [2, 3]:
         raise ValueError('Only two or three columns allowed: %s' % df.columns)
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = ax.get_figure()
     labels, colors = _retrieve_labels_colors(
         df.iloc[:,2] if df.shape[1] == 3 else [0] * len(df))
     for label, color in zip(labels, colors):
@@ -417,6 +413,8 @@ def bar(df, ax=None):
         raise ValueError('Only one or two columns allowed: %s.' % (df.columns,))
     if ax is None:
         fig, ax = plt.subplots()
+    else:
+        fig = ax.get_figure()
 
     xlabels = df.ix[:,0].values
     if len(set(xlabels)) != len(xlabels):
@@ -441,10 +439,12 @@ def hist(df, ax=None, normed=None):
     If df has one column, then a regular histogram is produced. If df has two
     columns, then the final column is used as the label for each data point.
     """
-    if ax is None:
-        fig, ax = plt.subplots()
     if df.shape[1] not in [1, 2]:
         raise ValueError('Only one or two columns allowed: %s' % df.columns)
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = ax.get_figure()
     # Retrieve the nominal values, sorted by overall frequency.
     nominals = df.iloc[:,0].value_counts().index.tolist()
     # Retrieve the labels.
@@ -489,10 +489,12 @@ def histogram(df, ax=None, normed=None):
     If df has one column, then a regular histogram is produced. If df has two
     columns, then the final column is used as the label for each data point.
     """
-    if ax is None:
-        fig, ax = plt.subplots()
     if df.shape[1] not in [1, 2]:
         raise ValueError('Only one or two columns allowed: %s' % df.columns)
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = ax.get_figure()
     labels, colors = _retrieve_labels_colors(
         df.iloc[:,1] if df.shape[1] == 2 else [0] * len(df))
     data = [df[df.iloc[:,1]==l].iloc[:,0].values for l in labels]\
