@@ -44,7 +44,8 @@ def scatter(df, ax=None):
     # Plot the legend.
     if len(labels) > 1:
         _plot_legend(fig, ax)
-    fig.set_tight_layout(True)
+
+    # fig.set_tight_layout(True)
     return fig
 
 
@@ -75,7 +76,7 @@ def bar(df, ax=None):
     ax.set_ylabel(df.columns[1])
     ax.grid()
 
-    fig.set_tight_layout(True)
+    # fig.set_tight_layout(True)
     return fig
 
 def hist(df, ax=None, normed=None):
@@ -124,7 +125,7 @@ def hist(df, ax=None, normed=None):
     if len(labels) > 1:
         _plot_legend(fig, ax)
 
-    fig.set_tight_layout(True)
+    # fig.set_tight_layout(True)
     return fig
 
 
@@ -158,7 +159,7 @@ def histogram(df, ax=None, normed=None):
     if len(labels) > 1:
         _plot_legend(fig, ax)
 
-    fig.set_tight_layout(True)
+    # fig.set_tight_layout(True)
     return fig
 
 
