@@ -56,7 +56,7 @@ def bar(df, ax=None):
     columns, then the final column is used as the label for each data point.
     """
     if df.shape[1] != 2:
-        raise ValueError('Only one or two columns allowed: %s.' % (df.columns,))
+        raise ValueError('Two columns required: %s.' % (df.columns,))
     if ax is None:
         fig, ax = plt.subplots()
     else:
