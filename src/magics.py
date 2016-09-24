@@ -431,7 +431,7 @@ class VentureMagics(Magics):
     def _cmd_histogram(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
-        plots.histogram(df, normed=bool(kwargs.get('normed', None)))
+        plots.histogram(df, **kwargs)
 
     _CMDS = {
         'csv': _cmd_csv,
