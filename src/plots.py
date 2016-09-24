@@ -184,7 +184,7 @@ def _handle_kwargs(ax, **kwargs):
     if 'ymin' in kwargs:
         ax.set_ylim([float(kwargs['ymin']), ax.get_ylim()[1]])
     if 'ymax' in kwargs:
-        ax.set_ylim([ax.get_xlim()[0], float(kwargs['ymax'])])
+        ax.set_ylim([ax.get_ylim()[0], float(kwargs['ymax'])])
 
 
 def _unroll_dataframe(df):
