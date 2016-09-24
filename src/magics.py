@@ -18,6 +18,7 @@ import StringIO
 import argparse
 import getpass
 import itertools
+import re
 import sys
 import traceback
 
@@ -321,15 +322,22 @@ class VentureMagics(Magics):
 
     def _cmd(self, cmd, sql=None):
         assert cmd[0] == '.'
-        sp = cmd.find(' ')
-        if sp == -1:
-            sp = len(cmd)
-        dot_command = cmd[1:sp].strip()
-        args = cmd[min(sp + 1, len(cmd)):]
+        space = cmd.find(' ')
+        if space == -1:
+            space = len(cmd)
+        dot_command = cmd[1:space].strip()
+        args = cmd[min(space + 1, len(cmd)):]
         if dot_command in self._CMDS:
             return self._CMDS[dot_command](self, args)
         elif dot_command in self._PLTS:
-            return self._PLTS[dot_command](self, args, sql=sql)
+            # Find the keyword arguments, if any.
+            matches = re.findall('--[^\\s]+?=[^\\s]*', args)
+            kwargs = dict([re.split('--|=',m)[1:] for m in matches])
+            # Remove kwargs from args.
+            for m in matches:
+                args = str.replace(args, m, '')
+            args = str.strip(args)
+            return self._PLTS[dot_command](self, args, sql=sql, **kwargs)
         else:
             sys.stderr.write('Unknown command: %s\n' % (dot_command,))
             return
@@ -393,47 +401,37 @@ class VentureMagics(Magics):
 
     # Plotting.
 
-    def _cmd_heatmap(self, query, sql=None):
+    def _cmd_heatmap(self, query, sql=None, **kwargs):
         import bdbcontrib.plot_utils as bpu
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
         bpu.heatmap(df)
 
-    def _cmd_plot(self, query, sql=None):
+    def _cmd_plot(self, query, sql=None, **kwargs):
         import bdbcontrib.plot_utils as bpu
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
         bpu.pairplot(self._bdb, df)
 
-    def _cmd_bar(self, query, sql=None):
+    def _cmd_bar(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
         plots.bar(df)
 
-    def _cmd_scatter(self, query, sql=None):
+    def _cmd_scatter(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
-        plots.scatter(df)
+        plots.scatter(df, **kwargs)
 
-    def _cmd_hist(self, query, sql=None):
+    def _cmd_hist(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
-        plots.hist(df)
+        plots.hist(df, normed=bool(kwargs.get('normed', None)))
 
-    def _cmd_histn(self, query, sql=None):
+    def _cmd_histogram(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
-        plots.hist(df, normed=True)
-
-    def _cmd_histogram(self, query, sql=None):
-        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.histogram(df)
-
-    def _cmd_histogramn(self, query, sql=None):
-        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.histogram(df, normed=True)
+        plots.histogram(df, normed=bool(kwargs.get('normed', None)))
 
     _CMDS = {
         'csv': _cmd_csv,
@@ -447,9 +445,7 @@ class VentureMagics(Magics):
         'heatmap': _cmd_heatmap,
         'histogram': _cmd_histogram,
         'hist': _cmd_hist,
-        'histn': _cmd_histn,
         'histogram': _cmd_histogram,
-        'histogramn': _cmd_histogramn,
         'plot': _cmd_plot,
         'scatter': _cmd_scatter,
     }

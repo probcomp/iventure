@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import pandas as pd
 
-def scatter(df, ax=None):
+def scatter(df, ax=None, **kwargs):
     """Scatter the NUMERICAL data points in df.
 
     If df has two columns, then a regular scatter plot is produced. If df has
@@ -44,6 +44,9 @@ def scatter(df, ax=None):
     # Plot the legend.
     if len(labels) > 1:
         _plot_legend(fig, ax)
+    # Adjust limits.
+    if kwargs:
+        _adjust_limits(ax, **kwargs)
 
     # fig.set_tight_layout(True)
     return fig
@@ -129,7 +132,7 @@ def hist(df, ax=None, normed=None):
     return fig
 
 
-def histogram(df, ax=None, normed=None):
+def histogram(df, ax=None, normed=None, **kwargs):
     """Histogram the NUMERICAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two
@@ -158,6 +161,9 @@ def histogram(df, ax=None, normed=None):
     # Plot the legend.
     if len(labels) > 1:
         _plot_legend(fig, ax)
+    # Adjust limits.
+    if kwargs:
+        _adjust_limits(ax, **kwargs)
 
     # fig.set_tight_layout(True)
     return fig
@@ -167,6 +173,18 @@ def _plot_legend(fig, ax):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), framealpha=0)
+
+
+def _adjust_limits(ax, **kwargs):
+    # Adjust axes if necessary.
+    if 'xmin' in kwargs:
+        ax.set_xlim([float(kwargs['xmin']), ax.get_xlim()[1]])
+    if 'xmax' in kwargs:
+        ax.set_xlim([ax.get_xlim()[0], float(kwargs['xmax'])])
+    if 'ymin' in kwargs:
+        ax.set_ylim([float(kwargs['ymin']), ax.get_ylim()[1]])
+    if 'ymax' in kwargs:
+        ax.set_ylim([ax.get_xlim()[0], float(kwargs['ymax'])])
 
 
 def _unroll_dataframe(df):
