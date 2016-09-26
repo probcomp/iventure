@@ -70,7 +70,7 @@ class VentureMagics(Magics):
         super(VentureMagics, self).__init__(shell)
         self._bdb = None
         self._path = None
-        self._ripl = vs.make_ripl()
+        self._ripl = vs.make_lite_ripl()
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
         username = getpass.getuser()
@@ -104,8 +104,14 @@ class VentureMagics(Magics):
     def venturescript(self, line, cell=None):
         script = line if cell is None else cell
         # XXX Whattakludge!
-        self._venturescript.append(script)
-        self._ripl.execute_program(script)
+
+        # easy clear
+        if script=="clear":
+            self._ripl.clear()
+            self._venturescript = []
+        else:
+            self._venturescript.append(script)
+            self._ripl.execute_program(script)
 
     @logged_cell
     @line_magic
