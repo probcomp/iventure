@@ -109,6 +109,12 @@ class VentureMagics(Magics):
         if script=="clear":
             self._ripl.clear()
             self._venturescript = []
+
+        elif script.startswith("sample"):
+            return ripl.sample(script[6:])
+
+        elif script.startswith("evaluate"):
+            return ripl.evaluate(script[8:])
         else:
             self._venturescript.append(script)
             self._ripl.execute_program(script)
