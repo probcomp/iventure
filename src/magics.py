@@ -79,56 +79,7 @@ class VentureMagics(Magics):
         self._bdb = None
         self._path = None
         self._ripl = vs.make_lite_ripl()
-        self._ripl.bind_foreign_inference_sp("scatter_plot",
-                deterministic_typed(scatter_plot,
-                    [ 
-                    t.ArrayUnboxedType(t.NumberType()), 
-                    t.ArrayUnboxedType(t.NumberType()),
-                    t.HomogeneousDictType(t.StringType(), t.AnyType())
-                    ],
-                    t.NumberType(),
-                    min_req_args=2)
-                )
-        self._ripl.bind_foreign_inference_sp("line_plot",
-                deterministic_typed(line_plot,
-                    [ 
-                    t.ArrayUnboxedType(t.NumberType()), 
-                    t.ArrayUnboxedType(t.NumberType()),
-                    t.HomogeneousDictType(t.StringType(), t.AnyType())
-                    ],
-                    t.NumberType(),
-                    min_req_args=2)
-                )
-
-        self._ripl.bind_foreign_inference_sp("density_contour_plot",
-                deterministic_typed(kde_plot,
-                    [ 
-                    t.AnyType(t.NumberType()), 
-                    t.HomogeneousDictType(t.StringType(), t.AnyType())
-                    ],
-                    t.NumberType(),
-                    min_req_args=2)
-                )
-
-        self._ripl.bind_foreign_inference_sp("trajectory_plot",
-                deterministic_typed(trajectory_plot,
-                    [ 
-                    t.AnyType(t.NumberType()), 
-                    t.HomogeneousDictType(t.StringType(), t.AnyType())
-                    ],
-                    t.NumberType(),
-                    min_req_args=2)
-                )
-        self._ripl.bind_foreign_inference_sp("hist_plot",
-                deterministic_typed(hist_plot,
-                    [ 
-                    t.AnyType(t.NumberType()), 
-                    t.StringType()
-                    ],
-                    t.NumberType(),
-                    min_req_args=2)
-                )
-   
+        self._register_foreign_sps() 
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
         username = getpass.getuser()
@@ -195,7 +146,7 @@ class VentureMagics(Magics):
             self._ripl = None
 
         self._ripl = vs.make_lite_ripl(seed=args.seed)
-
+        self._register_foreign_sps()
         return 'Set seed of a new RIPL instance for VentureScript to %.2f' % (args.seed,)
 
 
@@ -399,6 +350,56 @@ class VentureMagics(Magics):
         ''', {'population_id': population_id})
         return bqu.cursor_to_df(cursor)
 
+    def _register_foreign_sps(self):
+        self._ripl.bind_foreign_inference_sp("scatter_plot",
+                deterministic_typed(scatter_plot,
+                    [ 
+                    t.ArrayUnboxedType(t.NumberType()), 
+                    t.ArrayUnboxedType(t.NumberType()),
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+        self._ripl.bind_foreign_inference_sp("line_plot",
+                deterministic_typed(line_plot,
+                    [ 
+                    t.ArrayUnboxedType(t.NumberType()), 
+                    t.ArrayUnboxedType(t.NumberType()),
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+
+        self._ripl.bind_foreign_inference_sp("density_contour_plot",
+                deterministic_typed(kde_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+
+        self._ripl.bind_foreign_inference_sp("trajectory_plot",
+                deterministic_typed(trajectory_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+        self._ripl.bind_foreign_inference_sp("hist_plot",
+                deterministic_typed(hist_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.StringType()
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
     # Plotting.
 
     def _cmd_heatmap(self, query, sql=None):
