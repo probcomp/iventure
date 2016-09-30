@@ -196,7 +196,7 @@ class VentureMagics(Magics):
 
         self._ripl = vs.make_lite_ripl(seed=args.seed)
 
-        return 'Sed seed to %.2f' % (args.seed,)
+        return 'Set seed of a new RIPL instance for VentureScript to %.2f' % (args.seed,)
 
 
     @logged_cell
