@@ -61,7 +61,15 @@ from iventure.sessions import LogEntry
 from iventure.sessions import Session
 from iventure.sessions import TextLogger
 
-from iventure import plots
+
+import venture.lite.types as t
+from venture.lite.sp_help import deterministic_typed
+
+from iventure.plotting_sps import scatter_plot
+from iventure.plotting_sps import line_plot
+from iventure.plotting_sps import kde_plot
+from iventure.plotting_sps import trajectory_plot
+from iventure.plotting_sps import hist_plot
 
 @magics_class
 class VentureMagics(Magics):
@@ -71,6 +79,56 @@ class VentureMagics(Magics):
         self._bdb = None
         self._path = None
         self._ripl = vs.make_lite_ripl()
+        self._ripl.bind_foreign_inference_sp("scatter_plot",
+                deterministic_typed(scatter_plot,
+                    [ 
+                    t.ArrayUnboxedType(t.NumberType()), 
+                    t.ArrayUnboxedType(t.NumberType()),
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+        self._ripl.bind_foreign_inference_sp("line_plot",
+                deterministic_typed(line_plot,
+                    [ 
+                    t.ArrayUnboxedType(t.NumberType()), 
+                    t.ArrayUnboxedType(t.NumberType()),
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+
+        self._ripl.bind_foreign_inference_sp("density_contour_plot",
+                deterministic_typed(kde_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+
+        self._ripl.bind_foreign_inference_sp("trajectory_plot",
+                deterministic_typed(trajectory_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+        self._ripl.bind_foreign_inference_sp("hist_plot",
+                deterministic_typed(hist_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.StringType()
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+   
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
         username = getpass.getuser()
@@ -104,20 +162,42 @@ class VentureMagics(Magics):
     def venturescript(self, line, cell=None):
         script = line if cell is None else cell
         # XXX Whattakludge!
+        # TODO replace return with print statements. Question? Should we allow
+        # line inputs to return? probably.
+        venture_strings  = script.split(";")
+        for venture_string in venture_strings:
+            venture_string = venture_string.strip() # defensive programming 
+            # easy clear
+            if venture_string=="clear":
+                self._ripl.clear()
+                self._venturescript = []
+            elif venture_string.startswith("sample"):
+                # since I ripl.sample is causing problems, with ${symbol}, I can
+                # write this:return self._ripl.sample(script[6:])
+                return self._ripl.execute_program(venture_string)[0]["value"]["value"]
+            elif venture_string.startswith(".scatter"):
+                # since I ripl.sample is causing problems, with ${symbol}, I can
+                # write this:return self._ripl.sample(script[6:])
+                return self._ripl.execute_program(venture_string)[0]["value"]["value"]
+            elif venture_string.startswith("evaluate"):
+                return self._ripl.evaluate(venture_string[8:])
+            else:
+                self._venturescript.append(venture_string)
+                self._ripl.execute_program(venture_string)
 
-        # easy clear
-        if script=="clear":
-            self._ripl.clear()
-            self._venturescript = []
+    @logged_cell
+    @line_magic
+    def ripl(self, line, cell=None):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--seed", type=float,  help="deteriministic")
+        args = parser.parse_args(line.split())
+        if self._ripl is not None:
+            self._ripl = None
 
-        elif script.startswith("sample"):
-            return ripl.sample(script[6:])
+        self._ripl = vs.make_lite_ripl(seed=args.seed)
 
-        elif script.startswith("evaluate"):
-            return ripl.evaluate(script[8:])
-        else:
-            self._venturescript.append(script)
-            self._ripl.execute_program(script)
+        return 'Sed seed to %.2f' % (args.seed,)
+
 
     @logged_cell
     @line_magic
