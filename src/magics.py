@@ -63,6 +63,40 @@ from iventure.sessions import TextLogger
 
 from iventure import plots
 
+import venture.shortcuts as vs
+import venture.value.dicts as expr
+from collections import OrderedDict
+from venture.lite.types import Dict
+import venture.lite.value as vv
+def convert_from_stack_dict(stack_dict):
+    venture_value = vv.VentureValue.fromStackDict(stack_dict)
+    return convert_from_venture_value(venture_value)
+
+def convert_from_venture_value(venture_value):
+    'convert a stack dict to python object'
+    if isinstance(venture_value, vv.VentureDict):
+        shallow = Dict().asPythonNoneable(venture_value)
+        deep = OrderedDict()
+        for key, value in shallow.iteritems():
+            deep[convert_from_venture_value(key)] = convert_from_venture_value(value)
+        return deep 
+    elif isinstance(venture_value, vv.VentureNumber):
+        return venture_value.getNumber()
+    elif isinstance(venture_value, vv.VentureInteger):
+        return venture_value.getInteger()
+    elif isinstance(venture_value, vv.VentureString):
+        return venture_value.getString()
+    elif isinstance(venture_value, vv.VentureBool):
+        return venture_value.getBool()
+    elif isinstance(venture_value, vv.VentureAtom):
+        return venture_value.getAtom()
+    elif isinstance(venture_value, vv.VentureArray):
+        return [convert_from_venture_value(val) for val in venture_value.getArray()]
+    elif isinstance(venture_value, vv.VenturePair):
+        return [convert_from_venture_value(val) for val in venture_value.getArray()]
+    else:
+        raise ValueError("Venture value cannot be converted", str(venture_value))
+
 @magics_class
 class VentureMagics(Magics):
 
@@ -70,7 +104,7 @@ class VentureMagics(Magics):
         super(VentureMagics, self).__init__(shell)
         self._bdb = None
         self._path = None
-        self._ripl = vs.make_ripl()
+        self._ripl = vs.make_lite_ripl()
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
         username = getpass.getuser()
@@ -99,13 +133,21 @@ class VentureMagics(Magics):
                 return output
         return logged_cell_wrapper
 
+    @line_magic
+    def get_ripl(self, line):
+        return self._ripl
+
     @logged_cell
     @line_cell_magic
     def venturescript(self, line, cell=None):
         script = line if cell is None else cell
         # XXX Whattakludge!
         self._venturescript.append(script)
-        self._ripl.execute_program(script)
+        results = self._ripl.execute_program(script, type=True)
+        # use matlab convention where semicolon at end means don't print
+        import string
+        if string.rstrip(script)[-1] != ";":
+            return convert_from_stack_dict(results[-1]["value"])
 
     @logged_cell
     @line_magic
