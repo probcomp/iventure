@@ -153,6 +153,24 @@ class VentureMagics(Magics):
     def get_ripl(self, line):
         return self._ripl
 
+
+    @logged_cell
+    @line_magic
+    def ripl(self, line, cell=None):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--seed", type=float,  help="deteriministic")
+        parser.add_argument("--plugins", type=str, nargs = "+",  help="list of plugins")
+        args = parser.parse_args(line.split())
+        if self._ripl is not None:
+            self._ripl = None
+    
+        self._ripl = vs.make_lite_ripl(seed=args.seed)
+        for plugin in args.plugins:
+            print "Loading: %s" % (plugin,)
+            self._ripl.load_plugin(plugin)
+
+        return 'Set seed of a new RIPL instance for VentureScript to %.2f' % (args.seed,)
+
     @logged_cell
     @line_cell_magic
     def venturescript(self, line, cell=None):
