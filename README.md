@@ -79,7 +79,7 @@ group permissions, which are required by `manager.py`.
 #### Launch a Jupyter server
 
 ```
-./manager.py server_launch <username>
+./manager.py server_start <username>
 ```
 Note that only 1 server per user (which supports several notebooks), is allowed.
 
