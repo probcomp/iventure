@@ -68,8 +68,12 @@ from venture.lite.sp_help import deterministic_typed
 from iventure.plotting_sps import scatter_plot
 from iventure.plotting_sps import line_plot
 from iventure.plotting_sps import kde_plot
+from iventure.plotting_sps import gradient_trajectory_plot
 from iventure.plotting_sps import trajectory_plot
 from iventure.plotting_sps import hist_plot
+from iventure.plotting_sps import heatmap
+from iventure.plotting_sps import contour_plot
+from iventure.plotting_sps import density_line_plot
 
 @magics_class
 class VentureMagics(Magics):
@@ -115,26 +119,20 @@ class VentureMagics(Magics):
         # XXX Whattakludge!
         # TODO replace return with print statements. Question? Should we allow
         # line inputs to return? probably.
-        venture_strings  = script.split(";")
-        for venture_string in venture_strings:
-            venture_string = venture_string.strip() # defensive programming 
-            # easy clear
-            if venture_string=="clear":
-                self._ripl.clear()
-                self._venturescript = []
-            elif venture_string.startswith("sample"):
-                # since I ripl.sample is causing problems, with ${symbol}, I can
-                # write this:return self._ripl.sample(script[6:])
-                return self._ripl.execute_program(venture_string)[0]["value"]["value"]
-            elif venture_string.startswith(".scatter"):
-                # since I ripl.sample is causing problems, with ${symbol}, I can
-                # write this:return self._ripl.sample(script[6:])
-                return self._ripl.execute_program(venture_string)[0]["value"]["value"]
-            elif venture_string.startswith("evaluate"):
-                return self._ripl.evaluate(venture_string[8:])
-            else:
-                self._venturescript.append(venture_string)
-                self._ripl.execute_program(venture_string)
+        script = script.strip() # defensive programming 
+        # easy clear
+        if script=="clear":
+            self._ripl.clear()
+            self._venturescript = []
+        elif script.startswith("sample"):
+            # since I ripl.sample is causing problems, with ${symbol}, I can
+            # write this:return self._ripl.sample(script[6:])
+            return self._ripl.execute_program(script)[0]["value"]["value"]
+        elif script.startswith("evaluate"):
+            return self._ripl.evaluate(script[8:])
+        else:
+            self._venturescript.append(script)
+            self._ripl.execute_program(script)
 
     @logged_cell
     @line_magic
@@ -391,11 +389,47 @@ class VentureMagics(Magics):
                     t.NumberType(),
                     min_req_args=2)
                 )
+        self._ripl.bind_foreign_inference_sp("gradient_trajectory_plot",
+                deterministic_typed(gradient_trajectory_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
         self._ripl.bind_foreign_inference_sp("hist_plot",
                 deterministic_typed(hist_plot,
                     [ 
                     t.AnyType(t.NumberType()), 
                     t.StringType()
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+        self._ripl.bind_foreign_inference_sp("heatmap",
+                deterministic_typed(heatmap,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+        self._ripl.bind_foreign_inference_sp("contour_plot",
+                deterministic_typed(contour_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
+                    ],
+                    t.NumberType(),
+                    min_req_args=2)
+                )
+        self._ripl.bind_foreign_inference_sp("density_line_plot",
+                deterministic_typed(density_line_plot,
+                    [ 
+                    t.AnyType(t.NumberType()), 
+                    t.HomogeneousDictType(t.StringType(), t.AnyType())
                     ],
                     t.NumberType(),
                     min_req_args=2)
