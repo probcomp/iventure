@@ -99,6 +99,11 @@ def convert_from_venture_value(venture_value):
             convert_from_venture_value(val)
             for val in venture_value.getArray()
         ]
+    elif isinstance(venture_value, vv.VentureArrayUnboxed):
+        return [
+            convert_from_venture_value(val)
+            for val in venture_value.getArray()
+        ]
     elif isinstance(venture_value, vv.VenturePair):
         return [
             convert_from_venture_value(val)
