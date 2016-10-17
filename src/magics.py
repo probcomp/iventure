@@ -175,13 +175,17 @@ class VentureMagics(Magics):
     @line_cell_magic
     def venturescript(self, line, cell=None):
         script = line if cell is None else cell
-        # XXX Whattakludge!
-        self._venturescript.append(script)
-        results = self._ripl.execute_program(script, type=True)
-        # use matlab convention where semicolon at end means don't print
-        import string
-        if string.rstrip(script)[-1] != ";":
-            return convert_from_stack_dict(results[-1]["value"])
+        try:
+            results = self._ripl.execute_program(script, type=True)
+            # XXX Whattakludge!  Store the cell for later use by the VS CGPM
+            self._venturescript.append(script)
+            # use matlab convention where semicolon at end means don't print
+            import string
+            if string.rstrip(script)[-1] != ";":
+                return convert_from_stack_dict(results[-1]["value"])
+        except Exception as e:
+            print "An error has occurred:"
+            print e
 
     @logged_cell
     @line_magic
