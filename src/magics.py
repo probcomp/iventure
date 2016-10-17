@@ -21,8 +21,14 @@ import itertools
 import sys
 import traceback
 
+from collections import OrderedDict
+
 import bdbcontrib.bql_utils as bqu
+import venture.lite.value as vv
 import venture.shortcuts as vs
+import venture.value.dicts as expr
+
+from venture.lite.types import Dict
 
 from bayeslite import BQLError
 from bayeslite import BQLParseError
@@ -63,14 +69,11 @@ from iventure.sessions import TextLogger
 
 from iventure import plots
 
-import venture.shortcuts as vs
-import venture.value.dicts as expr
-from collections import OrderedDict
-from venture.lite.types import Dict
-import venture.lite.value as vv
+
 def convert_from_stack_dict(stack_dict):
     venture_value = vv.VentureValue.fromStackDict(stack_dict)
     return convert_from_venture_value(venture_value)
+
 
 def convert_from_venture_value(venture_value):
     'convert a stack dict to python object'
@@ -78,8 +81,9 @@ def convert_from_venture_value(venture_value):
         shallow = Dict().asPythonNoneable(venture_value)
         deep = OrderedDict()
         for key, value in shallow.iteritems():
-            deep[convert_from_venture_value(key)] = convert_from_venture_value(value)
-        return deep 
+            deep[convert_from_venture_value(key)] = \
+                convert_from_venture_value(value)
+        return deep
     elif isinstance(venture_value, vv.VentureNumber):
         return venture_value.getNumber()
     elif isinstance(venture_value, vv.VentureInteger):
@@ -91,11 +95,18 @@ def convert_from_venture_value(venture_value):
     elif isinstance(venture_value, vv.VentureAtom):
         return venture_value.getAtom()
     elif isinstance(venture_value, vv.VentureArray):
-        return [convert_from_venture_value(val) for val in venture_value.getArray()]
+        return [
+            convert_from_venture_value(val)
+            for val in venture_value.getArray()
+        ]
     elif isinstance(venture_value, vv.VenturePair):
-        return [convert_from_venture_value(val) for val in venture_value.getArray()]
+        return [
+            convert_from_venture_value(val)
+            for val in venture_value.getArray()
+        ]
     else:
-        raise ValueError("Venture value cannot be converted", str(venture_value))
+        raise ValueError(
+            'Venture value cannot be converted', str(venture_value))
 
 @magics_class
 class VentureMagics(Magics):
