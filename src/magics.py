@@ -76,7 +76,7 @@ def convert_from_stack_dict(stack_dict):
 
 
 def convert_from_venture_value(venture_value):
-    'convert a stack dict to python object'
+    """Convert a stack dict to python object."""
     if isinstance(venture_value, vv.VentureDict):
         shallow = Dict().asPythonNoneable(venture_value)
         deep = OrderedDict()
