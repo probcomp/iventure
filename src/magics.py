@@ -445,7 +445,6 @@ class VentureMagics(Magics):
         'heatmap': _cmd_heatmap,
         'histogram': _cmd_histogram,
         'hist': _cmd_hist,
-        'histogram': _cmd_histogram,
         'plot': _cmd_plot,
         'scatter': _cmd_scatter,
     }
