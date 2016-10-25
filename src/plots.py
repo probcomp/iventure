@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import pandas as pd
 
-def scatter(df, ax=None):
+def scatter(df, ax=None, **kwargs):
     """Scatter the NUMERICAL data points in df.
 
     If df has two columns, then a regular scatter plot is produced. If df has
@@ -41,11 +41,15 @@ def scatter(df, ax=None):
     ax.set_xlabel(df.columns[0], fontweight='bold')
     ax.set_ylabel(df.columns[1], fontweight='bold')
     ax.grid()
+
     # Plot the legend.
     if len(labels) > 1:
         _plot_legend(fig, ax)
 
-    # fig.set_tight_layout(True)
+    # Adjust limits.
+    if kwargs:
+        _handle_kwargs(ax, **kwargs)
+
     return fig
 
 
@@ -76,7 +80,6 @@ def bar(df, ax=None):
     ax.set_ylabel(df.columns[1])
     ax.grid()
 
-    # fig.set_tight_layout(True)
     return fig
 
 def hist(df, ax=None, normed=None):
@@ -121,15 +124,15 @@ def hist(df, ax=None, normed=None):
     largest = ax.get_xlim()[1]
     ax.set_xlim([0, 1.1*largest])
     ax.grid()
+
     # Plot the legend.
     if len(labels) > 1:
         _plot_legend(fig, ax)
 
-    # fig.set_tight_layout(True)
     return fig
 
 
-def histogram(df, ax=None, normed=None):
+def histogram(df, ax=None, **kwargs):
     """Histogram the NUMERICAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two
@@ -146,8 +149,8 @@ def histogram(df, ax=None, normed=None):
     data = [df[df.iloc[:,1]==l].iloc[:,0].values for l in labels]\
         if df.shape[1] == 2 else df.iloc[:,0]
     ax.hist(
-        data, 10, normed=normed, histtype='bar', color=colors, label=labels,
-        alpha=0.7)
+        data, 10, normed=kwargs.pop('normed', None), histtype='bar',
+        color=colors, label=labels, alpha=0.7)
     # Fix up the axes and their labels.
     ax.set_ylabel('Frequency', fontweight='bold')
     ax.set_xlabel(df.columns[0], fontweight='bold')
@@ -155,11 +158,14 @@ def histogram(df, ax=None, normed=None):
     largest = ax.get_ylim()[1]
     ax.set_ylim([0, 1.1*largest])
     ax.grid()
+
     # Plot the legend.
     if len(labels) > 1:
         _plot_legend(fig, ax)
 
-    # fig.set_tight_layout(True)
+    # Adjust limits.
+    if kwargs:
+        _handle_kwargs(ax, **kwargs)
     return fig
 
 
@@ -167,6 +173,18 @@ def _plot_legend(fig, ax):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), framealpha=0)
+
+
+def _handle_kwargs(ax, **kwargs):
+    # Adjust axes if necessary.
+    if 'xmin' in kwargs:
+        ax.set_xlim([float(kwargs['xmin']), ax.get_xlim()[1]])
+    if 'xmax' in kwargs:
+        ax.set_xlim([ax.get_xlim()[0], float(kwargs['xmax'])])
+    if 'ymin' in kwargs:
+        ax.set_ylim([float(kwargs['ymin']), ax.get_ylim()[1]])
+    if 'ymax' in kwargs:
+        ax.set_ylim([ax.get_ylim()[0], float(kwargs['ymax'])])
 
 
 def _unroll_dataframe(df):
