@@ -29,6 +29,8 @@ def scatter(df, ax=None, **kwargs):
     """
     if df.shape[1] not in [2, 3]:
         raise ValueError('Only two or three columns allowed: %s' % df.columns)
+    else:
+        df = _preprocess_dataframe(df)
     if ax is None:
         fig, ax = plt.subplots()
     else:
@@ -61,6 +63,8 @@ def bar(df, ax=None):
     """
     if df.shape[1] != 2:
         raise ValueError('Two columns required: %s.' % (df.columns,))
+    else:
+        df = _preprocess_dataframe(df)
     if ax is None:
         fig, ax = plt.subplots()
     else:
@@ -90,6 +94,8 @@ def hist(df, ax=None, normed=None):
     """
     if df.shape[1] not in [1, 2]:
         raise ValueError('Only one or two columns allowed: %s' % df.columns)
+    else:
+        df = _preprocess_dataframe(df)
     if ax is None:
         fig, ax = plt.subplots()
     else:
@@ -140,6 +146,8 @@ def histogram(df, ax=None, **kwargs):
     """
     if df.shape[1] not in [1, 2]:
         raise ValueError('Only one or two columns allowed: %s' % df.columns)
+    else:
+        df = _preprocess_dataframe(df)
     if ax is None:
         fig, ax = plt.subplots()
     else:
@@ -167,6 +175,13 @@ def histogram(df, ax=None, **kwargs):
     if kwargs:
         _handle_kwargs(ax, **kwargs)
     return fig
+
+
+def _preprocess_dataframe(df):
+    df = df.dropna()
+    if len(df) == 0:
+        raise ValueError('No valid values in dataframe!')
+    return df
 
 
 def _plot_legend(fig, ax):
