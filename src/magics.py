@@ -120,6 +120,8 @@ def convert_from_venture_value(venture_value):
 class VentureMagics(Magics):
 
     def __init__(self, shell):
+        import warnings
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         super(VentureMagics, self).__init__(shell)
         self._bdb = None
         self._path = None
