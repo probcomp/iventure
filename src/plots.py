@@ -86,7 +86,7 @@ def bar(df, ax=None):
 
     return fig
 
-def hist(df, ax=None, normed=None):
+def hist(df, ax=None, **kwargs):
     """Histogram the NOMINAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two
@@ -116,7 +116,7 @@ def hist(df, ax=None, normed=None):
     for i, (label, color) in enumerate(zip(labels, colors)):
         points = _filter_points(df, labels, label)
         raw_counts = points.iloc[:,0].value_counts()
-        normalizer = float(sum(raw_counts)) if normed else 1.
+        normalizer = float(sum(raw_counts)) if 'normed' in kwargs else 1.
         counts = [raw_counts.get(n, 0) / normalizer for n in nominals]
         ax.barh(
             [index - 0.2*offset + i*width for index in indices],
@@ -200,7 +200,11 @@ def _handle_kwargs(ax, **kwargs):
         ax.set_ylim([float(kwargs['ymin']), ax.get_ylim()[1]])
     if 'ymax' in kwargs:
         ax.set_ylim([ax.get_ylim()[0], float(kwargs['ymax'])])
-
+    # Change to logarithmic scales.
+    if 'xlog' in kwargs:
+        ax.set_xscale('log', basex=int(kwargs['xlog']))
+    if 'ylog' in kwargs:
+        ax.set_yscale('log', basey=int(kwargs['ylog']))
 
 def _unroll_dataframe(df):
     if len(df.columns) == 0:
