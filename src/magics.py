@@ -178,6 +178,7 @@ class VentureMagics(Magics):
                 print "Loading: %s" % (plugin,)
                 self._ripl.load_plugin(plugin)
 
+
     @logged_cell
     @line_cell_magic
     def venturescript(self, line, cell=None):
@@ -189,10 +190,14 @@ class VentureMagics(Magics):
             # use matlab convention where semicolon at end means don't print
             import string
             if string.rstrip(script)[-1] != ";":
-                return convert_from_stack_dict(results[-1]["value"])
+                self.venturescript_result = convert_from_stack_dict(results[-1]["value"])
         except Exception as e:
             print "An error has occurred:"
             print e
+
+    @line_cell_magic
+    def venturescript_result(self, line):
+        return self.venturescript_result
 
     @logged_cell
     @line_magic
