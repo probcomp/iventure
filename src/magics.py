@@ -21,6 +21,7 @@ import itertools
 import re
 import sys
 import traceback
+from concurrent.futures import ThreadPoolExecutor, wait
 
 from collections import OrderedDict
 
@@ -30,6 +31,8 @@ import venture.shortcuts as vs
 import venture.value.dicts as expr
 
 from venture.lite.types import Dict
+from venture.lite.sp_help import typed_nr, deterministic_typed 
+from venture.lite import types as t
 
 from bayeslite import BQLError
 from bayeslite import BQLParseError
@@ -125,13 +128,25 @@ class VentureMagics(Magics):
         super(VentureMagics, self).__init__(shell)
         self._bdb = None
         self._path = None
+
+        # VentureScript
+        self.venturescript_outs = {}
+        self.venturescript_futures = {}
+        self.prev_venturescript_future = None
+        self.executor = ThreadPoolExecutor(1) # one worker thread
         self._ripl = vs.make_lite_ripl()
+        def iprint(msg):
+            self.venturescript_out.write(msg)
+        self._ripl.bind_foreign_inference_sp("iprint", deterministic_typed(iprint,
+            [t.StringType()], t.NilType()))
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
         username = getpass.getuser()
         # TODO add SQLLogger
         self.session = Session(
             username, [TextLogger()], '.iventure_logs')
+
+
 
     def _retrieve_raw(self, line, cell=None):
         return '\n'.join([
@@ -182,22 +197,38 @@ class VentureMagics(Magics):
     @logged_cell
     @line_cell_magic
     def venturescript(self, line, cell=None):
-        script = line if cell is None else cell
-        try:
-            results = self._ripl.execute_program(script, type=True)
-            # XXX Whattakludge!  Store the cell for later use by the VS CGPM
-            self._venturescript.append(script)
-            # use matlab convention where semicolon at end means don't print
-            import string
-            if string.rstrip(script)[-1] != ";":
-                self.venturescript_result = convert_from_stack_dict(results[-1]["value"])
-        except Exception as e:
-            print "An error has occurred:"
-            print e
+        future_name = line
+        print future_name
+        script = cell
+        # NOTE we are now forbid line only . the line is now reserved for the name of the result
+        # wait for previous VentureScript computation to finish
+        if self.prev_venturescript_future is not None:
+            wait([self.prev_venturescript_future])
+        self.venturescript_outs[future_name] = StringIO.StringIO() # TODO make sure this get closed?
+        self.venturescript_out = self.venturescript_outs[future_name]
+        def job():
+            try:
+                results = self._ripl.execute_program(script, type=True)
+                # XXX Whattakludge!  Store the cell for later use by the VS CGPM
+                self._venturescript.append(script)
+                # use matlab convention where semicolon at end means don't print
+                import string
+                if string.rstrip(script)[-1] != ";":
+                    return convert_from_stack_dict(results[-1]["value"]) 
+            except Exception as e:
+                print "An error has occurred:"
+                print e
+                raise e
+        self.prev_venturescript_future = self.executor.submit(job)
+        self.venturescript_futures[future_name] = self.prev_venturescript_future
 
     @line_cell_magic
-    def venturescript_result(self, line):
-        return self.venturescript_result
+    def venturescript_future(self, line):
+        future_name =  line
+        #print "output of " + future_name + ": "
+        #print self.venturescript_outs[future_name].getvalue()
+        return self.venturescript_futures[future_name], self.venturescript_outs[future_name]
+
 
     @logged_cell
     @line_magic
