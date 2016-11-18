@@ -1,0 +1,8 @@
+include HACKING
+include README.md
+include VERSION
+include check.sh
+include docs/virtualenvs.md
+include pythenv.sh
+include requirements.txt
+include tests/test_nullop.py
