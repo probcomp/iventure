@@ -21,7 +21,11 @@ import itertools
 import re
 import sys
 import traceback
-from concurrent.futures import ThreadPoolExecutor, wait
+#from concurrent.futures import ThreadPoolExecutor, wait
+#from threading import Thread
+import thread
+import Queue
+from time import sleep
 
 from collections import OrderedDict
 
@@ -130,13 +134,17 @@ class VentureMagics(Magics):
         self._path = None
 
         # VentureScript
-        self.venturescript_outs = {}
-        self.venturescript_futures = {}
-        self.prev_venturescript_future = None
-        self.executor = ThreadPoolExecutor(1) # one worker thread
+        self.venturescript_active_cell = None
+        self.venturescript_queues = {}
+        self.venturescript_messages = {}
+        self.venturescript_results = {}
+        #self.venturescript_futures = {}
+        #self.prev_venturescript_future = None
+        #self.executor = ThreadPoolExecutor(1) # one worker thread
         self._ripl = vs.make_lite_ripl()
         def iprint(msg):
-            self.venturescript_out.write(msg)
+            assert self.venturescript_active_cell is not None
+            self.venturescript_queues[self.venturescript_active_cell].put(('message', msg))
         self._ripl.bind_foreign_inference_sp("iprint", deterministic_typed(iprint,
             [t.StringType()], t.NilType()))
         # self._ripl.set_mode('church_prime')
@@ -193,20 +201,52 @@ class VentureMagics(Magics):
                 print "Loading: %s" % (plugin,)
                 self._ripl.load_plugin(plugin)
 
+    def wait_for_venturescript_to_finish(self, cell_name_to_print):
+        cell_name = self.venturescript_active_cell
+        if cell_name is None:
+            # this is only run in the main thread
+            # there is no currently running VentureScript cell
+            return
+        else:
+            # cell_name VentureScript cell may be running
+            # we will know it is finished when it pushes 'finished' token onto its queue
+            q = self.venturescript_queues[cell_name]
+            while True:
+                item = q.get()
+                if item == 'finished':
+                    self.venturescript_active_cell = None
+                    return cell_name == cell_name_to_print
+                else:
+                    (item_type, item_content) = item
+                    if item_type == 'message':
+                        # only print messages as they arrive if it is the given cell
+                        if cell_name == cell_name_to_print:
+                            print item_content,
+                        self.venturescript_messages[cell_name].append(item_content)
+                    else:
+                        raise ValueError("Unknown queue item type %s" % (item_type,))
 
     @logged_cell
     @line_cell_magic
     def venturescript(self, line, cell=None):
-        future_name = line
-        print future_name
+        # start an asynchronous VentureScript computation
+        # there is only one such computation running at a time
+        cell_name = line
+        if cell_name == "":
+            # if cell_name not provided, create a random one
+            import binascii
+            import os
+            cell_name = binascii.b2a_hex(os.urandom(16))
+        if cell_name == self.venturescript_active_cell or cell_name in self.venturescript_results:
+            raise ValueError("Cell name already used: %s" % (cell_name,))
         script = cell
-        # NOTE we are now forbid line only . the line is now reserved for the name of the result
-        # wait for previous VentureScript computation to finish
-        if self.prev_venturescript_future is not None:
-            wait([self.prev_venturescript_future])
-        self.venturescript_outs[future_name] = StringIO.StringIO() # TODO make sure this get closed?
-        self.venturescript_out = self.venturescript_outs[future_name]
+        self.venturescript_queues[cell_name] = Queue.Queue()
+        # do not print output from previous cell(s), only the venturescript_get cells will do that        
+        self.wait_for_venturescript_to_finish(None)
+        self.venturescript_active_cell = cell_name
+        self.venturescript_messages[cell_name] = []
         def job():
+            print "asynchronously running cell %s..." % (cell_name,)
             try:
                 results = self._ripl.execute_program(script, type=True)
                 # XXX Whattakludge!  Store the cell for later use by the VS CGPM
@@ -214,21 +254,67 @@ class VentureMagics(Magics):
                 # use matlab convention where semicolon at end means don't print
                 import string
                 if string.rstrip(script)[-1] != ";":
-                    return convert_from_stack_dict(results[-1]["value"]) 
+                    self.venturescript_results[cell_name] = convert_from_stack_dict(results[-1]["value"]) 
+                else:
+                    self.venturescript_results[cell_name] = None
             except Exception as e:
+                self.venturescript_queues[cell_name].put(('message', str(e)))
                 print "An error has occurred:"
                 print e
-                raise e
-        self.prev_venturescript_future = self.executor.submit(job)
-        self.venturescript_futures[future_name] = self.prev_venturescript_future
+            # unblocks wait_for_venturescript_finish
+            self.venturescript_queues[cell_name].put('finished')
+            print "cell %s completed" % (cell_name,)
+        thread.start_new_thread(job, ())
 
-    @line_cell_magic
-    def venturescript_future(self, line):
-        future_name =  line
-        #print "output of " + future_name + ": "
-        #print self.venturescript_outs[future_name].getvalue()
-        return self.venturescript_futures[future_name], self.venturescript_outs[future_name]
+    @line_magic
+    def venturescript_status(self, line):
+        'non-blocking status of a cell'
+        cell_name = line
+        finished = cell_name in self.venturescript_results
+        if not finished and not self.venturescript_active_cell == cell_name:
+            raise ValueError("cell %s not finished, but also not the active cell" % (cell_name,))
+        if not finished and self.venturescript_active_cell == cell_name:
+            # unload any messages waiting  including possible the 'finish' mesage
+            more = True
+            while more:
+                try:
+                    message = self.venturescript_queues[cell_name].get(block=False)
+                    if message == 'finished':
+                        # put the finished token back on the queue and finalize the job
+                        self.venturescript_queues[cell_name].put('finished')
+                        self.wait_for_venturescript_to_finish(None)
+                        more = False
+                        finished = True
+                    else:
+                        (item_type, item_content) = message
+                        if item_type == 'message':
+                            self.venturescript_messages[cell_name].append(item_content)
+                        else:
+                            raise ValueError("Unknown message type %s" % (item_type,))
+                except Queue.Empty:
+                    more = False
+            # print unloaded messages
+            print 'cell in progress. cell messages so far:'
+            for message in self.venturescript_messages[cell_name]:
+                print message,
+        if finished:
+            print 'cell finished. use `\%venturescript_get %s` to get result' % (cell_name,)
 
+    @line_magic
+    def venturescript_get(self, line):
+        cell_name = line
+        # wait for the currently running venturescript cell to finish
+        # if the running cell is the one we are getting, print its messages as they arrive
+        our_cell = self.wait_for_venturescript_to_finish(cell_name)
+        # now there is no running venturescript cell
+        # either our cell is finished, or it has not yet been run
+        if not cell_name in self.venturescript_results:
+            raise ValueError("Unknown VentureScript cell %s" % (cell_name,))
+        if not our_cell:
+            # we did not print out the cell's output, while waiting, we should print it out now
+            for message in self.venturescript_messages[cell_name]:
+                print message
+        return self.venturescript_results[cell_name]
 
     @logged_cell
     @line_magic
