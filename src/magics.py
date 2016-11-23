@@ -21,11 +21,9 @@ import itertools
 import re
 import sys
 import traceback
-#from concurrent.futures import ThreadPoolExecutor, wait
-#from threading import Thread
+from threading import Condition
 import thread
 import Queue
-from time import sleep
 
 from collections import OrderedDict
 
@@ -134,27 +132,70 @@ class VentureMagics(Magics):
         self._path = None
 
         # VentureScript
-        self.venturescript_active_cell = None
+        self.venturescript_queue = Queue.Queue() # the queue of VS jobs that will be executed in FIFO order
+        self.venturescript_cond = Condition()
+        self.venturescript_running_cell = None # needed so a venturescript cell knows its name for iprint 
+        self.venturescript_error = False
         self.venturescript_queues = {}
-        self.venturescript_messages = {}
+        self.venturescript_message_histories = {} # store messages produced by venturescript cells 
         self.venturescript_results = {}
-        #self.venturescript_futures = {}
-        #self.prev_venturescript_future = None
-        #self.executor = ThreadPoolExecutor(1) # one worker thread
         self._ripl = vs.make_lite_ripl()
         def iprint(msg):
-            assert self.venturescript_active_cell is not None
-            self.venturescript_queues[self.venturescript_active_cell].put(('message', msg))
+            assert self.venturescript_running_cell is not None, "venturescript_running_cell is None when trying to send message %r" % (msg,)
+            self.venturescript_queues[self.venturescript_running_cell].put(msg)
         self._ripl.bind_foreign_inference_sp("iprint", deterministic_typed(iprint,
             [t.StringType()], t.NilType()))
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
+
         username = getpass.getuser()
         # TODO add SQLLogger
         self.session = Session(
             username, [TextLogger()], '.iventure_logs')
 
-
+        # start the thread that will run all VentureScript cells in order
+        def vs_loop():
+            while True:
+                # block until a new VentureScript cell is run
+                cell_name, script = self.venturescript_queue.get()
+                # block until the main interactive thread (and any venturescript_get operations within it) have released the vs lock
+                self.venturescript_cond.acquire()
+                print "vs has the lock"
+                print "cell %s" % (cell_name,)
+                assert self.venturescript_running_cell is None, "there is already a running VentureScript cell"
+                self.venturescript_running_cell = cell_name
+                error = None
+                if cell_name in self.venturescript_results:
+                    error = ValueError("Cell name already used: %s" % (cell_name,))
+                else:
+                    self.venturescript_message_histories[cell_name] = []
+                    self.venturescript_queues[cell_name] = Queue.Queue()
+                    try:
+                        results = self._ripl.execute_program(script, type=True)
+                        # XXX Whattakludge!  Store the cell for later use by the VS CGPM
+                        self._venturescript.append(script)
+                        # use matlab convention where semicolon at end means don't return
+                        import string
+                        if string.rstrip(script)[-1] != ";":
+                            self.venturescript_results[cell_name] = convert_from_stack_dict(results[-1]["value"]) 
+                        else:
+                            self.venturescript_results[cell_name] = None
+                    except Exception as e:
+                        error = e
+                self.venturescript_running_cell = None
+                if error is not None:
+                    self.venturescript_error = True
+                    self.venturescript_queues[cell_name].put(str(error))
+                    print str(error)
+                    # reset the venturescript queue (the enqueued jobs are discarded)
+                    self.venturescript_queue = Queue.Queue()
+                else:
+                    print "Cell %s completed" % (cell_name,)
+                print "vs notifying all waiting on cond" # notify whether there was an error or not
+                self.venturescript_cond.notifyAll()
+                print "vs releasing lock"
+                self.venturescript_cond.release()
+        thread.start_new_thread(vs_loop, ())
 
     def _retrieve_raw(self, line, cell=None):
         return '\n'.join([
@@ -201,121 +242,68 @@ class VentureMagics(Magics):
                 print "Loading: %s" % (plugin,)
                 self._ripl.load_plugin(plugin)
 
-    def wait_for_venturescript_to_finish(self, cell_name_to_print):
-        cell_name = self.venturescript_active_cell
-        if cell_name is None:
-            # this is only run in the main thread
-            # there is no currently running VentureScript cell
-            return
-        else:
-            # cell_name VentureScript cell may be running
-            # we will know it is finished when it pushes 'finished' token onto its queue
-            q = self.venturescript_queues[cell_name]
-            while True:
-                item = q.get()
-                if item == 'finished':
-                    self.venturescript_active_cell = None
-                    return cell_name == cell_name_to_print
-                else:
-                    (item_type, item_content) = item
-                    if item_type == 'message':
-                        # only print messages as they arrive if it is the given cell
-                        if cell_name == cell_name_to_print:
-                            print item_content,
-                        self.venturescript_messages[cell_name].append(item_content)
-                    else:
-                        raise ValueError("Unknown queue item type %s" % (item_type,))
+    def flush_message_queue(self, cell_name):
+        # flush messages from cell_name's queue
+        q = self.venturescript_queues[cell_name]
+        more = True
+        while more:
+            try:
+                message = self.venturescript_queues[cell_name].get(block=False)
+                self.venturescript_message_histories[cell_name].append(message)
+            except Queue.Empty:
+                more = False
 
     @logged_cell
     @line_cell_magic
     def venturescript(self, line, cell=None):
-        # start an asynchronous VentureScript computation
-        # there is only one such computation running at a time
+        # submit an asynchronous VentureScript computation request
+        # there is only one such computation running at a time, and they are queued in order of submission
         cell_name = line
         if cell_name == "":
             # if cell_name not provided, create a random one
             import binascii
             import os
             cell_name = binascii.b2a_hex(os.urandom(16))
-        if cell_name == self.venturescript_active_cell or cell_name in self.venturescript_results:
-            raise ValueError("Cell name already used: %s" % (cell_name,))
         script = cell
-        self.venturescript_queues[cell_name] = Queue.Queue()
-        # do not print output from previous cell(s), only the venturescript_get cells will do that        
-        self.wait_for_venturescript_to_finish(None)
-        self.venturescript_active_cell = cell_name
-        self.venturescript_messages[cell_name] = []
-        def job():
-            print "asynchronously running cell %s..." % (cell_name,)
-            try:
-                results = self._ripl.execute_program(script, type=True)
-                # XXX Whattakludge!  Store the cell for later use by the VS CGPM
-                self._venturescript.append(script)
-                # use matlab convention where semicolon at end means don't print
-                import string
-                if string.rstrip(script)[-1] != ";":
-                    self.venturescript_results[cell_name] = convert_from_stack_dict(results[-1]["value"]) 
-                else:
-                    self.venturescript_results[cell_name] = None
-            except Exception as e:
-                self.venturescript_queues[cell_name].put(('message', str(e)))
-                print "An error has occurred:"
-                print e
-            # unblocks wait_for_venturescript_finish
-            self.venturescript_queues[cell_name].put('finished')
-            print "cell %s completed" % (cell_name,)
-        thread.start_new_thread(job, ())
+        self.venturescript_queue.put((cell_name, cell))
 
     @line_magic
     def venturescript_status(self, line):
-        'non-blocking status of a cell'
+        '''flush messages from a venturescript cell's message queue and print to stdout, nonblocking'''
         cell_name = line
         finished = cell_name in self.venturescript_results
-        if not finished and not self.venturescript_active_cell == cell_name:
-            raise ValueError("cell %s not finished, but also not the active cell" % (cell_name,))
-        if not finished and self.venturescript_active_cell == cell_name:
-            # unload any messages waiting  including possible the 'finish' mesage
-            more = True
-            while more:
-                try:
-                    message = self.venturescript_queues[cell_name].get(block=False)
-                    if message == 'finished':
-                        # put the finished token back on the queue and finalize the job
-                        self.venturescript_queues[cell_name].put('finished')
-                        self.wait_for_venturescript_to_finish(None)
-                        more = False
-                        finished = True
-                    else:
-                        (item_type, item_content) = message
-                        if item_type == 'message':
-                            self.venturescript_messages[cell_name].append(item_content)
-                        else:
-                            raise ValueError("Unknown message type %s" % (item_type,))
-                except Queue.Empty:
-                    more = False
-            # print unloaded messages
-            print 'cell in progress. cell messages so far:'
-            for message in self.venturescript_messages[cell_name]:
-                print message,
         if finished:
-            print 'cell finished. use `\%venturescript_get %s` to get result' % (cell_name,)
+            print 'cell finished. use `venturescript_get %s` to get result' % (cell_name,)
+        else:
+            print 'still waiting for cell...'
+        # print out any unconsumed messages from the cell
+        if cell_name not in self.venturescript_queues:
+            print 'Warning, cell %s has not been registered' % (cell_name,)
+            return
+        for message in self.venturescript_message_histories[cell_name]:
+            print message
 
     @line_magic
     def venturescript_get(self, line):
         cell_name = line
-        # wait for the currently running venturescript cell to finish
-        # if the running cell is the one we are getting, print its messages as they arrive
-        our_cell = self.wait_for_venturescript_to_finish(cell_name)
-        # now there is no running venturescript cell
-        # either our cell is finished, or it has not yet been run
-        if not cell_name in self.venturescript_results:
-            raise ValueError("Unknown VentureScript cell %s" % (cell_name,))
-        if not our_cell:
-            # we did not print out the cell's output, while waiting, we should print it out now
-            for message in self.venturescript_messages[cell_name]:
-                print message
-        return self.venturescript_results[cell_name]
-
+        self.venturescript_cond.acquire()
+        print "vs_get %s acquired lock" % (cell_name,)
+        while not cell_name in self.venturescript_results:
+            # wait until a cell finishes
+            print "vs_get %s waiting (releasing lock)..." % (cell_name,)
+            self.venturescript_cond.wait()
+            print "vs_get %s awake (acquired lock)..." % (cell_name,)
+            if self.venturescript_error:
+                # there was an error, throw an exception in the main thread and reset the error
+                # there shouldn't be any other venturescript_get that block, because they all run synchronously in order in the main thread
+                self.venturescript_error = False
+                self.venturescript_cond.release()
+                raise ValueError('Error in VentureScript cell')
+        result = self.venturescript_results[cell_name]
+        print "vs_get %s releasing lock" % (cell_name,)
+        self.venturescript_cond.release()
+        return result
+        
     @logged_cell
     @line_magic
     def bayesdb(self, line, cell=None):
