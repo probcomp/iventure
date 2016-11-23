@@ -157,11 +157,12 @@ class VentureMagics(Magics):
         def vs_loop():
             while True:
                 # block until a new VentureScript cell is run
+                print "vs thread blocking until new vs job is queued"
                 cell_name, script = self.venturescript_job_queue.get()
                 # block until the main interactive thread (and any venturescript_get operations within it) have released the vs lock
+                print "vs thread running cell %s blocking until lock is acquired" % (cell_name,)
                 self.venturescript_cond.acquire()
-                print "vs has the lock"
-                print "cell %s" % (cell_name,)
+                print "vs thread running cell %s has the lock" % (cell_name,)
                 assert self.venturescript_running_cell is None, "there is already a running VentureScript cell"
                 self.venturescript_running_cell = cell_name
                 error = None
@@ -193,9 +194,9 @@ class VentureMagics(Magics):
                     self.venturescript_job_queue = Queue.Queue()
                 else:
                     print "Cell %s completed" % (cell_name,)
-                print "vs notifying all waiting on cond" # notify whether there was an error or not
+                print "vs thread running cell %s notifying all waiting on cond" % (cell_name,)# notify whether there was an error or not
                 self.venturescript_cond.notifyAll()
-                print "vs releasing lock"
+                print "vs thread running cell %s releasing lock" % (cell_name,)
                 self.venturescript_cond.release()
         thread.start_new_thread(vs_loop, ())
 
@@ -256,11 +257,13 @@ class VentureMagics(Magics):
         q = self.venturescript_message_queues[cell_name]
         more = True
         while more:
+            print "vs status for cell %s flushing more messages" % (cell_name,)
             try:
                 message = self.venturescript_message_queues[cell_name].get(block=False)
                 self.venturescript_message_histories[cell_name].append(message)
             except Queue.Empty:
                 more = False
+        print "vs status for cell %s done flushing messages" % (cell_name,)
 
     @logged_cell
     @line_cell_magic
@@ -299,6 +302,7 @@ class VentureMagics(Magics):
     def venturescript_get(self, line):
         self._raise_on_venturescript_error()
         cell_name = line
+        print "vs_get %s blocking until it acquires lock" % (cell_name,)
         self.venturescript_cond.acquire()
         print "vs_get %s acquired lock" % (cell_name,)
         while not cell_name in self.venturescript_results:
