@@ -50,13 +50,12 @@ class TextLogger(object):
         f.write(':' + label + ':' + entry + '\n')
 
     def _convert_output(self, output):
+        # For pandas objects (series/dataframes) use the pretty-print method.
+        # Otherwise convert output to a string using it __str__ and return it.
         try:
-            return output.to_string()
+            return output.to_string().encode('utf-8')
         except AttributeError:
-            try:
-                return str(output)
-            except:
-                return ''
+            return str(output)
 
     def _convert_exception(self, exception):
         return '' if exception is None else exception
