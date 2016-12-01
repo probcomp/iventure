@@ -1,16 +1,16 @@
-# Setting up a shared python virtualenv with group permissions.
+# Setting up a python virtualenv with probcomp repositories and their dependencies.
 
-#### Create a fresh directory and store its path in `$SHOME` (for shared home).
-
-```
-export SHOME=/path/to/my/dir
-$ mkdir $SHOME
-```
-
-#### Create a virtualenv in `$SHARED_HOME` called `.pyenv2.7.6`.
+#### Create a fresh directory and store its path in `$WRKDIR` (for workding directory).
 
 ```
-$ cd $SHOME
+export WRKDIR=/path/to/my/dir
+$ mkdir $WRKDIR
+```
+
+#### Create a virtualenv in `$WRKDIR` called `.pyenv2.7.6`.
+
+```
+$ cd $WRKDIR
 $ virtualenv -p /usr/bin/python .pyenv2.7.6
 ```
 
@@ -18,7 +18,7 @@ $ virtualenv -p /usr/bin/python .pyenv2.7.6
 
 ```
 $ source .pyenv2.7.6/bin/activate
-$ which python # should return $SHOME/.pyenv2.7.6/bin/python
+$ which python # should return $WRKDIR/.pyenv2.7.6/bin/python
 ```
 
 #### Install python requirements from `pip`, using the `requirements.txt` file from this directory (may take a while).
@@ -38,7 +38,7 @@ $ ln -s /usr/lib/python2.7/dist-packages/PyQt4 .
 #### Retrieve the probcomp repositories from Github.
 
 ```
-$ cd $SHOME
+$ cd $WRKDIR
 $ git clone git@github.com:probcomp/bayeslite-apsw.git
 $ git clone git@github.com:probcomp/bayeslite.git
 $ git clone git@github.com:probcomp/bdbcontrib.git
@@ -48,19 +48,7 @@ $ git clone git@github.com:probcomp/iventure.git
 $ git clone git@github.com:probcomp/Venturecxx.git
 ```
 
-Two repositories require checking out non-default branches.
-
-```
-$ cd $SHOME/bayeslite
-$ git fetch
-$ git checkout 20160801-fsaad-syntax-bonanza
-
-$ cd $SHOME/crosscat
-$ git fetch
-$ git checkout 20160907-fsaad-progress-hack
-```
-
-The default `master` branch suffices for the rest of the repositories.
+The `master` branch suffices for the repositories.
 
 #### Build the probcomp repositories.
 
@@ -75,7 +63,7 @@ For each cloned repository $REPO, build the repository.
 
 ```
 $ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx;
-    do cd $SHOME/$REPO;
+    do cd $WRKDIR/$REPO;
     python setup.py build; cd ..;
     done
 ````
@@ -91,13 +79,13 @@ match the actual `build/` directories produced in the previous step.
 
 ```
 $ echo '
-export PYTHONPATH=${SHOME}/bayeslite-apsw/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${SHOME}/bayeslite/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${SHOME}/bdbcontrib/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${SHOME}/cgpm/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${SHOME}/crosscat/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${SHOME}/iventure/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${SHOME}/Venturecxx/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${WRKDIR}/bayeslite-apsw/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/bayeslite/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/bdbcontrib/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/cgpm/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/crosscat/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/iventure/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/Venturecxx/build/lib.linux-x86_64-2.7
 
 export BAYESDB_DISABLE_VERSION_CHECK=1
 export BAYESDB_WIZARD_MODE=1
@@ -116,27 +104,29 @@ For each cloned repository, run the test suite (optional, may take a while).
 
 ```
 $ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx;
-    do cd $SHOME/$REPO;
+    do cd $WRKDIR/$REPO;
     ./check.sh; cd ..;
     done
 ```
 
-#### Create a new UNIX group `$G` for `$SHOME` and its subdirectories, and add yourself to the group.
+## [[Optional]] Setting UNIX group permissions for the virtualenv
 
-The purpose of the group `$G` is to control the file/access permissions for all
+#### Create a new UNIX group `$GRP` for `$WRKDIR` and its subdirectories, and add yourself to the group.
+
+The purpose of the group `$GRP` is to control the file/access permissions for all
 users which are managed by `iventure_manager.py`.
 
 ```
-$ addgroup $G
-$ adduser $USER $G
+$ addgroup $GRP
+$ adduser $USER $GRP
 ```
 
-#### Change permissions of `$SHOME` to the group.
+#### Change permissions of `$WRKDIR` to the new group `$GRP`.
 
 ```
-$ chmod -R g+s $SHOME
-$ chown -R $USER:$G $SHOME
+$ chmod -R g+s $WRKDIR
+$ chown -R $USER:$GRP $WRKDIR
 ```
 
-TODO: Ask Taylor about getting all the future new files in the `$SHOME`
-directory to inherit the group `$G`.
+TODO: Ask Taylor about getting all the future new files in the `$WRKDIR`
+directory to inherit the group `$GRP`.
