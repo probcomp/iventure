@@ -37,6 +37,9 @@ def scatter(df, ax=None, **kwargs):
         fig = ax.get_figure()
     labels, colors = _retrieve_labels_colors(
         df.iloc[:,2] if df.shape[1] == 3 else [0] * len(df))
+    if 'colors' in kwargs:
+        assert len(kwargs['colors']) == len(labels)
+        colors = kwargs['colors']
     for label, color in zip(labels, colors):
         points = _filter_points(df, labels, label)
         ax.scatter(points.iloc[:,0], points.iloc[:,1], color=color, label=label)
