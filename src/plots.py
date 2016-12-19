@@ -91,7 +91,7 @@ def bar(df, ax=None):
 
     return fig
 
-def hist(df, ax=None, **kwargs):
+def histogram_nominal(df, ax=None, **kwargs):
     """Histogram the NOMINAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two
@@ -143,7 +143,7 @@ def hist(df, ax=None, **kwargs):
     return fig
 
 
-def histogram(df, ax=None, **kwargs):
+def histogram_numerical(df, ax=None, **kwargs):
     """Histogram the NUMERICAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two

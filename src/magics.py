@@ -411,15 +411,15 @@ class VentureMagics(Magics):
         df = bqu.cursor_to_df(c)
         plots.scatter(df, **kwargs)
 
-    def _cmd_hist(self, query, sql=None, **kwargs):
+    def _cmd_histogram_nominal(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
-        plots.hist(df, **kwargs)
+        plots.histogram_nominal(df, **kwargs)
 
-    def _cmd_histogram(self, query, sql=None, **kwargs):
+    def _cmd_histogram_numerical(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = bqu.cursor_to_df(c)
-        plots.histogram(df, **kwargs)
+        plots.histogram_numerical(df, **kwargs)
 
     _CMDS = {
         'nullify': _cmd_nullify,
@@ -430,8 +430,8 @@ class VentureMagics(Magics):
     _PLTS = {
         'bar': _cmd_bar,
         'heatmap': _cmd_heatmap,
-        'histogram': _cmd_histogram,
-        'hist': _cmd_hist,
+        'histogram_numerical': _cmd_histogram_numerical,
+        'histogram_nominal': _cmd_histogram_nominal,
         'plot': _cmd_plot,
         'scatter': _cmd_scatter,
     }
