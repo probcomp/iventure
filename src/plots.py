@@ -181,6 +181,7 @@ def histogram(df, ax=None, **kwargs):
 
 
 def _preprocess_dataframe(df):
+    """Drops null values from df, and returns an error if no rows remain."""
     df = df.dropna()
     if len(df) == 0:
         raise ValueError('No valid values in dataframe!')
@@ -188,13 +189,15 @@ def _preprocess_dataframe(df):
 
 
 def _plot_legend(fig, ax):
+    """Plots legend on the side of a figure."""
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), framealpha=0)
 
 
 def _handle_kwargs(ax, **kwargs):
-    # Adjust axes if necessary.
+    """Handles keyword arguments for scales."""
+    # Adjust axes?
     if 'xmin' in kwargs:
         ax.set_xlim([float(kwargs['xmin']), ax.get_xlim()[1]])
     if 'xmax' in kwargs:
@@ -203,27 +206,20 @@ def _handle_kwargs(ax, **kwargs):
         ax.set_ylim([float(kwargs['ymin']), ax.get_ylim()[1]])
     if 'ymax' in kwargs:
         ax.set_ylim([ax.get_ylim()[0], float(kwargs['ymax'])])
-    # Change to logarithmic scales.
+    # Change to logarithmic scales?
     if 'xlog' in kwargs:
         ax.set_xscale('log', basex=int(kwargs['xlog']))
     if 'ylog' in kwargs:
         ax.set_yscale('log', basey=int(kwargs['ylog']))
 
-def _unroll_dataframe(df):
-    if len(df.columns) == 0:
-        raise ValueError('At least one column required: %s' % df.columns)
-    new_df = pd.concat(
-        [pd.DataFrame([[value, col] for value in df[col]])
-        for col in df.columns])
-    new_df.columns = ['value', 'label']
-    return new_df
-
 
 def _filter_points(df, labels, label):
+    """Returns all rows with the specified label (using last column in df)."""
     return df[df.iloc[:,-1]==label] if len(labels) > 1 else df
 
 
 def _retrieve_labels_colors(items):
+    """Returns unique entries (and assigns a color to each) from a list."""
     # Extract unique labels.
     labels = set(items)
     # Retrieve the colors.
@@ -232,4 +228,3 @@ def _retrieve_labels_colors(items):
         norm=matplotlib.colors.Normalize(vmin=0, vmax=len(labels)-1))
     colors = mapper.to_rgba(xrange(len(labels)))
     return labels, colors
-
