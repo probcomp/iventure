@@ -57,7 +57,7 @@ from iventure.sessions import Session
 from iventure.sessions import TextLogger
 
 from iventure import utils_bql
-from iventure import utils_plots
+from iventure import utils_plot
 
 
 def convert_from_stack_dict(stack_dict):
@@ -381,27 +381,27 @@ class VentureMagics(Magics):
     def _cmd_clustermap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        utils_plots.clustermap(df)
+        utils_plot.clustermap(df)
 
     def _cmd_bar(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        utils_plots.bar(df)
+        utils_plot.bar(df)
 
     def _cmd_scatter(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        utils_plots.scatter(df, **kwargs)
+        utils_plot.scatter(df, **kwargs)
 
     def _cmd_histogram_nominal(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        utils_plots.histogram_nominal(df, **kwargs)
+        utils_plot.histogram_nominal(df, **kwargs)
 
     def _cmd_histogram_numerical(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        utils_plots.histogram_numerical(df, **kwargs)
+        utils_plot.histogram_numerical(df, **kwargs)
 
     _CMDS = {
         'nullify': _cmd_nullify,
