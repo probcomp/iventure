@@ -422,7 +422,6 @@ class VentureMagics(Magics):
         plots.histogram(df, **kwargs)
 
     _CMDS = {
-        'csv': _cmd_csv,
         'nullify': _cmd_nullify,
         'population': _cmd_population,
         'table': _cmd_table,
