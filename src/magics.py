@@ -68,7 +68,8 @@ from iventure.sessions import LogEntry
 from iventure.sessions import Session
 from iventure.sessions import TextLogger
 
-from iventure import plots
+from iventure import utils_plots
+from iventure import utils_bql
 
 
 def convert_from_stack_dict(stack_dict):
@@ -258,7 +259,7 @@ class VentureMagics(Magics):
                 cursor = None
             else:
                 cursor = self._bdb.sql_execute(cmd)
-        return bqu.cursor_to_df(cursor) if cursor else None
+        return utils_bql.cursor_to_df(cursor) if cursor else None
 
     @logged_cell
     @line_cell_magic
@@ -320,7 +321,7 @@ class VentureMagics(Magics):
             if out.getvalue() and bql_string_complete_p(out.getvalue()):
                 ok = True
         cursor = self._bdb.execute(out.getvalue())
-        return bqu.cursor_to_df(cursor)
+        return utils_bql.cursor_to_df(cursor)
 
     def _cmd(self, cmd, sql=None):
         assert cmd[0] == '.'
@@ -355,7 +356,7 @@ class VentureMagics(Magics):
         table = tokens[0]
         expression = tokens[1]
         value = self._bdb.execute('SELECT %s' % (expression,)).fetchvalue()
-        return bqu.nullify(self._bdb, table, value)
+        return utils_bql.nullify(self._bdb, table, value)
 
     def _cmd_table(self, args):
         '''Returns a table of the PRAGMA schema of <table>.
@@ -365,7 +366,7 @@ class VentureMagics(Magics):
         table = args
         qt = bql_quote_name(table)
         cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (table,))
-        return bqu.cursor_to_df(cursor)
+        return utils_bql.cursor_to_df(cursor)
 
     def _cmd_population(self, args):
         '''Returns a table of the variables and metamodels for <population>.
@@ -385,41 +386,34 @@ class VentureMagics(Magics):
                 FROM bayesdb_generator
                 WHERE population_id = :population_id
         ''', {'population_id': population_id})
-        return bqu.cursor_to_df(cursor)
+        return utils_bql.cursor_to_df(cursor)
 
     # Plotting.
 
-    def _cmd_heatmap(self, query, sql=None, **kwargs):
-        import bdbcontrib.plot_utils as bpu
+    def _cmd_clustermap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        bpu.heatmap(df)
-
-    def _cmd_plot(self, query, sql=None, **kwargs):
-        import bdbcontrib.plot_utils as bpu
-        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        bpu.pairplot(self._bdb, df)
+        df = utils_bql.cursor_to_df(c)
+        utils_plots.clustermap(df)
 
     def _cmd_bar(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.bar(df)
+        df = utils_bql.cursor_to_df(c)
+        utils_plots.bar(df)
 
     def _cmd_scatter(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.scatter(df, **kwargs)
+        df = utils_bql.cursor_to_df(c)
+        utils_plots.scatter(df, **kwargs)
 
     def _cmd_histogram_nominal(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.histogram_nominal(df, **kwargs)
+        df = utils_bql.cursor_to_df(c)
+        utils_plots.histogram_nominal(df, **kwargs)
 
     def _cmd_histogram_numerical(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.histogram_numerical(df, **kwargs)
+        df = utils_bql.cursor_to_df(c)
+        utils_plots.histogram_numerical(df, **kwargs)
 
     _CMDS = {
         'nullify': _cmd_nullify,
@@ -429,10 +423,9 @@ class VentureMagics(Magics):
 
     _PLTS = {
         'bar': _cmd_bar,
-        'heatmap': _cmd_heatmap,
+        'heatmap': _cmd_clustermap,
         'histogram_numerical': _cmd_histogram_numerical,
         'histogram_nominal': _cmd_histogram_nominal,
-        'plot': _cmd_plot,
         'scatter': _cmd_scatter,
     }
 
