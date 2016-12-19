@@ -344,20 +344,6 @@ class VentureMagics(Magics):
             sys.stderr.write('Unknown command: %s\n' % (dot_command,))
             return
 
-    def _cmd_csv(self, args):
-        '''Creates a table from a csv file.
-
-        Usage: .csv <table> </path/to/data.csv>
-        '''
-        tokens = args.split()   # XXX
-        if len(tokens) != 2:
-            sys.stderr.write('Usage: .csv <table> </path/to/data.csv>\n')
-            return
-        table = tokens[0]
-        path = tokens[1]
-        bayesdb_read_csv_file(
-            self._bdb, table, path, header=True, create=True, ifnotexists=False)
-
     def _cmd_nullify(self, args):
         '''Convert <value> in <table> to SQL NULL.
 
