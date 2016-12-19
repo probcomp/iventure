@@ -17,36 +17,26 @@
 import StringIO
 import argparse
 import getpass
-import itertools
 import re
 import sys
 import traceback
 
 from collections import OrderedDict
 
-import bdbcontrib.bql_utils as bqu
 import venture.lite.value as vv
 import venture.shortcuts as vs
-import venture.value.dicts as expr
 
 from venture.lite.types import Dict
 
-from bayeslite import BQLError
-from bayeslite import BQLParseError
 from bayeslite import bayesdb_open
-from bayeslite import bayesdb_read_csv_file
 from bayeslite import bayesdb_register_metamodel
 from bayeslite import bql_quote_name
 
 from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_has_population
-
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
-from bayeslite.shell.pretty import pp_list
-
-from bdbcontrib import Population
 
 from cgpm.factor.factor import FactorAnalysis
 from cgpm.kde.mvkde import MultivariateKde
@@ -57,9 +47,7 @@ from cgpm.regressions.ols import OrdinaryLeastSquares
 from cgpm.venturescript.vscgpm import VsCGpm
 from cgpm.venturescript.vsinline import InlineVsCGpm
 
-from IPython.core.error import UsageError
 from IPython.core.magic import Magics
-from IPython.core.magic import cell_magic
 from IPython.core.magic import line_cell_magic
 from IPython.core.magic import line_magic
 from IPython.core.magic import magics_class
@@ -68,8 +56,8 @@ from iventure.sessions import LogEntry
 from iventure.sessions import Session
 from iventure.sessions import TextLogger
 
-from iventure import utils_plots
 from iventure import utils_bql
+from iventure import utils_plots
 
 
 def convert_from_stack_dict(stack_dict):
