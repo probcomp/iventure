@@ -18,7 +18,9 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 
+import numpy as np
 import pandas as pd
+
 
 def scatter(df, ax=None, **kwargs):
     """Scatter the NUMERICAL data points in df.
@@ -178,6 +180,67 @@ def histogram(df, ax=None, **kwargs):
     if kwargs:
         _handle_kwargs(ax, **kwargs)
     return fig
+
+
+def clustermap(df, ax=None, **kwargs):
+    """Plot a clustermap using the last 3 columns of `df`.
+
+    The `df` is typically returned from an ESTIMATE PAIRWISE query in BQL.
+    """
+    if len(df.columns) < 3:
+        raise ValueError('At least three columns requried: %s' % (df.columns,))
+    pivot = df.pivot(df.columns[-3], df.columns[-2], df.columns[-1])
+    return _clustermap(
+        pivot.as_matrix(),
+        xticklabels=pivot.index.tolist(),
+        yticklabels=pivot.columns.tolist())
+
+
+def _clustermap(D, xticklabels=None, yticklabels=None):
+    import seaborn.apionly as sns
+    if xticklabels is None:
+        xticklabels = range(D.shape[0])
+    if yticklabels is None:
+        yticklabels = range(D.shape[1])
+    zmatrix = sns.clustermap(
+        D, yticklabels=yticklabels, xticklabels=xticklabels,
+        linewidths=0.2, cmap='BuGn')
+    plt.setp(zmatrix.ax_heatmap.get_yticklabels(), rotation=0)
+    plt.setp(zmatrix.ax_heatmap.get_xticklabels(), rotation=90)
+    zmatrix.fig.set_tight_layout(True)
+    return zmatrix
+
+
+def _clustermap_ordering(D):
+    """Returns the ordering of variables in D according to the clustermap."""
+    zmatrix = _clustermap(D)
+    plt.close(zmatrix.fig)
+    return zmatrix.dendrogram_row.reordered_ind
+
+
+def _heatmap(
+        D, xordering=None, yordering=None, xticklabels=None,
+        yticklabels=None, vmin=None, vmax=None, ax=None):
+    import seaborn.apionly as sns
+    D = np.copy(D)
+    if ax is None:
+        _, ax = plt.subplots()
+    if xticklabels is None:
+        xticklabels = np.arange(D.shape[0])
+    if yticklabels is None:
+        yticklabels = np.arange(D.shape[1])
+    if xordering is not None:
+        xticklabels = xticklabels[xordering]
+        D = D[:,xordering]
+    if yordering is not None:
+        yticklabels = yticklabels[yordering]
+        D = D[yordering,:]
+    sns.heatmap(
+        D, yticklabels=yticklabels, xticklabels=xticklabels,
+        linewidths=0.2, cmap='BuGn', ax=ax, vmin=vmin, vmax=vmax)
+    ax.set_xticklabels(xticklabels, rotation=90)
+    ax.set_yticklabels(yticklabels, rotation=0)
+    return ax
 
 
 def _preprocess_dataframe(df):
