@@ -18,7 +18,9 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 
+import numpy as np
 import pandas as pd
+
 
 def scatter(df, ax=None, **kwargs):
     """Scatter the NUMERICAL data points in df.
@@ -89,7 +91,7 @@ def bar(df, ax=None):
 
     return fig
 
-def hist(df, ax=None, **kwargs):
+def histogram_nominal(df, ax=None, **kwargs):
     """Histogram the NOMINAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two
@@ -141,7 +143,7 @@ def hist(df, ax=None, **kwargs):
     return fig
 
 
-def histogram(df, ax=None, **kwargs):
+def histogram_numerical(df, ax=None, **kwargs):
     """Histogram the NUMERICAL data points in df.
 
     If df has one column, then a regular histogram is produced. If df has two
@@ -180,7 +182,84 @@ def histogram(df, ax=None, **kwargs):
     return fig
 
 
+def clustermap(df, ax=None, **kwargs):
+    """Plot a clustermap using the last 3 columns of `df`.
+
+    The `df` is typically returned from an ESTIMATE PAIRWISE query in BQL.
+    """
+    if len(df.columns) < 3:
+        raise ValueError('At least three columns requried: %s' % (df.columns,))
+    # Pivot the matrix.
+    pivot = df.pivot(df.columns[-3], df.columns[-2], df.columns[-1])
+    pivot.fillna(0, inplace=True)
+    # Check if all values are between 0 and 1 to set vmin and vmax.
+    (vmin, vmax) = (None, None)
+    if all(0 <= v <= 1 for v in df.iloc[:,-1]):
+        (vmin, vmax) = (0, 1)
+    zmatrix =  _clustermap(
+        pivot.as_matrix(),
+        xticklabels=pivot.index.tolist(),
+        yticklabels=pivot.columns.tolist(),
+        vmin=vmin, vmax=vmax)
+    # Heuristics for the size.
+    figsize = kwargs.pop('figsize', None)
+    if figsize is None:
+        half_root_col = (df.shape[0] ** .5) / 2.
+        figsize = (half_root_col, .8 * half_root_col)
+    zmatrix.fig.set_size_inches(figsize)
+    return zmatrix
+
+
+def _clustermap(
+        D, xticklabels=None, yticklabels=None, vmin=None, vmax=None, **kwargs):
+    import seaborn as sns
+    sns.set_style('white')
+    if xticklabels is None:
+        xticklabels = range(D.shape[0])
+    if yticklabels is None:
+        yticklabels = range(D.shape[1])
+    zmatrix = sns.clustermap(
+        D, yticklabels=yticklabels, xticklabels=xticklabels,
+        linewidths=0.2, vmin=vmin, vmax=vmax, cmap='BuGn')
+    plt.setp(zmatrix.ax_heatmap.get_yticklabels(), rotation=0)
+    plt.setp(zmatrix.ax_heatmap.get_xticklabels(), rotation=90)
+    return zmatrix
+
+
+def _clustermap_ordering(D):
+    """Returns the ordering of variables in D according to the clustermap."""
+    zmatrix = _clustermap(D)
+    plt.close(zmatrix.fig)
+    return zmatrix.dendrogram_row.reordered_ind
+
+
+def _heatmap(
+        D, xordering=None, yordering=None, xticklabels=None,
+        yticklabels=None, vmin=None, vmax=None, ax=None):
+    import seaborn.apionly as sns
+    D = np.copy(D)
+    if ax is None:
+        _, ax = plt.subplots()
+    if xticklabels is None:
+        xticklabels = np.arange(D.shape[0])
+    if yticklabels is None:
+        yticklabels = np.arange(D.shape[1])
+    if xordering is not None:
+        xticklabels = xticklabels[xordering]
+        D = D[:,xordering]
+    if yordering is not None:
+        yticklabels = yticklabels[yordering]
+        D = D[yordering,:]
+    sns.heatmap(
+        D, yticklabels=yticklabels, xticklabels=xticklabels,
+        linewidths=0.2, cmap='BuGn', ax=ax, vmin=vmin, vmax=vmax)
+    ax.set_xticklabels(xticklabels, rotation=90)
+    ax.set_yticklabels(yticklabels, rotation=0)
+    return ax
+
+
 def _preprocess_dataframe(df):
+    """Drops null values from df, and returns an error if no rows remain."""
     df = df.dropna()
     if len(df) == 0:
         raise ValueError('No valid values in dataframe!')
@@ -188,13 +267,15 @@ def _preprocess_dataframe(df):
 
 
 def _plot_legend(fig, ax):
+    """Plots legend on the side of a figure."""
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), framealpha=0)
 
 
 def _handle_kwargs(ax, **kwargs):
-    # Adjust axes if necessary.
+    """Handles keyword arguments for scales."""
+    # Adjust axes?
     if 'xmin' in kwargs:
         ax.set_xlim([float(kwargs['xmin']), ax.get_xlim()[1]])
     if 'xmax' in kwargs:
@@ -203,27 +284,20 @@ def _handle_kwargs(ax, **kwargs):
         ax.set_ylim([float(kwargs['ymin']), ax.get_ylim()[1]])
     if 'ymax' in kwargs:
         ax.set_ylim([ax.get_ylim()[0], float(kwargs['ymax'])])
-    # Change to logarithmic scales.
+    # Change to logarithmic scales?
     if 'xlog' in kwargs:
         ax.set_xscale('log', basex=int(kwargs['xlog']))
     if 'ylog' in kwargs:
         ax.set_yscale('log', basey=int(kwargs['ylog']))
 
-def _unroll_dataframe(df):
-    if len(df.columns) == 0:
-        raise ValueError('At least one column required: %s' % df.columns)
-    new_df = pd.concat(
-        [pd.DataFrame([[value, col] for value in df[col]])
-        for col in df.columns])
-    new_df.columns = ['value', 'label']
-    return new_df
-
 
 def _filter_points(df, labels, label):
+    """Returns all rows with the specified label (using last column in df)."""
     return df[df.iloc[:,-1]==label] if len(labels) > 1 else df
 
 
 def _retrieve_labels_colors(items):
+    """Returns unique entries (and assigns a color to each) from a list."""
     # Extract unique labels.
     labels = set(items)
     # Retrieve the colors.
@@ -232,4 +306,3 @@ def _retrieve_labels_colors(items):
         norm=matplotlib.colors.Normalize(vmin=0, vmax=len(labels)-1))
     colors = mapper.to_rgba(xrange(len(labels)))
     return labels, colors
-

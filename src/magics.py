@@ -17,36 +17,26 @@
 import StringIO
 import argparse
 import getpass
-import itertools
 import re
 import sys
 import traceback
 
 from collections import OrderedDict
 
-import bdbcontrib.bql_utils as bqu
 import venture.lite.value as vv
 import venture.shortcuts as vs
-import venture.value.dicts as expr
 
 from venture.lite.types import Dict
 
-from bayeslite import BQLError
-from bayeslite import BQLParseError
 from bayeslite import bayesdb_open
-from bayeslite import bayesdb_read_csv_file
 from bayeslite import bayesdb_register_metamodel
 from bayeslite import bql_quote_name
 
 from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_has_population
-
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
-from bayeslite.shell.pretty import pp_list
-
-from bdbcontrib import Population
 
 from cgpm.factor.factor import FactorAnalysis
 from cgpm.kde.mvkde import MultivariateKde
@@ -57,9 +47,7 @@ from cgpm.regressions.ols import OrdinaryLeastSquares
 from cgpm.venturescript.vscgpm import VsCGpm
 from cgpm.venturescript.vsinline import InlineVsCGpm
 
-from IPython.core.error import UsageError
 from IPython.core.magic import Magics
-from IPython.core.magic import cell_magic
 from IPython.core.magic import line_cell_magic
 from IPython.core.magic import line_magic
 from IPython.core.magic import magics_class
@@ -68,7 +56,8 @@ from iventure.sessions import LogEntry
 from iventure.sessions import Session
 from iventure.sessions import TextLogger
 
-from iventure import plots
+from iventure import utils_bql
+from iventure import utils_plot
 
 
 def convert_from_stack_dict(stack_dict):
@@ -258,7 +247,7 @@ class VentureMagics(Magics):
                 cursor = None
             else:
                 cursor = self._bdb.sql_execute(cmd)
-        return bqu.cursor_to_df(cursor) if cursor else None
+        return utils_bql.cursor_to_df(cursor) if cursor else None
 
     @logged_cell
     @line_cell_magic
@@ -320,7 +309,7 @@ class VentureMagics(Magics):
             if out.getvalue() and bql_string_complete_p(out.getvalue()):
                 ok = True
         cursor = self._bdb.execute(out.getvalue())
-        return bqu.cursor_to_df(cursor)
+        return utils_bql.cursor_to_df(cursor)
 
     def _cmd(self, cmd, sql=None):
         assert cmd[0] == '.'
@@ -344,20 +333,6 @@ class VentureMagics(Magics):
             sys.stderr.write('Unknown command: %s\n' % (dot_command,))
             return
 
-    def _cmd_csv(self, args):
-        '''Creates a table from a csv file.
-
-        Usage: .csv <table> </path/to/data.csv>
-        '''
-        tokens = args.split()   # XXX
-        if len(tokens) != 2:
-            sys.stderr.write('Usage: .csv <table> </path/to/data.csv>\n')
-            return
-        table = tokens[0]
-        path = tokens[1]
-        bayesdb_read_csv_file(
-            self._bdb, table, path, header=True, create=True, ifnotexists=False)
-
     def _cmd_nullify(self, args):
         '''Convert <value> in <table> to SQL NULL.
 
@@ -369,7 +344,7 @@ class VentureMagics(Magics):
         table = tokens[0]
         expression = tokens[1]
         value = self._bdb.execute('SELECT %s' % (expression,)).fetchvalue()
-        return bqu.nullify(self._bdb, table, value)
+        return utils_bql.nullify(self._bdb, table, value)
 
     def _cmd_table(self, args):
         '''Returns a table of the PRAGMA schema of <table>.
@@ -379,7 +354,7 @@ class VentureMagics(Magics):
         table = args
         qt = bql_quote_name(table)
         cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (table,))
-        return bqu.cursor_to_df(cursor)
+        return utils_bql.cursor_to_df(cursor)
 
     def _cmd_population(self, args):
         '''Returns a table of the variables and metamodels for <population>.
@@ -399,44 +374,36 @@ class VentureMagics(Magics):
                 FROM bayesdb_generator
                 WHERE population_id = :population_id
         ''', {'population_id': population_id})
-        return bqu.cursor_to_df(cursor)
+        return utils_bql.cursor_to_df(cursor)
 
     # Plotting.
 
-    def _cmd_heatmap(self, query, sql=None, **kwargs):
-        import bdbcontrib.plot_utils as bpu
+    def _cmd_clustermap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        bpu.heatmap(df)
-
-    def _cmd_plot(self, query, sql=None, **kwargs):
-        import bdbcontrib.plot_utils as bpu
-        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        bpu.pairplot(self._bdb, df)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.clustermap(df)
 
     def _cmd_bar(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.bar(df)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.bar(df)
 
     def _cmd_scatter(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.scatter(df, **kwargs)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.scatter(df, **kwargs)
 
-    def _cmd_hist(self, query, sql=None, **kwargs):
+    def _cmd_histogram_nominal(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.hist(df, **kwargs)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.histogram_nominal(df, **kwargs)
 
-    def _cmd_histogram(self, query, sql=None, **kwargs):
+    def _cmd_histogram_numerical(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
-        df = bqu.cursor_to_df(c)
-        plots.histogram(df, **kwargs)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.histogram_numerical(df, **kwargs)
 
     _CMDS = {
-        'csv': _cmd_csv,
         'nullify': _cmd_nullify,
         'population': _cmd_population,
         'table': _cmd_table,
@@ -444,10 +411,9 @@ class VentureMagics(Magics):
 
     _PLTS = {
         'bar': _cmd_bar,
-        'heatmap': _cmd_heatmap,
-        'histogram': _cmd_histogram,
-        'hist': _cmd_hist,
-        'plot': _cmd_plot,
+        'clustermap': _cmd_clustermap,
+        'histogram_numerical': _cmd_histogram_numerical,
+        'histogram_nominal': _cmd_histogram_nominal,
         'scatter': _cmd_scatter,
     }
 

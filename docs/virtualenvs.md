@@ -41,7 +41,6 @@ $ ln -s /usr/lib/python2.7/dist-packages/PyQt4 .
 $ cd $WRKDIR
 $ git clone git@github.com:probcomp/bayeslite-apsw.git
 $ git clone git@github.com:probcomp/bayeslite.git
-$ git clone git@github.com:probcomp/bdbcontrib.git
 $ git clone git@github.com:probcomp/cgpm.git
 $ git clone git@github.com:probcomp/crosscat.git
 $ git clone git@github.com:probcomp/iventure.git
@@ -62,7 +61,7 @@ $ source .pyenv2.7.6/bin/activate
 For each cloned repository $REPO, build the repository.
 
 ```
-$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx;
+$ for REPO in bayeslite-apsw bayeslite cgpm crosscat Venturecxx;
     do cd $WRKDIR/$REPO;
     python setup.py build; cd ..;
     done
@@ -81,7 +80,6 @@ match the actual `build/` directories produced in the previous step.
 $ echo '
 export PYTHONPATH=${WRKDIR}/bayeslite-apsw/build/lib.linux-x86_64-2.7
 export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/bayeslite/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/bdbcontrib/build/lib.linux-x86_64-2.7
 export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/cgpm/build/lib.linux-x86_64-2.7
 export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/crosscat/build/lib.linux-x86_64-2.7
 export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/iventure/build/lib.linux-x86_64-2.7
@@ -103,7 +101,7 @@ $ source .pyenv2.7.6/bin/activate
 For each cloned repository, run the test suite (optional, may take a while).
 
 ```
-$ for REPO in bayeslite-apsw bayeslite bdbcontrib cgpm crosscat Venturecxx;
+$ for REPO in bayeslite-apsw bayeslite cgpm crosscat Venturecxx;
     do cd $WRKDIR/$REPO;
     ./check.sh; cd ..;
     done
