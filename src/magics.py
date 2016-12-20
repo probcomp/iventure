@@ -411,7 +411,7 @@ class VentureMagics(Magics):
 
     _PLTS = {
         'bar': _cmd_bar,
-        'heatmap': _cmd_clustermap,
+        'clustermap': _cmd_clustermap,
         'histogram_numerical': _cmd_histogram_numerical,
         'histogram_nominal': _cmd_histogram_nominal,
         'scatter': _cmd_scatter,
