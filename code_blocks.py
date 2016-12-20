@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
+import os
 import re
+import shutil
 import sys
+
+self_dir = os.path.dirname(os.path.realpath(__file__))
 
 class Block(object):
     def __init__(self, mode):
@@ -63,15 +67,25 @@ def colorize_hash_tags(line):
     line = re.sub(r"#", r"(*@\hashtag @*)", line)
     return line
 
-def print_latex(result):
+def print_latex(result, stream=sys.stdout):
     for block in result.blocks:
-        print r"\begin{lstlisting}[language=VentureScript,frame=single]"
+        print >>stream, r"\begin{lstlisting}[language=VentureScript,frame=single]"
         for line in block.lines:
-            sys.stdout.write(colorize_hash_tags(line))
-        print r"\end{lstlisting}"
+            stream.write(colorize_hash_tags(line))
+        print >>stream, r"\end{lstlisting}"
+
+def standalone_tex_file(result, filename):
+    shutil.copy(os.path.join(self_dir, "tex_header.tex"), filename)
+    with open(filename, 'a') as f:
+        print >>f, r"\setlength{\pdfpagewidth}{7.65in}"
+        print >>f, r"\setlength{\pdfpageheight}{3in}"
+        print_latex(result, f)
+        print >>f, r"\end{document}"
 
 def main():
-    print_latex(parse_to_blocks(sys.argv[1:]))
+    standalone_tex_file(parse_to_blocks(sys.argv[1:]), "foo")
+    os.system("pdflatex foo")
+    os.system("convert -density 400 foo.pdf -quality 100 -channel RGBA -fill white -opaque none foo.png")
 
 if __name__ == '__main__':
     main()
