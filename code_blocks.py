@@ -16,15 +16,28 @@ class ResultBuilder(object):
     def __init__(self):
         self.blocks = []
         self._mode = "hide"
+        self.indent = 0
 
     def consume_line(self, line):
-        m = re.match(r"^\s*//\s*-[*]-\s*(hide|model|observation|inference|query)", line)
+        m = re.match(r"^\s*//\s*-[*]-\s*(hide|model|observation|inference|query)\s*([0-9-]*)?", line)
         if m:
             self.set_mode(m.group(1))
+            if m.group(2) == '':
+                self.indent = 0
+            else:
+                self.indent = int(m.group(2))
         else:
             if self._mode != "hide":
                 self._start_block_if_needed()
-                self.blocks[-1].add_line(line)
+                self.blocks[-1].add_line(self._do_indent(line))
+
+    def _do_indent(self, line):
+        if self.indent >= 0:
+            return (" " * self.indent) + line
+        else:
+            outdent = -self.indent
+            assert line[:outdent] == " " * outdent
+            return line[outdent:]
 
     def set_mode(self, mode):
         self._mode = mode
