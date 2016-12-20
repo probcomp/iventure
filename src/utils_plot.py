@@ -189,25 +189,40 @@ def clustermap(df, ax=None, **kwargs):
     """
     if len(df.columns) < 3:
         raise ValueError('At least three columns requried: %s' % (df.columns,))
+    # Pivot the matrix.
     pivot = df.pivot(df.columns[-3], df.columns[-2], df.columns[-1])
-    return _clustermap(
+    pivot.fillna(0, inplace=True)
+    # Check if all values are between 0 and 1 to set vmin and vmax.
+    (vmin, vmax) = (None, None)
+    if all(0 <= v <= 1 for v in df.iloc[:,-1]):
+        (vmin, vmax) = (0, 1)
+    zmatrix =  _clustermap(
         pivot.as_matrix(),
         xticklabels=pivot.index.tolist(),
-        yticklabels=pivot.columns.tolist())
+        yticklabels=pivot.columns.tolist(),
+        vmin=vmin, vmax=vmax)
+    # Heuristics for the size.
+    figsize = kwargs.pop('figsize', None)
+    if figsize is None:
+        half_root_col = (df.shape[0] ** .5) / 2.
+        figsize = (half_root_col, .8 * half_root_col)
+    zmatrix.fig.set_size_inches(figsize)
+    return zmatrix
 
 
-def _clustermap(D, xticklabels=None, yticklabels=None):
-    import seaborn.apionly as sns
+def _clustermap(
+        D, xticklabels=None, yticklabels=None, vmin=None, vmax=None, **kwargs):
+    import seaborn as sns
+    sns.set_style('white')
     if xticklabels is None:
         xticklabels = range(D.shape[0])
     if yticklabels is None:
         yticklabels = range(D.shape[1])
     zmatrix = sns.clustermap(
         D, yticklabels=yticklabels, xticklabels=xticklabels,
-        linewidths=0.2, cmap='BuGn')
+        linewidths=0.2, vmin=vmin, vmax=vmax, cmap='BuGn')
     plt.setp(zmatrix.ax_heatmap.get_yticklabels(), rotation=0)
     plt.setp(zmatrix.ax_heatmap.get_xticklabels(), rotation=90)
-    zmatrix.fig.set_tight_layout(True)
     return zmatrix
 
 
