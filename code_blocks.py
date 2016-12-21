@@ -77,8 +77,6 @@ def print_latex(result, stream=sys.stdout):
 def standalone_tex_file(result, filename):
     shutil.copy(os.path.join(self_dir, "tex_header.tex"), filename)
     with open(filename, 'a') as f:
-        print >>f, r"\setlength{\pdfpagewidth}{7.65in}"
-        print >>f, r"\setlength{\pdfpageheight}{3in}"
         print_latex(result, f)
         print >>f, r"\end{document}"
 
