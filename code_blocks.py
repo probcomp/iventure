@@ -191,7 +191,7 @@ def standalone_tex_file(result, basename):
 def parser():
     p = argparse.ArgumentParser(description='Code Blocks, a program for drawing presentable VentureScript code blocks.')
     p.add_argument('file', nargs="+", help='Input file')
-    p.add_argument('-o', '--output', default="code", help="Output file name, including format")
+    p.add_argument('-o', '--output', default="code", help="Output file name.  Format deduced from extension")
     p.add_argument('-s', '--standalone', action='store_true', help="Produce standalone (not inputtable) tex output")
     return p
 
