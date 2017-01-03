@@ -19,8 +19,8 @@ How to use
 1. Annotate your program with comments indicating which part you wish
    to display as what.
 
-2. Run `code_blocks.py <source files>` (in order) to generate
-   a .png, .pdf, or .tex file.  See code_blocks.py -h for details.
+2. Run `code_blocks.py <source files>` (in order) to generate a .png,
+   .pdf, or .tex file.  See code_blocks.py -h for invocation details.
 
 Dependencies
 ------------
@@ -189,7 +189,8 @@ def standalone_tex_file(result, basename):
         print >>f, r"\end{document}"
 
 def parser():
-    p = argparse.ArgumentParser(description='Code Blocks, a program for drawing presentable VentureScript code blocks.')
+    p = argparse.ArgumentParser(description='Code Blocks, a program for drawing presentable VentureScript code blocks.',
+                                epilog='See the module docstring for more information.')
     p.add_argument('file', nargs="+", help='Input file')
     p.add_argument('-o', '--output', default="code", help="Output file name.  Format deduced from extension")
     p.add_argument('-s', '--standalone', action='store_true', help="Produce standalone (not inputtable) tex output")
