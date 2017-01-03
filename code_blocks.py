@@ -1,5 +1,102 @@
 #!/usr/bin/env python
 
+r"""Code Blocks, a program and library for drawing presentable VentureScript code blocks.
+
+Features
+--------
+
+- Processes executable .vnts sources with lightweight annotations
+- Syntax highlighting
+- Line numbering
+- Coloring model, observation, inference, and query code
+- Emits embedable .pdf or .png graphics for iterating with
+  collaborators, or \input-able .tex source for inclusion in
+  publications.
+
+How to use
+----------
+
+1. Annotate your program with comments indicating which part you wish
+   to display as what.
+
+2. Run `code_blocks.py <source files>` (in order) to generate
+   a .png, .pdf, or .tex file.  See code_blocks.py -h for details.
+
+Dependencies
+------------
+
+Code Blocks requires Python 2.7.
+
+If you want to generate .png output, you will need ImageMagick,
+specifically the `convert` program.  On Ubuntu, do
+  sudo apt-get install imagemagick
+
+You will also of course need LaTeX for Code Blocks to be useful (but
+you _can_ run it to produce .tex input files even without LaTeX being
+installed).
+
+Annotation format
+-----------------
+
+Code Blocks will look in your source file(s) for VentureScript
+comments in this syntax:
+  // -*- model
+  assume ...
+  // -*- hide
+
+That means all the statements after the `-*- model` comment but before
+the `-*- hide` comment are a "model" block, which should be emitted
+and colorized as such.
+
+The following block types are supported:
+  // -*- model
+  // -*- observation
+  // -*- inference
+  // -*- query
+  // -*- hide
+
+The first four are treated the same, except for the background color
+they get; the `-*- hide` comment tells Code Blocks not to display
+subsequent lines (until the next non-hide comment).
+
+You may optionally write a number after your comment, like this:
+  // -*- model -2
+  assume ...
+
+The number tells Code Blocks to indent (outdent, if negative) the
+following lines that many additional spaces.  This may be helpful for
+showing a code snippet that is indented for some reason (e.g., is
+inside a function definition) as though it were not indented.
+
+How to use the \input-able .tex
+-------------------------------
+
+Code Blocks can generate .tex input for use in a larger publication.
+This will come in the form of a file containing several
+`\begin{lstlisting}...\end{lstlisting}` environments with appropriate
+content and options.  To use these, take care to
+
+1. Use the color and listings packages
+  \usepackage{color}
+  \usepackage{listings}
+
+2. Include the output of Code Blocks in the desired tex document with
+  `\input{filename}`
+
+3. Provide definitions for the elements that the generated snippets
+   will require:
+   - The VentureScript lstlistings language, which defines the desired
+     syntax highlighting
+     - This must include the option `escapeinside={(*@}{@*)}`
+   - The commands `\hashtag` and `\hashsep` (for syntax highlighting
+     of `#` and `:` in VentureScript code)
+   - The colors modelblock, observationblock, inferenceblock, and
+     queryblock, which are the background colors of those blocks.
+   For an example, see the tex_header.tex template file that ships with
+   Code Blocks.
+
+"""
+
 import argparse
 import os
 import re
@@ -92,7 +189,7 @@ def standalone_tex_file(result, basename):
         print >>f, r"\end{document}"
 
 def parser():
-    p = argparse.ArgumentParser(description='Code Blocks, a frob!')
+    p = argparse.ArgumentParser(description='Code Blocks, a program for drawing presentable VentureScript code blocks.')
     p.add_argument('--version', action='version', version='Code Blocks, version 0.1')
     p.add_argument('file', nargs="+", help='Input file')
     p.add_argument('-o', '--output', default="code", help="Output file name, including format")
