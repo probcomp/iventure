@@ -36,6 +36,9 @@ class ResultBuilder(object):
                 self.blocks[-1].add_line(self._do_indent(line))
 
     def _do_indent(self, line):
+        if re.match(r"^\s*$", line):
+            # Do not in- or out-dent blank lines
+            return line
         if self.indent >= 0:
             return (" " * self.indent) + line
         else:
