@@ -74,7 +74,7 @@ def colorize_hash_tags(line):
 
 def print_latex(result, stream=sys.stdout):
     for block in result.blocks:
-        print >>stream, r"\begin{lstlisting}[language=VentureScript,frame=single]"
+        print >>stream, r"\begin{lstlisting}[language=VentureScript,frame=single,backgroundcolor=\color{" + block.mode + "block}]"
         for line in block.lines:
             stream.write(colorize_hash_tags(line))
         print >>stream, r"\end{lstlisting}"
