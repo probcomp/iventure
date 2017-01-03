@@ -4,6 +4,7 @@ import argparse
 import os
 import re
 import shutil
+import subprocess
 import sys
 
 self_dir = os.path.dirname(os.path.realpath(__file__))
@@ -96,9 +97,10 @@ def main():
     p = parser()
     args = p.parse_args()
     standalone_tex_file(parse_to_blocks(args.file), args.output)
-    os.system("pdflatex " + args.output + ".tex")
-    os.system("convert -density 400 %s.pdf -quality 100 -channel RGBA -fill white -opaque none %s.png"
-              % (args.output, args.output))
+    subprocess.call(["pdflatex", args.output + ".tex"])
+    subprocess.call(["convert", "-density", "400", args.output + ".pdf",
+                     "-quality", "100", "-channel", "RGBA", "-fill", "white", "-opaque", "none",
+                     args.output + ".png"])
 
 if __name__ == '__main__':
     main()
