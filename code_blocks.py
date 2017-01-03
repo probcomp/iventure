@@ -79,6 +79,11 @@ def print_latex(result, stream=sys.stdout):
             stream.write(colorize_hash_tags(line))
         print >>stream, r"\end{lstlisting}"
 
+def embeddable_tex_file(result, basename):
+    filename = basename + ".tex"
+    with open(filename, 'w') as f:
+        print_latex(result, f)
+
 def standalone_tex_file(result, basename):
     filename = basename + ".tex"
     shutil.copy(os.path.join(self_dir, "tex_header.tex"), filename)
@@ -90,26 +95,37 @@ def parser():
     p = argparse.ArgumentParser(description='Code Blocks, a frob!')
     p.add_argument('--version', action='version', version='Code Blocks, version 0.1')
     p.add_argument('file', nargs="+", help='Input file')
-    p.add_argument('-o', '--output', default="code", help="Output file name")
+    p.add_argument('-o', '--output', default="code", help="Output file name, including format")
+    p.add_argument('-s', '--standalone', action='store_true', help="Produce standalone (not inputtable) tex output")
     return p
 
-def write_output(result, target):
+def write_output(result, target, standalone):
     path = os.path.dirname(target)
     os.chdir(path)
     filename = os.path.basename(target)
-    (base, _ext) = os.path.splitext(filename)
-    standalone_tex_file(result, base)
-    subprocess.call(["pdflatex", base + ".tex"])
-    subprocess.call(["convert", "-density", "400", base + ".pdf",
-                     "-quality", "100", "-channel", "RGBA", "-fill", "white", "-opaque", "none",
-                     base + ".png"])
+    (base, ext) = os.path.splitext(filename)
+    if ext not in [".png", ".pdf", ".tex"]:
+        print "Only .png, .pdf, or .tex output formats supported, not", ext
+        sys.exit(1)
+    if ext in [".png", ".pdf"]:
+        standalone_tex_file(result, base)
+        subprocess.call(["pdflatex", base + ".tex"])
+        subprocess.call(["convert", "-density", "400", base + ".pdf",
+                         "-quality", "100", "-channel", "RGBA", "-fill", "white", "-opaque", "none",
+                         base + ".png"])
+    elif standalone:
+        standalone_tex_file(result, base)
+        print "Standalone tex file written to", target
+    else:
+        embeddable_tex_file(result, base)
+        print "Embeddable tex file written to", target
 
 def main():
     p = parser()
     args = p.parse_args()
     target = os.path.realpath(args.output)
     result = parse_to_blocks(args.file)
-    write_output(result, target)
+    write_output(result, target, args.standalone)
 
 if __name__ == '__main__':
     main()
