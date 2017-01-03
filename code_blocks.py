@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import re
 import shutil
@@ -77,16 +78,27 @@ def print_latex(result, stream=sys.stdout):
             stream.write(colorize_hash_tags(line))
         print >>stream, r"\end{lstlisting}"
 
-def standalone_tex_file(result, filename):
+def standalone_tex_file(result, basename):
+    filename = basename + ".tex"
     shutil.copy(os.path.join(self_dir, "tex_header.tex"), filename)
     with open(filename, 'a') as f:
         print_latex(result, f)
         print >>f, r"\end{document}"
 
+def parser():
+    p = argparse.ArgumentParser(description='Code Blocks, a frob!')
+    p.add_argument('--version', action='version', version='Code Blocks, version 0.1')
+    p.add_argument('file', nargs="+", help='Input file')
+    p.add_argument('-o', '--output', default="code", help="Output file name")
+    return p
+
 def main():
-    standalone_tex_file(parse_to_blocks(sys.argv[1:]), "foo")
-    os.system("pdflatex foo")
-    os.system("convert -density 400 foo.pdf -quality 100 -channel RGBA -fill white -opaque none foo.png")
+    p = parser()
+    args = p.parse_args()
+    standalone_tex_file(parse_to_blocks(args.file), args.output)
+    os.system("pdflatex " + args.output + ".tex")
+    os.system("convert -density 400 %s.pdf -quality 100 -channel RGBA -fill white -opaque none %s.png"
+              % (args.output, args.output))
 
 if __name__ == '__main__':
     main()
