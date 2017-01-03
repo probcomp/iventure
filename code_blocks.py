@@ -93,14 +93,23 @@ def parser():
     p.add_argument('-o', '--output', default="code", help="Output file name")
     return p
 
+def write_output(result, target):
+    path = os.path.dirname(target)
+    os.chdir(path)
+    filename = os.path.basename(target)
+    (base, _ext) = os.path.splitext(filename)
+    standalone_tex_file(result, base)
+    subprocess.call(["pdflatex", base + ".tex"])
+    subprocess.call(["convert", "-density", "400", base + ".pdf",
+                     "-quality", "100", "-channel", "RGBA", "-fill", "white", "-opaque", "none",
+                     base + ".png"])
+
 def main():
     p = parser()
     args = p.parse_args()
-    standalone_tex_file(parse_to_blocks(args.file), args.output)
-    subprocess.call(["pdflatex", args.output + ".tex"])
-    subprocess.call(["convert", "-density", "400", args.output + ".pdf",
-                     "-quality", "100", "-channel", "RGBA", "-fill", "white", "-opaque", "none",
-                     args.output + ".png"])
+    target = os.path.realpath(args.output)
+    result = parse_to_blocks(args.file)
+    write_output(result, target)
 
 if __name__ == '__main__':
     main()
