@@ -7,6 +7,11 @@ well named branch is 20160621-fsaad-update-hacking.
 
 Please do not delete branches, history should be maintained.
 
+* Copyright headers.
+
+Files should have appropriate copyright headers, refer to `src/__init__.py`
+for the probcomp template.
+
 * Python coding style
 
 Generally follow PEP 8, 80-char max, with these exceptions:
