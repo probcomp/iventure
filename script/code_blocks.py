@@ -83,6 +83,11 @@ following lines that many additional spaces.  This may be helpful for
 showing a code snippet that is indented for some reason (e.g., is
 inside a function definition) as though it were not indented.
 
+You may highlight code snippets by enclosing them in "Oxford comments",
+i.e. [* some important code here *].  This is useful, for example,
+for showing differences from a previous code figure.  Unfortunately,
+the Oxford comments will make your .vnts source not executable.
+
 How to use the \input-able .tex
 -------------------------------
 
@@ -105,6 +110,10 @@ content and options.  To use these, take care to
      - This must include a definition of /| and |/ as delimiters, such
        as `moredelim=**[is][keywordstyle4]{/|}{|/}` (for syntax
        highlighting of `#` and `:` in VentureScript code)
+     - If you use Oxford comments to highlight, this must also include
+       a definition of [* and *] as delimiters that implements the
+       desired highlighting effect.  See tex_header.tex for how
+       this is done for the standalone output.
    - The colors modelblock, observationblock, inferenceblock, and
      queryblock, which are the background colors of those blocks.
    For an example, see the tex_header.tex template file that ships with
