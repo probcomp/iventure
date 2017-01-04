@@ -16,6 +16,33 @@
 
 \usepackage{color}
 \usepackage{listings}
+\usepackage{tikz}
+
+% Implement red highlighting
+% This mumbo-jumbo (until \makeatother) is from
+% http://tex.stackexchange.com/questions/15237/highlight-text-in-code-listing-while-also-keeping-syntax-highlighting/49309#49309
+% for working around a limitation in listings.
+\makeatletter
+\newenvironment{btHighlight}[1][]
+{\begingroup\tikzset{bt@Highlight@par/.style={#1}}\begin{lrbox}{\@tempboxa}}
+{\end{lrbox}\bt@HL@box[bt@Highlight@par]{\@tempboxa}\endgroup}
+
+\newcommand\btHL[1][]{%
+  \begin{btHighlight}[#1]\bgroup\aftergroup\bt@HL@endenv%
+}
+\def\bt@HL@endenv{%
+  \end{btHighlight}%
+  \egroup
+}
+\newcommand{\bt@HL@box}[2][]{%
+  \tikz[#1]{%
+    \pgfpathrectangle{\pgfpoint{1pt}{0pt}}{\pgfpoint{\wd #2}{\ht #2}}%
+    \pgfusepath{use as bounding box}%
+    \node[anchor=base west, fill=red!30,outer sep=0pt,inner xsep=1pt, inner ysep=0pt, rounded corners=3pt, minimum height=\ht\strutbox+1pt,#1]{\raisebox{1pt}{\strut}\strut\usebox{#2}};
+  }%
+}
+\makeatother
+
 \definecolor{myred}{rgb}{0.4,0,0}
 \definecolor{mygreen}{rgb}{0,0.4,0}
 \definecolor{mybrown}{rgb}{0.4,0.2,0}
@@ -28,6 +55,7 @@
     commentstyle=\color{mygreen},
     morestring=[b]",
     morestring=[b]',
+    moredelim=**[is][\btHL]{[*}{*]}, % Highlight inside "Oxford comments"
     moredelim=**[is][keywordstyle4]{/|}{|/},
     stringstyle=\color{mybrown},
     moredelim=[s][\color{myblue}]{[|}{|]},
