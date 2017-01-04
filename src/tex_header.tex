@@ -1,0 +1,55 @@
+\documentclass[preview,border={0.3in 1bp 0.5bp 1bp}]{standalone}
+
+\usepackage{color}
+\usepackage{listings}
+\definecolor{myred}{rgb}{0.4,0,0}
+\definecolor{mygreen}{rgb}{0,0.4,0}
+\definecolor{mybrown}{rgb}{0.4,0.2,0}
+\definecolor{mypurple}{rgb}{0.38,0,0.83}
+\definecolor{myblue}{rgb}{0,0.2,0.6}
+\definecolor{myorange}{rgb}{0.75,0.3,0}
+
+\lstdefinelanguage{VentureScript}{
+    morecomment=[l]{//},
+    commentstyle=\color{mygreen},
+    morestring=[b]",
+    morestring=[b]',
+    stringstyle=\color{mybrown},
+    moredelim=[s][\color{myblue}]{[|}{|]},
+    keywordstyle=[2]\color{myred},
+    keywords=[2]{assume,generate,observe,define,assume_list,sample,call_back},
+    keywordstyle=[3]\color{myorange},
+    keywords=[3]{if,then,else,lambda,proc,tag,do,repeat,run,with,true,false,
+      begin,let,letrec,make_sp,make_elementary_sp},
+    keywordstyle=[4]\color{mypurple},
+    keywords=[4]{return,pass,for_each,all,uniform_continuous,normal,gamma,beta,
+      categorical,flip,log_flip,assess,reverse,dot,mem,length,lookup,list,pair,
+      first,rest,second,keys,values,sum,logsumexp,sqrt,log,cos,pow,
+      matrix_times_vector,fill,size,is_pair,hadamard,to_array,
+      log_gamma_function,log_beta_function,apply_sp,log_density_of_sp,
+      invoke_metaprogram_of_sp,next_base_address,global_env,eval_request,
+      value_at,bind_global,find_symbol,register_observation,get_observations,
+      set_value_at,clone_trace,single_site_subproblem,weight_bound,extract,
+      regen,restore,run_in,eval_in,exec_in,infer,blank_trace,flat_trace,graph_trace,
+      request_address,address_of,extend_environment,get_current_environment,
+      uneval_request,restore_request,proposal_kernel_of_sp_at,
+      constraint_kernel_of_sp_at,extract_kernel,regen_kernel,restore_kernel},
+    escapeinside={(*@}{@*)}
+}
+\lstset{
+  basicstyle=\ttfamily,
+  numbers=left
+}
+
+\newcommand{\hashtag}{\color{mypurple}{\#}}
+\newcommand{\hashsep}{\color{mypurple}{:}}
+
+\definecolor{modelblock}{RGB}{238,235,245}
+\definecolor{observationblock}{RGB}{226,239,220}
+\definecolor{inferenceblock}{RGB}{230,240,249}
+\definecolor{queryblock}{RGB}{230,249,248}
+
+\usepackage[margin=0in,left=0.3in,right=1bp]{geometry}
+
+\begin{document}
+\thispagestyle{plain}
