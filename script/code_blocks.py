@@ -123,7 +123,7 @@ Outstanding TODOs
 - [ ] Tweak the default style to Vikash's taste (he specifically
   suggested bold-facing the keywords `assume` and co) (this should
   just be a matter of fiddling with the `tex_header.tex` file).
-- [ ] Continue the line numbers from one code block to the next
+- [x] Continue the line numbers from one code block to the next
   in the same output.
 
 Possible Additional Feaures / Use Cases
@@ -143,6 +143,7 @@ Possible Additional Feaures / Use Cases
   - Output document width (either in inches, or corresponding to
     various LaTeX page layout settings such a default, fullpage, nips
     two-column, nips one-column, etc).
+  - Whether line numbers continue or restart
   Does this want to be a few command line options spliced into the
   tex header (which now becomes a template)?  Ability to replace the
   template entirely?
@@ -241,6 +242,7 @@ def colorize_hash_tags(line):
 
 def print_latex(result, stream=sys.stdout):
     for block in result.blocks:
+        print >>stream, r'\lstset{firstnumber=last}'
         print >>stream, r'\begin{lstlisting}[language=VentureScript,' + \
             r'frame=single,backgroundcolor=\color{' + block.mode + 'block}]'
         for line in block.lines:
