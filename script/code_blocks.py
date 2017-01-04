@@ -225,6 +225,8 @@ class ResultBuilder(object):
 
     def set_mode(self, mode):
         self._mode = mode
+        if mode != 'hide':
+            self._start_block_if_needed()
 
     def _start_block_if_needed(self):
         if len(self.blocks) == 0:
@@ -252,6 +254,7 @@ def colorize_hash_tags(line):
 
 def print_latex(result, stream=sys.stdout):
     for block in result.blocks:
+        if len(block.lines) == 0: continue
         print >>stream, r'\lstset{firstnumber=last}'
         print >>stream, r'\begin{lstlisting}[language=VentureScript,' + \
             r'frame=single,backgroundcolor=\color{' + block.mode + 'block}]'
