@@ -236,8 +236,8 @@ def parse_to_blocks(items):
     return ans
 
 def colorize_hash_tags(line):
-    line = re.sub(r'#(.*):', r'(*@\hashtag @*)\1(*@\hashsep @*)', line)
-    line = re.sub(r'#', r'(*@\hashtag @*)', line)
+    line = re.sub(r'#(.*):', r'/|#|/\1/|:|/', line)
+    line = re.sub(r'#([^|])', r'/|#|/\1', line)
     return line
 
 def print_latex(result, stream=sys.stdout):
