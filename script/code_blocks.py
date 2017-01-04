@@ -223,6 +223,9 @@ class ResultBuilder(object):
         else:
             pass
 
+    def num_selected_lines(self):
+        return sum(len(b.lines) for b in self.blocks)
+
 def parse_to_blocks(items):
     ans = ResultBuilder()
     for filename in items:
@@ -282,12 +285,16 @@ def write_output(result, target, standalone):
         subprocess.call(['convert', '-density', '400', base + '.pdf',
             '-quality', '100', '-channel', 'RGBA', '-fill', 'white',
             '-opaque', 'none', base + '.png'])
+        print 'Image written to', base + '.png'
     elif standalone:
         standalone_tex_file(result, base)
         print 'Standalone tex file written to', target
     else:
         embeddable_tex_file(result, base)
         print 'Embeddable tex file written to', target
+    print 'Rendered', result.num_selected_lines(), 'lines.'
+    if result.num_selected_lines() == 0:
+        print 'Did you remember to add a `// -*- model` or such comment to the input?'
 
 def main():
     p = parser()
