@@ -118,11 +118,11 @@ class ResultBuilder(object):
     """Accumulate a parsing result from incoming pieces."""
     def __init__(self):
         self.blocks = []
-        self._mode = "hide"
+        self._mode = 'hide'
         self.indent = 0
 
     def consume_line(self, line):
-        m = re.match(r"^\s*//\s*-[*]-\s*(hide|model|observation|inference|query)\s*([0-9-]*)?", line)
+        m = re.match(r'^\s*//\s*-[*]-\s*(hide|model|observation|inference|query)\s*([0-9-]*)?', line)
         if m:
             self.set_mode(m.group(1))
             if m.group(2) == '':
@@ -130,19 +130,19 @@ class ResultBuilder(object):
             else:
                 self.indent = int(m.group(2))
         else:
-            if self._mode != "hide":
+            if self._mode != 'hide':
                 self._start_block_if_needed()
                 self.blocks[-1].add_line(self._do_indent(line))
 
     def _do_indent(self, line):
-        if re.match(r"^\s*$", line):
+        if re.match(r'^\s*$', line):
             # Do not in- or out-dent blank lines
             return line
         if self.indent >= 0:
-            return (" " * self.indent) + line
+            return (' ' * self.indent) + line
         else:
             outdent = -self.indent
-            assert line[:outdent] == " " * outdent
+            assert line[:outdent] == ' ' * outdent
             return line[outdent:]
 
     def set_mode(self, mode):
@@ -165,35 +165,35 @@ def parse_to_blocks(items):
     return ans
 
 def colorize_hash_tags(line):
-    line = re.sub(r"#(.*):", r"(*@\hashtag @*)\1(*@\hashsep @*)", line)
-    line = re.sub(r"#", r"(*@\hashtag @*)", line)
+    line = re.sub(r'#(.*):', r'(*@\hashtag @*)\1(*@\hashsep @*)', line)
+    line = re.sub(r'#', r'(*@\hashtag @*)', line)
     return line
 
 def print_latex(result, stream=sys.stdout):
     for block in result.blocks:
-        print >>stream, r"\begin{lstlisting}[language=VentureScript,frame=single,backgroundcolor=\color{" + block.mode + "block}]"
+        print >>stream, r'\begin{lstlisting}[language=VentureScript,frame=single,backgroundcolor=\color{' + block.mode + 'block}]'
         for line in block.lines:
             stream.write(colorize_hash_tags(line))
-        print >>stream, r"\end{lstlisting}"
+        print >>stream, r'\end{lstlisting}'
 
 def embeddable_tex_file(result, basename):
-    filename = basename + ".tex"
+    filename = basename + '.tex'
     with open(filename, 'w') as f:
         print_latex(result, f)
 
 def standalone_tex_file(result, basename):
-    filename = basename + ".tex"
-    shutil.copy(os.path.join(self_dir, "tex_header.tex"), filename)
+    filename = basename + '.tex'
+    shutil.copy(os.path.join(self_dir, 'tex_header.tex'), filename)
     with open(filename, 'a') as f:
         print_latex(result, f)
-        print >>f, r"\end{document}"
+        print >>f, r'\end{document}'
 
 def parser():
     p = argparse.ArgumentParser(description='Code Blocks, a program for drawing presentable VentureScript code blocks.',
                                 epilog='See the module docstring for more information.')
-    p.add_argument('file', nargs="+", help='Input file')
-    p.add_argument('-o', '--output', default="code", help="Output file name.  Format deduced from extension")
-    p.add_argument('-s', '--standalone', action='store_true', help="Produce standalone (not inputtable) tex output")
+    p.add_argument('file', nargs='+', help='Input file')
+    p.add_argument('-o', '--output', default='code', help='Output file name.  Format deduced from extension')
+    p.add_argument('-s', '--standalone', action='store_true', help='Produce standalone (not inputtable) tex output')
     return p
 
 def write_output(result, target, standalone):
@@ -201,21 +201,21 @@ def write_output(result, target, standalone):
     os.chdir(path)
     filename = os.path.basename(target)
     (base, ext) = os.path.splitext(filename)
-    if ext not in [".png", ".pdf", ".tex"]:
-        print "Only .png, .pdf, or .tex output formats supported, not", ext
+    if ext not in ['.png', '.pdf', '.tex']:
+        print 'Only .png, .pdf, or .tex output formats supported, not', ext
         sys.exit(1)
-    if ext in [".png", ".pdf"]:
+    if ext in ['.png', '.pdf']:
         standalone_tex_file(result, base)
-        subprocess.call(["pdflatex", base + ".tex"])
-        subprocess.call(["convert", "-density", "400", base + ".pdf",
-                         "-quality", "100", "-channel", "RGBA", "-fill", "white", "-opaque", "none",
-                         base + ".png"])
+        subprocess.call(['pdflatex', base + '.tex'])
+        subprocess.call(['convert', '-density', '400', base + '.pdf',
+                         '-quality', '100', '-channel', 'RGBA', '-fill', 'white', '-opaque', 'none',
+                         base + '.png'])
     elif standalone:
         standalone_tex_file(result, base)
-        print "Standalone tex file written to", target
+        print 'Standalone tex file written to', target
     else:
         embeddable_tex_file(result, base)
-        print "Embeddable tex file written to", target
+        print 'Embeddable tex file written to', target
 
 def main():
     p = parser()
