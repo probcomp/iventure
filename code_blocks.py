@@ -95,6 +95,56 @@ content and options.  To use these, take care to
    For an example, see the tex_header.tex template file that ships with
    Code Blocks.
 
+Outstanding TODOs
+-----------------
+
+- [ ] Port to OSX (Should be straightforward, but Axch has no Mac)
+- [ ] (Easy) Check whether `convert` is missing and give a nice
+  error message; generate pdf output anyway.
+- [ ] (Easy) Check whether `pdflatex` is missing and give a nice
+  error message; generate tex output anyway.
+- [ ] Accept input from .ipynb files (just need to deal with their
+  quote marks and such).
+- [ ] Tweak the default style to Vikash's taste (he specifically
+  suggested bold-facing the keywords `assume` and co) (this should
+  just be a matter of fiddling with the `tex_header.tex` file).
+- [ ] Continue the line numbers from one code block to the next
+  in the same output.
+
+Possible Additional Feaures / Use Cases
+---------------------------------------
+
+- Highlighting and uploading without leaving IPyton.  Presumably this
+  feature would requires the user to add some boilerplate to their
+  IPython notebooks.  Should this be done based on this code base or
+  some other way?  For example, by teaching Prism
+  (http://prismjs.com/) to handle VS in IPython cells?
+
+- Gross presentation control.  Maybe add some way to control some
+  aspects of the graphical outputs, to allow better iteration before
+  embedding into LaTeX.  I am specifically thinking of
+  - Font
+  - Font size
+  - Output document width (either in inches, or corresponding to
+    various LaTeX page layout settings such a default, fullpage, nips
+    two-column, nips one-column, etc).
+  Does this want to be a few command line options spliced into the
+  tex header (which now becomes a template)?  Ability to replace the
+  template entirely?
+
+- Zero-annotation input.  It may be nice to be able to make images of
+  snippets without having to modify the input source files.  Axch was
+  envisioning a command-line spec language, similar to pdfjam;
+  something like this:
+    code_blocks.py --model foo.vnts:3-14 --observation foo.vnts:15-17
+      --inference bar.vnts
+  which would make snippets of the given types out of the given line
+  ranges of the given files.
+
+- Alternate offline highlighter(s).  The VentureScript->png use case
+  does not strictly need to use LaTeX as the syntax highlighter.
+  Perhaps add others?
+
 """
 
 import argparse
