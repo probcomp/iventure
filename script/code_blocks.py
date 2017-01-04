@@ -102,9 +102,9 @@ content and options.  To use these, take care to
    will require:
    - The VentureScript lstlistings language, which defines the desired
      syntax highlighting
-     - This must include the option `escapeinside={(*@}{@*)}`
-   - The commands `\hashtag` and `\hashsep` (for syntax highlighting
-     of `#` and `:` in VentureScript code)
+     - This must include a definition of /| and |/ as delimiters, such
+       as `moredelim=**[is][keywordstyle4]{/|}{|/}` (for syntax
+       highlighting of `#` and `:` in VentureScript code)
    - The colors modelblock, observationblock, inferenceblock, and
      queryblock, which are the background colors of those blocks.
    For an example, see the tex_header.tex template file that ships with
