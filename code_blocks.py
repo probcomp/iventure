@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-r"""Code Blocks, a program and library for drawing presentable VentureScript code blocks.
+r"""Code Blocks, drawing presentable VentureScript code blocks.
 
 Features
 --------
@@ -114,6 +114,8 @@ class Block(object):
     def add_line(self, line):
         self.lines.append(line)
 
+annot=r'^\s*//\s*-[*]-\s*(hide|model|observation|inference|query)\s*([0-9-]*)?'
+
 class ResultBuilder(object):
     """Accumulate a parsing result from incoming pieces."""
     def __init__(self):
@@ -122,7 +124,7 @@ class ResultBuilder(object):
         self.indent = 0
 
     def consume_line(self, line):
-        m = re.match(r'^\s*//\s*-[*]-\s*(hide|model|observation|inference|query)\s*([0-9-]*)?', line)
+        m = re.match(annot, line)
         if m:
             self.set_mode(m.group(1))
             if m.group(2) == '':
@@ -171,7 +173,8 @@ def colorize_hash_tags(line):
 
 def print_latex(result, stream=sys.stdout):
     for block in result.blocks:
-        print >>stream, r'\begin{lstlisting}[language=VentureScript,frame=single,backgroundcolor=\color{' + block.mode + 'block}]'
+        print >>stream, r'\begin{lstlisting}[language=VentureScript,' + \
+            r'frame=single,backgroundcolor=\color{' + block.mode + 'block}]'
         for line in block.lines:
             stream.write(colorize_hash_tags(line))
         print >>stream, r'\end{lstlisting}'
@@ -189,11 +192,15 @@ def standalone_tex_file(result, basename):
         print >>f, r'\end{document}'
 
 def parser():
-    p = argparse.ArgumentParser(description='Code Blocks, a program for drawing presentable VentureScript code blocks.',
-                                epilog='See the module docstring for more information.')
+    p = argparse.ArgumentParser(
+        description='Code Blocks, a program for drawing presentable ' \
+            + 'VentureScript code blocks.',
+        epilog='See the module docstring for more information.')
     p.add_argument('file', nargs='+', help='Input file')
-    p.add_argument('-o', '--output', default='code', help='Output file name.  Format deduced from extension')
-    p.add_argument('-s', '--standalone', action='store_true', help='Produce standalone (not inputtable) tex output')
+    p.add_argument('-o', '--output', default='code',
+        help='Output file name.  Format deduced from extension')
+    p.add_argument('-s', '--standalone', action='store_true',
+        help='Produce standalone (not inputtable) tex output')
     return p
 
 def write_output(result, target, standalone):
@@ -208,8 +215,8 @@ def write_output(result, target, standalone):
         standalone_tex_file(result, base)
         subprocess.call(['pdflatex', base + '.tex'])
         subprocess.call(['convert', '-density', '400', base + '.pdf',
-                         '-quality', '100', '-channel', 'RGBA', '-fill', 'white', '-opaque', 'none',
-                         base + '.png'])
+            '-quality', '100', '-channel', 'RGBA', '-fill', 'white',
+            '-opaque', 'none', base + '.png'])
     elif standalone:
         standalone_tex_file(result, base)
         print 'Standalone tex file written to', target
