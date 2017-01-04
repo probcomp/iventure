@@ -24,6 +24,7 @@ Features
 - Syntax highlighting
 - Line numbering
 - Coloring model, observation, inference, and query code
+- Optional manual highlights to code points of interest
 - Emits embedable .pdf or .png graphics for iterating with
   collaborators, or \input-able .tex source for inclusion in
   publications.
