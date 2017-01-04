@@ -14,7 +14,7 @@
 
 \documentclass[preview,border={0.3in 1bp 0.5bp 1bp}]{standalone}
 
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{listings}
 \usepackage{tikz}
 
@@ -22,6 +22,8 @@
 % This mumbo-jumbo (until \makeatother) is from
 % http://tex.stackexchange.com/questions/15237/highlight-text-in-code-listing-while-also-keeping-syntax-highlighting/49309#49309
 % for working around a limitation in listings.
+\colorlet{highlight}{red!30}
+
 \makeatletter
 \newenvironment{btHighlight}[1][]
 {\begingroup\tikzset{bt@Highlight@par/.style={#1}}\begin{lrbox}{\@tempboxa}}
@@ -38,7 +40,7 @@
   \tikz[#1]{%
     \pgfpathrectangle{\pgfpoint{1pt}{0pt}}{\pgfpoint{\wd #2}{\ht #2}}%
     \pgfusepath{use as bounding box}%
-    \node[anchor=base west, fill=red!30,outer sep=0pt,inner xsep=1pt, inner ysep=0pt, rounded corners=3pt, minimum height=\ht\strutbox+1pt,#1]{\raisebox{1pt}{\strut}\strut\usebox{#2}};
+    \node[anchor=base west, fill=highlight,outer sep=0pt,inner xsep=1pt, inner ysep=0pt, rounded corners=3pt, minimum height=\ht\strutbox+1pt,#1]{\raisebox{1pt}{\strut}\strut\usebox{#2}};
   }%
 }
 \makeatother
