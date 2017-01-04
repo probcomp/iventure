@@ -45,28 +45,28 @@
 }
 \makeatother
 
-\definecolor{myred}{rgb}{0.4,0,0}
-\definecolor{mygreen}{rgb}{0,0.4,0}
-\definecolor{mybrown}{rgb}{0.4,0.2,0}
-\definecolor{mypurple}{rgb}{0.38,0,0.83}
-\definecolor{myblue}{rgb}{0,0.2,0.6}
-\definecolor{myorange}{rgb}{0.75,0.3,0}
+\definecolor{model-red}{rgb}{0.4,0,0}
+\definecolor{comment-green}{rgb}{0,0.4,0}
+\definecolor{string-brown}{rgb}{0.4,0.2,0}
+\definecolor{predef-purple}{rgb}{0.38,0,0.83}
+\definecolor{quasi-blue}{rgb}{0,0.2,0.6}
+\definecolor{special-orange}{rgb}{0.75,0.3,0}
 
 \lstdefinelanguage{VentureScript}{
     morecomment=[l]{//},
-    commentstyle=\color{mygreen},
+    commentstyle=\color{comment-green},
     morestring=[b]",
     morestring=[b]',
     moredelim=**[is][\btHL]{[*}{*]}, % Highlight inside "Oxford comments"
     moredelim=**[is][keywordstyle4]{/|}{|/},
-    stringstyle=\color{mybrown},
-    moredelim=[s][\color{myblue}]{[|}{|]},
-    keywordstyle=[2]\color{myred},
+    stringstyle=\color{string-brown},
+    moredelim=[s][\color{quasi-blue}]{[|}{|]},
+    keywordstyle=[2]\color{model-red},
     keywords=[2]{assume,generate,observe,define,assume_list,sample,call_back},
-    keywordstyle=[3]\color{myorange},
+    keywordstyle=[3]\color{special-orange},
     keywords=[3]{if,then,else,lambda,proc,tag,do,repeat,run,with,true,false,
       begin,let,letrec,make_sp,make_elementary_sp},
-    keywordstyle=[4]\color{mypurple},
+    keywordstyle=[4]\color{predef-purple},
     keywords=[4]{return,pass,for_each,all,uniform_continuous,normal,gamma,beta,
       categorical,flip,log_flip,assess,reverse,dot,mem,length,lookup,list,pair,
       first,rest,second,keys,values,sum,logsumexp,sqrt,log,cos,pow,
