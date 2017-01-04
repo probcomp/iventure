@@ -21,14 +21,14 @@ import subprocess
 
 import notebook.auth
 
-from utils_unix import unix_group_exists
-from utils_unix import unix_user_adddir
-from utils_unix import unix_user_addgroup
-from utils_unix import unix_user_create
-from utils_unix import unix_user_exists
-from utils_unix import unix_user_home
-from utils_unix import unix_user_id
-from utils_unix import unix_user_ingroup
+from iventure.utils_unix import unix_group_exists
+from iventure.utils_unix import unix_user_adddir
+from iventure.utils_unix import unix_user_addgroup
+from iventure.utils_unix import unix_user_create
+from iventure.utils_unix import unix_user_exists
+from iventure.utils_unix import unix_user_home
+from iventure.utils_unix import unix_user_id
+from iventure.utils_unix import unix_user_ingroup
 
 
 def jupyter_config_create(username, venv, prefix=None):
