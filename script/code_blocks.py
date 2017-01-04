@@ -262,7 +262,7 @@ def parser():
             + 'VentureScript code blocks.',
         epilog='See the module docstring for more information.')
     p.add_argument('file', nargs='+', help='Input file')
-    p.add_argument('-o', '--output', default='code',
+    p.add_argument('-o', '--output', default='code.png',
         help='Output file name.  Format deduced from extension')
     p.add_argument('-s', '--standalone', action='store_true',
         help='Produce standalone (not inputtable) tex output')
