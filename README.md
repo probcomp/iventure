@@ -39,7 +39,7 @@ CREATE POPULATION xyz for t (...);
 
 #### Write BQL programs
 ```
-%bql ESTIMULATE MUTUAL INFORMATION OF  x WITH y WITHIN xyz;
+%bql ESTIMATE MUTUAL INFORMATION OF x WITH y WITHIN xyz;
 ```
 or, for multi-line queries
 ```
