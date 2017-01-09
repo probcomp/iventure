@@ -389,6 +389,17 @@ class IVentureManager(object):
 
 if __name__ == '__main__':
 
+    '''
+    Usage:
+        create a user:      ./manager.py user_create <username>
+        delete a user:      ./manager.py user_delete <username>
+
+        stop a server:      ./manager.py server_stop <username>
+        start server:       ./manager.py server_start <username>
+        restart server:     ./manager.py server_restart <username>
+        check server:       ./manager.py server_status <username>
+    '''
+
     import argparse
     parser = argparse.ArgumentParser()
 
