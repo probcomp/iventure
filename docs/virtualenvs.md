@@ -7,21 +7,21 @@ export WRKDIR=/path/to/my/dir
 $ mkdir $WRKDIR
 ```
 
-#### Create a virtualenv in `$WRKDIR` called `.pyenv2.7.6`.
+#### Create a virtualenv in `$WRKDIR` called `.pyenv2.7`.
 
 ```
 $ cd $WRKDIR
-$ virtualenv -p /usr/bin/python .pyenv2.7.6
+$ virtualenv -p /usr/bin/python .pyenv2.7
 ```
 
 #### Activate the virtual environment, and ensure the right python interpreter is being referenced.
 
 ```
-$ source .pyenv2.7.6/bin/activate
-$ which python # should return $WRKDIR/.pyenv2.7.6/bin/python
+$ source .pyenv2.7/bin/activate
+$ which python # should return $WRKDIR/.pyenv2.7/bin/python
 ```
 
-#### Install python requirements from `pip`, using the `requirements.txt` file from this directory (may take a while).
+#### Install python requirements from `pip`, using the `requirements.txt` file from the toplevel directory of this repository (may take a while).
 
 ```
 $ pip install -r /path/to/requirements.txt
@@ -30,7 +30,7 @@ $ pip install -r /path/to/requirements.txt
 #### [Optional] Link `matplotlib` libraries for the nicer `Qt` backend to the virtualenv. This step will only work if the `python-qt4` is installed system-wide.
 
 ```
-$ cd .pyenv2.7.6/lib/python2.7/site-packages
+$ cd .pyenv2.7/lib/python2.7/site-packages
 $ ln -s /usr/lib/python2.7/dist-packages/sip.so .
 $ ln -s /usr/lib/python2.7/dist-packages/PyQt4 .
 ```
@@ -54,8 +54,8 @@ The `master` branch suffices for the repositories.
 First prevent python from generating `.pyc` files.
 
 ```
-$ echo PYTHONDONTWRITEBYTECODE=1 >> .pyenv2.7.6/bin/activate
-$ source .pyenv2.7.6/bin/activate
+$ echo PYTHONDONTWRITEBYTECODE=1 >> .pyenv2.7/bin/activate
+$ source .pyenv2.7/bin/activate
 ```
 
 For each cloned repository $REPO, build the repository.
@@ -79,15 +79,15 @@ match the actual `build/` directories produced in the previous step.
 ```
 $ echo '
 export PYTHONPATH=${WRKDIR}/bayeslite-apsw/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/bayeslite/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/cgpm/build/lib.linux-x86_64-2.7
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/bayeslite/build/lib
+export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/cgpm/build/lib
 export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/crosscat/build/lib.linux-x86_64-2.7
-export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/iventure/build/lib.linux-x86_64-2.7
+#export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/iventure/build/lib
 export PYTHONPATH=${PYTHONPATH}:${WRKDIR}/Venturecxx/build/lib.linux-x86_64-2.7
 
 export BAYESDB_DISABLE_VERSION_CHECK=1
 export BAYESDB_WIZARD_MODE=1
-export GPMCCDEBUG=1' >> .pyenv2.7.6/bin/activate
+export GPMCCDEBUG=1' >> .pyenv2.7/bin/activate
 ```
 
 #### Verify the installation is successful.
@@ -95,7 +95,7 @@ export GPMCCDEBUG=1' >> .pyenv2.7.6/bin/activate
 Reactivate the virtualenv.
 
 ```
-$ source .pyenv2.7.6/bin/activate
+$ source .pyenv2.7/bin/activate
 ```
 
 For each cloned repository, run the test suite (optional, may take a while).
