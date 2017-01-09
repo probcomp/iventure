@@ -16,8 +16,10 @@
 #   limitations under the License.
 
 import os
+import re
 import sqlite3
 import subprocess
+import warnings
 
 import notebook.auth
 
@@ -117,6 +119,38 @@ def nginx_config_delete(username):
     process.wait()
 
 
+def nginx_find_port(username):
+    if not os.path.exists('/etc/nginx/jupyter'):
+        raise ValueError('NGINX does not have a config directory.')
+
+    config = '/etc/nginx/jupyter/%s.conf' % (username,)
+    if not os.path.exists(config):
+        raise ValueError('NGINX config does not exist: %s' % (username,))
+
+    if not unix_user_exists(username):
+        warnings.warn('Config file exists, but user does not: %s' % (username,))
+
+    # The port is $1 on the line with the form
+    #   proxy_pass http://127.0.0.1:$1/jupyter/$1/;
+    with open(config, 'r') as f:
+        lines = f.readlines()
+
+    proxy_pass_lines = [
+        line for line in lines
+        if line.strip().startswith('proxy_pass')
+    ]
+    assert len(proxy_pass_lines) == 1
+
+    proxy_pass_line = proxy_pass_lines[0].strip()
+    match = re.search('127\.0\.0\.1:(.*)/jupyter', proxy_pass_line)
+
+    if not (match and match.group(1)):
+        raise ValueError('Faied to parse port from: %s' % (config,))
+
+    port = int(match.group(1))
+    return port
+
+
 def jupyter_find_pid(username):
     if not unix_user_exists(username):
         raise ValueError('No such user: %s' % (username,))
@@ -149,6 +183,7 @@ def jupyter_find_port(username):
     port, _err = process.communicate()
 
     return int(str.strip(port)) if port else None
+
 
 def jupyter_server_start(username, venv):
     if not unix_user_exists(username):
@@ -211,12 +246,11 @@ class IVentureManager(object):
         'dir_venv': os.path.join('/','scratch','pp_iventure', '.pyenv2.7.6'),
         'grp_unix': 'pp_iventure',
         'usr_prefix': 'pp_',
-        'ports': 'ports',
         'start': 10000,
     }
 
     def __init__( self, dir_root=None, dir_venv=None, grp_unix=None,
-            usr_prefix=None, ports=None, start=None):
+            usr_prefix=None, start=None):
         if dir_root is None:
             dir_root = IVentureManager.CONFIG['dir_root']
         if dir_venv is None:
@@ -225,8 +259,6 @@ class IVentureManager(object):
             grp_unix = IVentureManager.CONFIG['grp_unix']
         if usr_prefix is None:
             usr_prefix = IVentureManager.CONFIG['usr_prefix']
-        if ports is None:
-            ports = IVentureManager.CONFIG['ports']
         if start is None:
             start = IVentureManager.CONFIG['start']
 
@@ -234,11 +266,8 @@ class IVentureManager(object):
         self.dir_venv = dir_venv
         self.grp_unix = grp_unix
         self.usr_prefix = usr_prefix
-        self.ports = ports
         self.start = start
 
-        if not os.path.exists(ports):
-            open(ports, 'w').close()
 
     def user_create(self, username):
         self._validate_username(username)
@@ -254,12 +283,8 @@ class IVentureManager(object):
         print 'Adding user to group: %s' % (self.grp_unix,)
         unix_user_addgroup(username, self.grp_unix)
 
-        # Prepare the user port.
+        # Retrieve the user port and write it to NGINX configuration.
         port = self._find_new_port()
-        self._user_assign_port(username, port)
-        assert self._user_lookup_port(username) == port
-
-        # Prepare the nginx server configruation.
         nginx_config_create(username, port)
 
         # Prepare the jupyter server configruation.
@@ -321,15 +346,12 @@ class IVentureManager(object):
         raise ValueError('Failed to find a free port.')
 
 
-    def _user_assign_port(self, username, port):
+    def _verify_new_port(self, username, port):
         table = self._load_port_assignments()
         if username in table:
             raise ValueError('User already in ports: %s' % (username,))
         if port in table.values():
             raise ValueError('Port already in ports: %s' % (port))
-        with open(self.ports, 'a') as f:
-            f.write('%s,%d\n' % (username, port))
-
 
     def _user_lookup_port(self, username):
         table = self._load_port_assignments()
@@ -339,10 +361,18 @@ class IVentureManager(object):
 
 
     def _load_port_assignments(self):
-        with open(self.ports ,'r') as f:
-            lines = f.readlines()
-        pairs = [str.split(str.strip(l), ',') for l in lines]
-        return {p[0]: int(p[1]) for p in pairs}
+        usernames = self._find_usernames()
+        ports = [nginx_find_port(username) for username in usernames]
+        table = zip(usernames, ports)
+        return dict(table)
+
+
+    def _find_usernames(self):
+        return [
+            f.replace('.conf', '')
+            for f in os.listdir('/etc/nginx/jupyter')
+            if f.startswith(self.usr_prefix)
+        ]
 
 
     def _validate_username(self, username):
