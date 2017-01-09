@@ -34,6 +34,14 @@ def unix_group_exists(groupname):
     return True if retcode == 0 else False
 
 
+def unix_port_active(port):
+    result = subprocess.check_output(
+        'nc -s0 127.0.0.1 %d >/dev/null </dev/null; echo $?' % (port,),
+        shell=True)
+    code = int(str.strip(result))
+    return True if code == 0 else False
+
+
 def unix_user_adddir(username, dir_name):
     subprocess.Popen(
         'sudo -iu %s sh -c "mkdir %s"' % (username, dir_name,),
@@ -55,6 +63,16 @@ def unix_user_create(username, home):
             '--disabled-password',
             '--home',
             home,
+            username,
+        ])
+    process.wait()
+
+
+def unix_user_delete(username):
+    # Delete the specified username, preserving the home directory.
+    process = subprocess.Popen([
+        'sudo',
+            'deluser',
             username,
         ])
     process.wait()
