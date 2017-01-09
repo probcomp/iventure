@@ -35,6 +35,9 @@ from iventure.utils_unix import unix_user_id
 from iventure.utils_unix import unix_user_ingroup
 
 
+NGINX_CONFIG_DIR = '/etc/nginx/jupyter'
+
+
 def jupyter_config_create(username, venv, port, prefix=None):
     if prefix and not str.startswith(username, prefix):
         raise ValueError(
@@ -75,13 +78,15 @@ def jupyter_config_create(username, venv, port, prefix=None):
 def nginx_config_create(username, port):
     if not unix_user_exists(username):
         raise ValueError('No such user: %s' % (username,))
-    if not os.path.exists('/etc/nginx/jupyter'):
+    if not os.path.exists(NGINX_CONFIG_DIR):
         raise ValueError('NGINX does not have a config directory.')
-    if os.path.exists('/etc/nginx/jupyter/%s.conf' % (username,)):
+
+    config = os.path.join(NGINX_CONFIG_DIR, '%s.conf' % (username))
+    if os.path.exists(config):
         raise ValueError('NGINX config already exists: %s' % (username,))
 
     # These are the lines which we need to write to
-    # /etc/nginx/jupyter/username.conf create.
+    # NGIN_CONFIG_DIR/username.conf create.
     lines = '''location /jupyter/%s/ {
         proxy_pass http://127.0.0.1:%d/jupyter/%s/;
         proxy_set_header Host $host;
@@ -96,7 +101,7 @@ def nginx_config_create(username, port):
 
     # Copy the temp file to the target directory.
     process = subprocess.Popen(
-        'sudo cp /tmp/%s.conf /etc/nginx/jupyter/' % (username,),
+        'sudo cp /tmp/%s.conf %s' % (username, NGINX_CONFIG_DIR),
         shell=True)
     process.wait()
 
@@ -108,10 +113,10 @@ def nginx_config_create(username, port):
 def nginx_config_delete(username):
     if not unix_user_exists(username):
         raise ValueError('No such user: %s' % (username,))
-    if not os.path.exists('/etc/nginx/jupyter'):
+    if not os.path.exists(NGINX_CONFIG_DIR):
         raise ValueError('NGINX does not have a config directory.')
 
-    config = '/etc/nginx/jupyter/%s.conf' % (username,)
+    config = os.path.join(NGINX_CONFIG_DIR, '%s.conf' % (username))
     if not os.path.exists(config):
         raise ValueError('NGINX config does not exist: %s' % (username,))
 
@@ -120,10 +125,10 @@ def nginx_config_delete(username):
 
 
 def nginx_find_port(username):
-    if not os.path.exists('/etc/nginx/jupyter'):
+    if not os.path.exists(NGINX_CONFIG_DIR):
         raise ValueError('NGINX does not have a config directory.')
 
-    config = '/etc/nginx/jupyter/%s.conf' % (username,)
+    config = os.path.join(NGINX_CONFIG_DIR, '%s.conf' % (username))
     if not os.path.exists(config):
         raise ValueError('NGINX config does not exist: %s' % (username,))
 
@@ -370,7 +375,7 @@ class IVentureManager(object):
     def _find_usernames(self):
         return [
             f.replace('.conf', '')
-            for f in os.listdir('/etc/nginx/jupyter')
+            for f in os.listdir(NGINX_CONFIG_DIR)
             if f.startswith(self.usr_prefix)
         ]
 
