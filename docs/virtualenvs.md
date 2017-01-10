@@ -3,6 +3,26 @@
 These instructions are tested on `Ubuntu 14.04.5`, different Linux distributions
 might require small modifications.
 
+#### Retrieve required packages from the Ubuntu standard repositories.
+
+```bash
+sudo apt-get update -qq
+sudo apt-get upgrade -qq
+sudo apt-get install -qq build-essential
+sudo apt-get install -qq ccache
+sudo apt-get install -qq git
+sudo apt-get install -qq libboost-all-dev
+sudo apt-get install -qq libfreetype6-dev
+sudo apt-get install -qq libgsl0-dev
+sudo apt-get install -qq libjpeg8-dev
+sudo apt-get install -qq libpng12-dev
+sudo apt-get install -qq pandoc
+sudo apt-get install -qq pkg-config
+sudo apt-get install -qq python-apsw
+sudo apt-get install -qq python-pip
+sudo apt-get install -qq python-virtualenv
+```
+
 #### Create a fresh directory and store its path in `$WRKDIR` (for working directory).
 
 ```bash
