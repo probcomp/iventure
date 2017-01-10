@@ -85,7 +85,7 @@ simplegeneric==0.8.1
 simplejson==3.8.2
 singledispatch==3.4.0.3
 six==1.10.0
-sklearn==0.0
+scikit-learn==0.18.1
 statsmodels==0.6.1
 tabview==1.4.2
 terminado==0.6
