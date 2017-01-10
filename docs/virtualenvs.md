@@ -82,14 +82,14 @@ $ for project in $PROJECTS; do
 $ python -c 'import iventure'
 ```
 
-## [[OPTIONAL]] Run the test suite for probcomp repositories (may take a while).
+### [[OPTIONAL]] Run the test suite for probcomp repositories (may take a while).
 
 ```bash
-$ for REPO in bayeslite cgpm crosscat Venturecxx; do
-    cd $WRKDIR/$REPO
+$ for project in bayeslite cgpm crosscat Venturecxx; do
+    cd $project
     ./check.sh
     cd ..
-    done
+  done
 ```
 
 ### [[OPTIONAL]] Activate the `Qt` backend for `matplotlib`.
