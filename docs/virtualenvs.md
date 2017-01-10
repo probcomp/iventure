@@ -3,7 +3,7 @@
 These instructions are tested on `Ubuntu 14.04.5`, different Linux distributions
 might require small modifications.
 
-#### Create a fresh directory and store its path in `$WRKDIR` (for workding directory).
+#### Create a fresh directory and store its path in `$WRKDIR` (for working directory).
 
 ```bash
 export WRKDIR=/path/to/my/dir
@@ -108,7 +108,7 @@ $ ln -s /usr/lib/python2.7/dist-packages/sip.so .
 $ ln -s /usr/lib/python2.7/dist-packages/PyQt4 .
 ```
 
-### [[OPTIONAL]] Setting UNIX group permissions for the virtualenv
+### [[OPTIONAL]] Setting UNIX group permissions for the virtualenv.
 
 #### Create a new UNIX group `$GRP` for `$WRKDIR` and its subdirectories, and add yourself to the group.
 
