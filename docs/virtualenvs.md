@@ -6,7 +6,7 @@ might require small modifications.
 #### Create a fresh directory and store its path in `$WRKDIR` (for working directory).
 
 ```bash
-export WRKDIR=/path/to/my/dir
+$ export WRKDIR=/path/to/my/dir
 $ mkdir $WRKDIR
 ```
 
