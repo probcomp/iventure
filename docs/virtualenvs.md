@@ -99,7 +99,7 @@ $ for project in $PROJECTS; do
 #### Verify the installation is successful.
 
 ```bash
-$ python -c 'import iventure'
+$ python -c 'import iventure.magics'
 ```
 
 ### [[OPTIONAL]] Run the test suite for probcomp repositories (may take a while).
