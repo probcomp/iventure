@@ -25,6 +25,7 @@ Features
 - Line numbering
 - Coloring model, observation, inference, and query code
 - Optional manual highlights to code points of interest
+- Controllable document width
 - Emits embedable .pdf or .png graphics for iterating with
   collaborators, or \input-able .tex source for inclusion in
   publications.
@@ -150,9 +151,6 @@ Possible Additional Feaures / Use Cases
   embedding into LaTeX.  I am specifically thinking of
   - Font
   - Font size
-  - Output document width (either in inches, or corresponding to
-    various LaTeX page layout settings such a default, fullpage, nips
-    two-column, nips one-column, etc).
   - Whether line numbers continue or restart
   Does this want to be a few command line options spliced into the
   tex header (which now becomes a template)?  Ability to replace the
@@ -267,10 +265,14 @@ def embeddable_tex_file(result, basename):
     with open(filename, 'w') as f:
         print_latex(result, f)
 
-def standalone_tex_file(result, basename):
+def standalone_tex_file(result, basename, width):
     filename = basename + '.tex'
     shutil.copy(os.path.join(self_dir, 'tex_header.tex'), filename)
     with open(filename, 'a') as f:
+        if width is not None:
+            f.write(r'\setlength{\textwidth}{' + width + '}\n')
+        f.write(r'''\begin{document}
+\thispagestyle{plain}''')
         print_latex(result, f)
         print >>f, r'\end{document}'
 
@@ -284,9 +286,11 @@ def parser():
         help='Output file name.  Format deduced from extension')
     p.add_argument('-s', '--standalone', action='store_true',
         help='Produce standalone (not inputtable) tex output')
+    p.add_argument('-w', '--width',
+        help='Tex distance to use as text width, e.g. 0.5\textwidth for half')
     return p
 
-def write_output(result, target, standalone):
+def write_output(result, target, standalone, width):
     path = os.path.dirname(target)
     os.chdir(path)
     filename = os.path.basename(target)
@@ -295,14 +299,14 @@ def write_output(result, target, standalone):
         print 'Only .png, .pdf, or .tex output formats supported, not', ext
         sys.exit(1)
     if ext in ['.png', '.pdf']:
-        standalone_tex_file(result, base)
+        standalone_tex_file(result, base, width)
         subprocess.call(['pdflatex', base + '.tex'])
         subprocess.call(['convert', '-density', '400', base + '.pdf',
             '-quality', '100', '-channel', 'RGBA', '-fill', 'white',
             '-opaque', 'none', base + '.png'])
         print 'Image written to', base + '.png'
     elif standalone:
-        standalone_tex_file(result, base)
+        standalone_tex_file(result, base, width)
         print 'Standalone tex file written to', target
     else:
         embeddable_tex_file(result, base)
@@ -316,7 +320,7 @@ def main():
     args = p.parse_args()
     target = os.path.realpath(args.output)
     result = parse_to_blocks(args.file)
-    write_output(result, target, args.standalone)
+    write_output(result, target, args.standalone, args.width)
 
 if __name__ == '__main__':
     main()
