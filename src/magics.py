@@ -152,19 +152,20 @@ class VentureMagics(Magics):
     @line_magic
     def ripl(self, line, cell=None):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--seed", type=float,  help="deteriministic")
-        parser.add_argument("--plugins", type=str, nargs = "+",  help="list of plugins")
+        parser.add_argument('--seed', type=float,  help='deteriministic')
+        parser.add_argument(
+            '--plugins', type=str, nargs = '+',  help='list of plugins')
         args = parser.parse_args(line.split())
         if self._ripl is not None:
             self._ripl = None
         if args.seed is not None:
             self._ripl = vs.make_lite_ripl(seed=args.seed)
-            print 'Set seed of a new RIPL instance for VentureScript to %.2f' % (args.seed,)
+            print 'Set seed of a new VentureScript RIPL to %.2f.' % (args.seed,)
         else:
             self._ripl = vs.make_lite_ripl()
         if args.plugins is not None:
             for plugin in args.plugins:
-                print "Loading: %s" % (plugin,)
+                print 'Loading plugin: %s' % (plugin,)
                 self._ripl.load_plugin(plugin)
 
     @logged_cell
@@ -218,13 +219,13 @@ class VentureMagics(Magics):
         # Register cgpm.
         cgpm_registry = {
             'factor_analysis': FactorAnalysis,
+            'inline_venturescript': InlineVsCGpm,
             'linear_regression': LinearRegression,
             'multivariate_kde': MultivariateKde,
             'multivariate_knn': MultivariateKnn,
             'ordinary_least_squares': OrdinaryLeastSquares,
             'random_forest': RandomForest,
             'venturescript': _VsCGpm,
-            'inline_venturescript': InlineVsCGpm,
         }
         mm = CGPM_Metamodel(cgpm_registry, multiprocess=args.j)
         bayesdb_register_metamodel(self._bdb, mm)
@@ -353,7 +354,7 @@ class VentureMagics(Magics):
         '''
         table = args
         qt = bql_quote_name(table)
-        cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (table,))
+        cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (qt,))
         return utils_bql.cursor_to_df(cursor)
 
     def _cmd_population(self, args):
@@ -412,8 +413,8 @@ class VentureMagics(Magics):
     _PLTS = {
         'bar': _cmd_bar,
         'clustermap': _cmd_clustermap,
-        'histogram_numerical': _cmd_histogram_numerical,
         'histogram_nominal': _cmd_histogram_nominal,
+        'histogram_numerical': _cmd_histogram_numerical,
         'scatter': _cmd_scatter,
     }
 
