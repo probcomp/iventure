@@ -250,30 +250,33 @@ def colorize_hash_tags(line):
     line = re.sub(r'#([^|])', r'/|#|/\1', line)
     return line
 
-def print_latex(result, stream=sys.stdout):
+def print_latex(result, stream, args):
     for block in result.blocks:
         if len(block.lines) == 0: continue
         print >>stream, r'\lstset{firstnumber=last}'
-        print >>stream, r'\begin{lstlisting}[language=VentureScript,' + \
-            r'frame=single,backgroundcolor=\color{' + block.mode + 'block}]'
+        stream.write(r'\begin{lstlisting}[language=VentureScript,')
+        stream.write(r'frame=single,')
+        if not args.no_color:
+            stream.write(r'backgroundcolor=\color{' + block.mode + 'block}')
+        print >>stream, ']'
         for line in block.lines:
             stream.write(colorize_hash_tags(line))
         print >>stream, r'\end{lstlisting}'
 
-def embeddable_tex_file(result, basename):
+def embeddable_tex_file(result, basename, args):
     filename = basename + '.tex'
     with open(filename, 'w') as f:
-        print_latex(result, f)
+        print_latex(result, f, args)
 
-def standalone_tex_file(result, basename, width):
+def standalone_tex_file(result, basename, args):
     filename = basename + '.tex'
     shutil.copy(os.path.join(self_dir, 'tex_header.tex'), filename)
     with open(filename, 'a') as f:
-        if width is not None:
-            f.write(r'\setlength{\textwidth}{' + width + '}\n')
+        if args.width is not None:
+            f.write(r'\setlength{\textwidth}{' + args.width + '}\n')
         f.write(r'''\begin{document}
 \thispagestyle{plain}''')
-        print_latex(result, f)
+        print_latex(result, f, args)
         print >>f, r'\end{document}'
 
 def parser():
@@ -288,9 +291,11 @@ def parser():
         help='Produce standalone (not inputtable) tex output')
     p.add_argument('-w', '--width',
         help='Tex distance to use as text width, e.g. 0.5\textwidth for half')
+    p.add_argument('--no-color', action='store_true',
+        help='Suppress coloring code blocks by type.')
     return p
 
-def write_output(result, target, standalone, width):
+def write_output(result, target, args):
     path = os.path.dirname(target)
     os.chdir(path)
     filename = os.path.basename(target)
@@ -299,17 +304,17 @@ def write_output(result, target, standalone, width):
         print 'Only .png, .pdf, or .tex output formats supported, not', ext
         sys.exit(1)
     if ext in ['.png', '.pdf']:
-        standalone_tex_file(result, base, width)
+        standalone_tex_file(result, base, args)
         subprocess.call(['pdflatex', base + '.tex'])
         subprocess.call(['convert', '-density', '400', base + '.pdf',
             '-quality', '100', '-channel', 'RGBA', '-fill', 'white',
             '-opaque', 'none', base + '.png'])
         print 'Image written to', base + '.png'
-    elif standalone:
-        standalone_tex_file(result, base, width)
+    elif args.standalone:
+        standalone_tex_file(result, base, args)
         print 'Standalone tex file written to', target
     else:
-        embeddable_tex_file(result, base)
+        embeddable_tex_file(result, base, args)
         print 'Embeddable tex file written to', target
     print 'Rendered', result.num_selected_lines(), 'lines.'
     if result.num_selected_lines() == 0:
@@ -320,7 +325,7 @@ def main():
     args = p.parse_args()
     target = os.path.realpath(args.output)
     result = parse_to_blocks(args.file)
-    write_output(result, target, args.standalone, args.width)
+    write_output(result, target, args)
 
 if __name__ == '__main__':
     main()
