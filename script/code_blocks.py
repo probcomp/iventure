@@ -140,7 +140,7 @@ Outstanding TODOs
 Possible Additional Feaures / Use Cases
 ---------------------------------------
 
-- Highlighting and uploading without leaving IPyton.  Presumably this
+- Highlighting and uploading without leaving IPython.  Presumably this
   feature would requires the user to add some boilerplate to their
   IPython notebooks.  Should this be done based on this code base or
   some other way?  For example, by teaching Prism
