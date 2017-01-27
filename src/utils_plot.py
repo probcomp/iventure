@@ -241,16 +241,16 @@ def heatmap(df, ax=None, **kwargs):
     D = pivot.as_matrix()
     ordering = _clustermap_ordering(D)
     xticklabels = np.asarray(pivot.index)[ordering]
-    yticklabels = np.asarray(pivot.columns)[ordering[::-1]]
+    yticklabels = np.asarray(pivot.columns)[ordering]
     D = D[:,ordering]
-    D = D[ordering[::-1],:]
+    D = D[ordering,:]
     ax = sns.heatmap(
         D, xticklabels=xticklabels, yticklabels=yticklabels,
         linewidths=0.2, cmap='BuGn', ax=ax, vmin=vmin, vmax=vmax)
     # Heuristics for the size.
     figsize = kwargs.pop('figsize', None)
     if figsize is None:
-        half_root_col = (df.shape[0] ** .5) / 2.
+        half_root_col = (df.shape[0] ** .5) / 2.5
         figsize = (half_root_col, .8 * half_root_col)
     ax.get_figure().set_size_inches(figsize)
     return ax
