@@ -183,14 +183,18 @@ def histogram_numerical(df, ax=None, **kwargs):
 
 
 def clustermap(df, ax=None, **kwargs):
-    """Plot a clustermap using the last 3 columns of `df`.
+    """Plot a clustermap by pivoting the last 3 columns of `df`.
 
     The `df` is typically returned from an ESTIMATE PAIRWISE query in BQL.
     """
     if len(df.columns) < 3:
         raise ValueError('At least three columns requried: %s' % (df.columns,))
     # Pivot the matrix.
-    pivot = df.pivot(df.columns[-3], df.columns[-2], df.columns[-1])
+    pivot = df.pivot(
+        index=df.columns[-3],
+        columns=df.columns[-2],
+        values=df.columns[-1],
+    )
     pivot.fillna(0, inplace=True)
     # Check if all values are between 0 and 1 to set vmin and vmax.
     (vmin, vmax) = (None, None)
@@ -200,7 +204,9 @@ def clustermap(df, ax=None, **kwargs):
         pivot.as_matrix(),
         xticklabels=pivot.index.tolist(),
         yticklabels=pivot.columns.tolist(),
-        vmin=vmin, vmax=vmax)
+        vmin=vmin,
+        vmax=vmax
+    )
     # Heuristics for the size.
     figsize = kwargs.pop('figsize', None)
     if figsize is None:
