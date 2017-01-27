@@ -216,6 +216,46 @@ def clustermap(df, ax=None, **kwargs):
     return zmatrix
 
 
+def heatmap(df, ax=None, **kwargs):
+    """Plot a heatmap by pivoting the 3 columns of `df`.
+
+    The `df` is typically returned from an ESTIMATE PAIRWISE query in BQL.
+
+    Currently assumes the pivoted `df` will be square (Github #20).
+    """
+    if len(df.columns) < 3:
+        raise ValueError('At least three columns requried: %s' % (df.columns,))
+    import seaborn.apionly as sns
+    # Pivot the matrix.
+    pivot = df.pivot(
+        index=df.columns[-3],
+        columns=df.columns[-2],
+        values=df.columns[-1],
+    )
+    pivot.fillna(0, inplace=True)
+    # Check if all values are between 0 and 1 to set vmin and vmax.
+    (vmin, vmax) = (None, None)
+    if all(0 <= v <= 1 for v in df.iloc[:,-1]):
+        (vmin, vmax) = (0, 1)
+    # Apply the optimal ordering from a clustermap.
+    D = pivot.as_matrix()
+    ordering = _clustermap_ordering(D)
+    xticklabels = np.asarray(pivot.index)[ordering]
+    yticklabels = np.asarray(pivot.columns)[ordering[::-1]]
+    D = D[:,ordering]
+    D = D[ordering[::-1],:]
+    ax = sns.heatmap(
+        D, xticklabels=xticklabels, yticklabels=yticklabels,
+        linewidths=0.2, cmap='BuGn', ax=ax, vmin=vmin, vmax=vmax)
+    # Heuristics for the size.
+    figsize = kwargs.pop('figsize', None)
+    if figsize is None:
+        half_root_col = (df.shape[0] ** .5) / 2.
+        figsize = (half_root_col, .8 * half_root_col)
+    ax.get_figure().set_size_inches(figsize)
+    return ax
+
+
 def _clustermap(
         D, xticklabels=None, yticklabels=None, vmin=None, vmax=None, **kwargs):
     import seaborn as sns
@@ -233,35 +273,13 @@ def _clustermap(
 
 
 def _clustermap_ordering(D):
-    """Returns the ordering of variables in D according to the clustermap."""
+    """Returns the ordering of variables in D according to the clustermap.
+
+    Currently assumes D is square-symmetric (Github #20).
+    """
     zmatrix = _clustermap(D)
     plt.close(zmatrix.fig)
     return zmatrix.dendrogram_row.reordered_ind
-
-
-def _heatmap(
-        D, xordering=None, yordering=None, xticklabels=None,
-        yticklabels=None, vmin=None, vmax=None, ax=None):
-    import seaborn.apionly as sns
-    D = np.copy(D)
-    if ax is None:
-        _, ax = plt.subplots()
-    if xticklabels is None:
-        xticklabels = np.arange(D.shape[0])
-    if yticklabels is None:
-        yticklabels = np.arange(D.shape[1])
-    if xordering is not None:
-        xticklabels = xticklabels[xordering]
-        D = D[:,xordering]
-    if yordering is not None:
-        yticklabels = yticklabels[yordering]
-        D = D[yordering,:]
-    sns.heatmap(
-        D, yticklabels=yticklabels, xticklabels=xticklabels,
-        linewidths=0.2, cmap='BuGn', ax=ax, vmin=vmin, vmax=vmax)
-    ax.set_xticklabels(xticklabels, rotation=90)
-    ax.set_yticklabels(yticklabels, rotation=0)
-    return ax
 
 
 def _preprocess_dataframe(df):
