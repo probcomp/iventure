@@ -202,8 +202,8 @@ def clustermap(df, ax=None, **kwargs):
         (vmin, vmax) = (0, 1)
     zmatrix =  _clustermap(
         pivot.as_matrix(),
-        xticklabels=pivot.index.tolist(),
-        yticklabels=pivot.columns.tolist(),
+        xticklabels=pivot.columns.tolist(),
+        yticklabels=pivot.index.tolist(),
         vmin=vmin,
         vmax=vmax
     )
@@ -217,11 +217,9 @@ def clustermap(df, ax=None, **kwargs):
 
 
 def heatmap(df, ax=None, **kwargs):
-    """Plot a heatmap by pivoting the 3 columns of `df`.
+    """Plot a heatmap by pivoting the last 3 columns of `df`.
 
-    The `df` is typically returned from an ESTIMATE PAIRWISE query in BQL.
-
-    Currently assumes the pivoted `df` will be square (Github #20).
+    The `df` is a "tidy-dataframe" i.e. from an ESTIMATE PAIRWISE query in BQL.
     """
     if len(df.columns) < 3:
         raise ValueError('At least three columns requried: %s' % (df.columns,))
@@ -239,14 +237,21 @@ def heatmap(df, ax=None, **kwargs):
         (vmin, vmax) = (0, 1)
     # Apply the optimal ordering from a clustermap.
     D = pivot.as_matrix()
-    ordering = _clustermap_ordering(D)
-    xticklabels = np.asarray(pivot.index)[ordering]
-    yticklabels = np.asarray(pivot.columns)[ordering]
-    D = D[:,ordering]
-    D = D[ordering,:]
+    (xordering, yordering) = _clustermap_ordering(D)
+    xticklabels = np.asarray(pivot.columns)[xordering]
+    yticklabels = np.asarray(pivot.index)[yordering]
+    D = D[:,xordering]
+    D = D[yordering,:]
     ax = sns.heatmap(
-        D, xticklabels=xticklabels, yticklabels=yticklabels,
-        linewidths=0.2, cmap='BuGn', ax=ax, vmin=vmin, vmax=vmax)
+        D,
+        xticklabels=xticklabels,
+        yticklabels=yticklabels,
+        linewidths=0.2,
+        cmap='BuGn',
+        ax=ax,
+        vmin=vmin,
+        vmax=vmax
+    )
     # Heuristics for the size.
     figsize = kwargs.pop('figsize', None)
     if figsize is None:
@@ -265,21 +270,26 @@ def _clustermap(
     if yticklabels is None:
         yticklabels = range(D.shape[1])
     zmatrix = sns.clustermap(
-        D, yticklabels=yticklabels, xticklabels=xticklabels,
-        linewidths=0.2, vmin=vmin, vmax=vmax, cmap='BuGn')
+        D,
+        xticklabels=xticklabels,
+        yticklabels=yticklabels,
+        linewidths=0.2,
+        cmap='BuGn',
+        vmin=vmin,
+        vmax=vmax,
+    )
     plt.setp(zmatrix.ax_heatmap.get_yticklabels(), rotation=0)
     plt.setp(zmatrix.ax_heatmap.get_xticklabels(), rotation=90)
     return zmatrix
 
 
 def _clustermap_ordering(D):
-    """Returns the ordering of variables in D according to the clustermap.
-
-    Currently assumes D is square-symmetric (Github #20).
-    """
+    """Returns the ordering of variables in D according to the clustermap."""
     zmatrix = _clustermap(D)
     plt.close(zmatrix.fig)
-    return zmatrix.dendrogram_row.reordered_ind
+    xordering = zmatrix.dendrogram_col.reordered_ind
+    yordering = zmatrix.dendrogram_row.reordered_ind
+    return (xordering, yordering)
 
 
 def _preprocess_dataframe(df):
