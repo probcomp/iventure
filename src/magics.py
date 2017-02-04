@@ -34,6 +34,8 @@ from bayeslite import bql_quote_name
 
 from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_has_population
+from bayeslite.core import bayesdb_has_table
+from bayeslite.exception import BQLError
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
@@ -276,7 +278,11 @@ class VentureMagics(Magics):
                 bql_q.append(cmd)
         assert not cmd_q or not bql_q
         if cmd_q:
-            return self._cmd(cmd_q)
+            out = self._cmd(cmd_q)
+            if isinstance(out, unicode):
+                print out
+            else:
+                return out
         if bql_q:
             return self._bql(bql_q)
 
@@ -377,6 +383,94 @@ class VentureMagics(Magics):
         ''', {'population_id': population_id})
         return utils_bql.cursor_to_df(cursor)
 
+    def _cmd_guess_schema(self, args):
+        '''Returns an MML schema using the guessed stattypes for <table>. Using
+        the `--reasons` flag includes the heuristic reasons for the stattype
+        guesses.
+
+        Usage: .guess_schema <table> (--reasons)
+        '''
+        include_reasons = False
+
+        tokens = args.split()
+        table = tokens[0]
+        if len(tokens) > 1:
+            if tokens[1] == '--reasons':
+                include_reasons = True
+
+        if not bayesdb_has_table(self._bdb, table):
+            raise BQLError(self._bdb, 'No such table : %s' % table)
+        self._bdb.execute('GUESS SCHEMA FOR %s' % (table,))
+
+        df = utils_bql.query(self._bdb, 'SELECT * FROM '
+            'guessed_stattypes_%s' %(table,))
+        columns = df['column'].tolist()
+        stattypes = df['stattype'].tolist()
+        if include_reasons:
+            reasons = df['reason'].tolist()
+        else:
+            reasons = [''] * len(columns)
+
+        guesses = {}
+        for i, c in enumerate(columns):
+            guesses[c] = [stattypes[i], reasons[i]]
+
+        schema = ''
+        nominal = []
+        numerical = []
+        ignore = []
+
+        for col in guesses.keys():
+            if len(col) > 0:
+                guessed_type_reason = guesses[col]
+                stattype = guessed_type_reason[0].lower()
+                reason = guessed_type_reason[1]
+
+                if stattype == 'nominal':
+                    nominal.append([col, reason])
+                elif stattype == 'numerical':
+                    numerical.append([col, reason])
+                elif stattype == 'ignore':
+                    ignore.append([col, reason])
+                elif stattype == 'key':
+                    ignore.append([col, reason])
+            else:
+                raise BQLError(self._bdb, 'Empty column name(s) in table %s' %
+                    (table,))
+
+        stattype_columns_pairs = [
+            ['NOMINAL', nominal],
+            ['NUMERICAL', numerical],
+            ['IGNORE', ignore]
+        ]
+
+        for i, [stattype, columns] in enumerate(stattype_columns_pairs):
+            # Remove any empty-string variable names.
+            columns = filter(None, columns)
+            if len(columns) > 0:
+                if stattype == 'IGNORE':
+                    schema += 'IGNORE '
+                else:
+                    schema += 'MODEL \n '
+                for j in xrange(len(columns)):
+                    [col, reason] = columns[j]
+                    schema += '\t %s' % (col,)
+                    # Don't append a comma for last item in list.
+                    if j != len(columns) - 1:
+                        schema += ','
+                    # Add a space between the last variable and 'AS' for proper
+                    # parsing.
+                    else:
+                        schema += ' '
+                    if len(reason) > 0:
+                        schema += " # %s" % (reason,)
+                    schema += '\n'
+                if stattype != 'IGNORE':
+                    schema += 'AS \n\t%s' %(stattype,)
+                if i != len(stattype_columns_pairs) - 1:
+                    schema += ';\n'
+        return schema
+
     # Plotting.
 
     def _cmd_clustermap(self, query, sql=None, **kwargs):
@@ -413,6 +507,7 @@ class VentureMagics(Magics):
         'nullify': _cmd_nullify,
         'population': _cmd_population,
         'table': _cmd_table,
+        'guess_schema': _cmd_guess_schema,
     }
 
     _PLTS = {
