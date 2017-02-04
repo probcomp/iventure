@@ -57,6 +57,7 @@ from iventure.sessions import Session
 from iventure.sessions import TextLogger
 
 from iventure import utils_bql
+from iventure import utils_mml
 from iventure import utils_plot
 
 
@@ -377,6 +378,27 @@ class VentureMagics(Magics):
         ''', {'population_id': population_id})
         return utils_bql.cursor_to_df(cursor)
 
+    def _cmd_guess_schema(self, args):
+        '''Returns an MML schema using the guessed stattypes for <table>.
+
+        Using the `--reasons` flag includes the heuristic reasons for the
+        stattype guesses.
+
+        Usage: .guess_schema [--reasons] <table>
+        '''
+        tokens = args.split()
+        if len(tokens) == 1:
+            reasons = False
+            table = tokens[0]
+        elif len(tokens) == 2:
+            assert tokens[0] == '--reasons'
+            reasons = True
+            table = tokens[1]
+        schema = utils_mml.guess_schema(self._bdb, table, reasons)
+        # XXX Rather than return the schema, print it to the console. Returning
+        # the raw string will not cause the notebook to pretty-print it.
+        print schema
+
     # Plotting.
 
     def _cmd_clustermap(self, query, sql=None, **kwargs):
@@ -410,6 +432,7 @@ class VentureMagics(Magics):
         utils_plot.histogram_numerical(df, **kwargs)
 
     _CMDS = {
+        'guess_schema': _cmd_guess_schema,
         'nullify': _cmd_nullify,
         'population': _cmd_population,
         'table': _cmd_table,
