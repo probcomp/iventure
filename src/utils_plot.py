@@ -247,10 +247,11 @@ def heatmap(df, ax=None, **kwargs):
         xticklabels=xticklabels,
         yticklabels=yticklabels,
         linewidths=0.2,
+        cbar=kwargs.get('cbar', True),
         cmap='BuGn',
         ax=ax,
         vmin=vmin,
-        vmax=vmax
+        vmax=vmax,
     )
     # Heuristics for the size.
     figsize = kwargs.pop('figsize', None)
