@@ -61,10 +61,9 @@ def scatter(df, ax=None, **kwargs):
 
 
 def bar(df, ax=None):
-    """Histogram the NOMINAL data points in df.
+    """Vertical barplot of data in df.
 
-    If df has one column, then a regular histogram is produced. If df has two
-    columns, then the final column is used as the label for each data point.
+    First column is (nominal) names, second column is (numerical) values.
     """
     if df.shape[1] != 2:
         raise ValueError('Two columns required: %s.' % (df.columns,))
@@ -79,7 +78,7 @@ def bar(df, ax=None):
     if len(set(xlabels)) != len(xlabels):
         raise ValueError('Unique nominal values required: %s.' % (xlabels,))
 
-    ax.bar([x - .5 for x in xrange(df.shape[0])], df.ix[:, 1].values, alpha=0.7)
+    ax.bar([x-.5 for x in xrange(df.shape[0])], df.ix[:,1].values, alpha=0.7)
 
     ax.set_xticks(range(df.shape[0]))
     ax.set_xticklabels(xlabels, rotation=90)
