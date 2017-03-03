@@ -409,7 +409,7 @@ class VentureMagics(Magics):
     def _cmd_heatmap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        utils_plot.heatmap(df)
+        utils_plot.heatmap(df, **kwargs)
 
     def _cmd_bar(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
