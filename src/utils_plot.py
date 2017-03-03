@@ -60,7 +60,7 @@ def scatter(df, ax=None, **kwargs):
     return fig
 
 
-def bar(df, ax=None):
+def bar(df, ax=None, **kwargs):
     """Vertical barplot of data in df.
 
     First column is (nominal) names, second column is (numerical) values.
@@ -91,7 +91,7 @@ def bar(df, ax=None):
     return fig
 
 
-def barh(df, ax=None):
+def barh(df, ax=None, **kwargs):
     """Horizontal barplot of data in df.
 
     First column is (nominal) names, second column is (numerical) values.
