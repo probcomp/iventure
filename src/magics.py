@@ -416,6 +416,11 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.bar(df)
 
+    def _cmd_barh(self, query, sql=None, **kwargs):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.barh(df)
+
     def _cmd_scatter(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
@@ -440,6 +445,7 @@ class VentureMagics(Magics):
 
     _PLTS = {
         'bar': _cmd_bar,
+        'barh': _cmd_barh,
         'clustermap': _cmd_clustermap,
         'heatmap' : _cmd_heatmap,
         'histogram_nominal': _cmd_histogram_nominal,

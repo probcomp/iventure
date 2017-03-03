@@ -91,6 +91,39 @@ def bar(df, ax=None):
 
     return fig
 
+
+def barh(df, ax=None):
+    """Horizontal barplot of data in df.
+
+    First column is (nominal) names, second column is (numerical) values.
+    """
+    if df.shape[1] != 2:
+        raise ValueError('Two columns required: %s.' % (df.columns,))
+    else:
+        df = _preprocess_dataframe(df)
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = ax.get_figure()
+
+    ylabels = df.ix[:,0].values
+    if len(set(ylabels)) != len(ylabels):
+        raise ValueError('Unique nominal values required: %s.' % (ylabels,))
+
+    ax.barh([x-.5 for x in xrange(df.shape[0])], df.ix[:,1].values, alpha=0.7)
+
+    ax.set_yticks(range(df.shape[0]))
+    ax.set_yticklabels(ylabels)
+    ax.set_ylim([-1, df.shape[0]-.5])
+    ax.set_xlim([None, 1.1 * df.ix[:,1].max()])
+
+    ax.set_ylabel(df.columns[0])
+    ax.set_xlabel(df.columns[1])
+    ax.grid()
+
+    return fig
+
+
 def histogram_nominal(df, ax=None, **kwargs):
     """Histogram the NOMINAL data points in df.
 
