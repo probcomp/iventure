@@ -34,6 +34,7 @@ from bayeslite import bql_quote_name
 
 from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_has_population
+from bayeslite.core import bayesdb_population_table
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
@@ -436,6 +437,23 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.histogram_numerical(df, **kwargs)
 
+    def _cmd_interactive_depprob(self, query, **kwargs):
+        population_name = query.strip()
+        population_id = bayesdb_get_population(self._bdb, population_name)
+        table_name = bayesdb_population_table(self._bdb, population_id)
+        table_name = table_name.encode('ascii','strict')
+        qt = bql_quote_name(table_name)
+        raw_c = self._bdb.execute('SELECT * FROM %s;' % (qt,))
+        raw_df = utils_bql.cursor_to_df(raw_c)
+        qt = bql_quote_name(population_name)
+        depprob_c = self._bdb.execute(
+            '''SELECT name0, name1, value FROM
+                (ESTIMATE DEPENDENCE PROBABILITY
+                    FROM PAIRWISE COLUMNS OF %s);''' % (qt,))
+        depprob_df = utils_bql.cursor_to_df(depprob_c)
+        schema = utils_bql.get_schema_as_list(self._bdb, population_id)
+        return utils_plot.interactive_depprob(raw_df, depprob_df, schema)
+
     _CMDS = {
         'guess_schema': _cmd_guess_schema,
         'nullify': _cmd_nullify,
@@ -450,6 +468,7 @@ class VentureMagics(Magics):
         'heatmap' : _cmd_heatmap,
         'histogram_nominal': _cmd_histogram_nominal,
         'histogram_numerical': _cmd_histogram_numerical,
+        'interactive_depprob' : _cmd_interactive_depprob,
         'scatter': _cmd_scatter,
     }
 
