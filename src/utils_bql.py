@@ -17,6 +17,10 @@
 import pandas as pd
 
 from bayeslite import bql_quote_name
+from bayeslite.core import bayesdb_population_generators
+from bayeslite.core import bayesdb_variable_names
+from bayeslite.core import bayesdb_variable_number
+from bayeslite.core import bayesdb_variable_stattype
 from bayeslite.util import cursor_value
 
 
@@ -76,3 +80,31 @@ def query(bdb, bql, bindings=None, logger=None):
         logger.info("BQL [%s] %s", bql, bindings)
     cursor = bdb.execute(bql, bindings)
     return cursor_to_df(cursor)
+
+
+def get_schema_as_list(bdb, population_id):
+    generator_ids = bayesdb_population_generators(bdb, population_id)
+    if len(generator_ids) != 1:
+        raise ValueError('More than one generator for population.')
+    generator_id = generator_ids[0]
+    variable_names = bayesdb_variable_names(bdb, population_id,
+        generator_id)
+    schema = []
+    for variable_name in variable_names:
+        colno =  bayesdb_variable_number(bdb, population_id,
+            generator_id, variable_name)
+        stattype = bayesdb_variable_stattype(bdb, population_id,
+            colno)
+        schema_entry = { 'name' : variable_name, 'stattype' : stattype }
+        if stattype == 'categorical':
+            res = bdb.execute('''
+                SELECT value FROM bayesdb_cgpm_category
+                WHERE generator_id=%d AND colno=%d;
+            ''' % (generator_id, colno))
+            unique_values = []
+            for item in res.fetchall():
+                assert len(item) == 1
+                unique_values.append(item[0])
+            schema_entry['unique_values'] = unique_values
+        schema.append(schema_entry)
+    return schema

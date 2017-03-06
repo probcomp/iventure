@@ -258,8 +258,7 @@ def _heatmap(
     return ax
 
 def interactive_depprob(raw_df, depprob_df, schema, **kwargs):
-    """Create an interactive dependence probability visualization.
-    """
+    """Create an interactive dependence probability visualization."""
     import vizgpm
     return vizgpm.depprob(raw_df, depprob_df, schema)
 
