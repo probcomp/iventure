@@ -33,6 +33,11 @@ from bayeslite import bayesdb_register_metamodel
 from bayeslite import bql_quote_name
 
 from bayeslite.core import bayesdb_get_population
+from bayeslite.core import bayesdb_population_generators
+from bayeslite.core import bayesdb_population_table
+from bayeslite.core import bayesdb_variable_names
+from bayeslite.core import bayesdb_variable_number
+from bayeslite.core import bayesdb_variable_stattype
 from bayeslite.core import bayesdb_has_population
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
@@ -404,6 +409,45 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.histogram_numerical(df, **kwargs)
 
+    def _get_schema_as_list(self, population_name):
+        population_id = bayesdb_get_population(self._bdb, population_name)
+        generator_ids = bayesdb_population_generators(self._bdb, population_id)
+        if len(generator_ids) != 1:
+            raise ValueError("More than one generator for population.")
+        generator_id = generator_ids[0]
+        variable_names = bayesdb_variable_names(self._bdb, population_id, generator_id)
+        schema = []
+        for variable_name in variable_names:
+            colno =  bayesdb_variable_number(self._bdb, population_id, generator_id, variable_name)
+            stattype = bayesdb_variable_stattype(self._bdb, population_id, colno)
+            schema_entry = { 'name' : variable_name, 'stattype' : stattype }
+            if stattype == 'categorical':
+                res = self._bdb.execute('''
+                    SELECT value FROM bayesdb_cgpm_category WHERE generator_id=%d AND colno=%d;
+                ''' % (generator_id, colno))
+                unique_values = []
+                for item in res.fetchall():
+                    assert len(item) == 1
+                    unique_values.append(item[0])
+                schema_entry['unique_values'] = unique_values
+            schema.append(schema_entry)
+        return schema
+
+    def _cmd_interactive_depprob(self, query, **kwargs):
+        population_name = query.strip()
+        population_id = bayesdb_get_population(self._bdb, population_name)
+        table_name = bayesdb_population_table(self._bdb, population_id)
+        table_name = table_name.encode('ascii','strict')
+        raw_c = self._bdb.execute(
+            '''SELECT * FROM %s;''' % (table_name,)) # TODO injection
+        raw_df = utils_bql.cursor_to_df(raw_c)
+        depprob_c = self._bdb.execute(
+            '''SELECT name0, name1, value FROM
+                (ESTIMATE DEPENDENCE PROBABILITY FROM PAIRWISE COLUMNS OF %s);''' % (population_name,)) # TODO injection
+        depprob_df = utils_bql.cursor_to_df(depprob_c)
+        schema = self._get_schema_as_list(population_name)
+        return utils_plot.interactive_depprob(raw_df, depprob_df, schema)
+
     _CMDS = {
         'nullify': _cmd_nullify,
         'population': _cmd_population,
@@ -416,6 +460,7 @@ class VentureMagics(Magics):
         'histogram_nominal': _cmd_histogram_nominal,
         'histogram_numerical': _cmd_histogram_numerical,
         'scatter': _cmd_scatter,
+        'interactive_depprob' : _cmd_interactive_depprob,
     }
 
 

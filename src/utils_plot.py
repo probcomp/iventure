@@ -257,6 +257,11 @@ def _heatmap(
     ax.set_yticklabels(yticklabels, rotation=0)
     return ax
 
+def interactive_depprob(raw_df, depprob_df, schema, **kwargs):
+    """Create an interactive dependence probability visualization.
+    """
+    import vizgpm
+    return vizgpm.depprob(depprob_df)
 
 def _preprocess_dataframe(df):
     """Drops null values from df, and returns an error if no rows remain."""
