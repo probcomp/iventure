@@ -314,6 +314,11 @@ class VentureMagics(Magics):
         cursor = self._bdb.execute(out.getvalue())
         return utils_bql.cursor_to_df(cursor)
 
+    @line_magic
+    def multiprocess(self, line, cell=None):
+        switch = False if line == 'off' else True
+        self._bdb.metamodels['cgpm'].set_multiprocess(switch)
+
     def _cmd(self, cmd, sql=None):
         assert cmd[0] == '.'
         space = cmd.find(' ')
