@@ -149,6 +149,9 @@ class VentureMagics(Magics):
     def get_ripl(self, line):
         return self._ripl
 
+    @line_magic
+    def get_bdb(self, line):
+        return self._bdb
 
     @logged_cell
     @line_magic
