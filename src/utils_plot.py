@@ -329,6 +329,21 @@ def interactive_depprob(raw_df, depprob_df, schema, **kwargs):
     import vizgpm
     return vizgpm.depprob(raw_df, depprob_df, schema)
 
+
+def tidy_pairwise(array, index, columns, xlabel=None, ylabel=None, vlabel=None):
+    """Convert a pairwise matrix into a tidy data frame."""
+    assert array.shape == (len(index), len(columns))
+    xlabel = xlabel or 'var0'
+    ylabel = ylabel or 'var1'
+    vlabel = vlabel or 'value'
+    data = [
+        (ind, col, array[i,j])
+        for i, ind in enumerate(index)
+        for j, col in enumerate(columns)
+    ]
+    return pd.DataFrame(data, columns=[xlabel, ylabel, vlabel])
+
+
 def _preprocess_dataframe(df):
     """Drops null values from df, and returns an error if no rows remain."""
     df = df.dropna()
