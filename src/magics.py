@@ -420,6 +420,11 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.heatmap(df, **kwargs)
 
+    def _cmd_density(self, query, sql=None, **kwargs):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.density(df, **kwargs)
+
     def _cmd_bar(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
@@ -473,6 +478,7 @@ class VentureMagics(Magics):
         'bar': _cmd_bar,
         'barh': _cmd_barh,
         'clustermap': _cmd_clustermap,
+        'density': _cmd_density,
         'heatmap' : _cmd_heatmap,
         'histogram_nominal': _cmd_histogram_nominal,
         'histogram_numerical': _cmd_histogram_numerical,
