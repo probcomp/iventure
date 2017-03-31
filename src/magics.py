@@ -23,10 +23,6 @@ import traceback
 
 from collections import OrderedDict
 
-import venture.lite.value as vv
-import venture.shortcuts as vs
-
-from venture.lite.types import Dict
 
 from bayeslite import bayesdb_open
 from bayeslite import bayesdb_register_metamodel
@@ -45,8 +41,6 @@ from cgpm.knn.mvknn import MultivariateKnn
 from cgpm.regressions.forest import RandomForest
 from cgpm.regressions.linreg import LinearRegression
 from cgpm.regressions.ols import OrdinaryLeastSquares
-from cgpm.venturescript.vscgpm import VsCGpm
-from cgpm.venturescript.vsinline import InlineVsCGpm
 
 from IPython.core.magic import Magics
 from IPython.core.magic import line_cell_magic
@@ -62,13 +56,33 @@ from iventure import utils_mml
 from iventure import utils_plot
 
 
+def VsCGpm(outputs, inputs, rng, *args, **kwds):
+    try:
+        from cgpm.venturescript.vscgpm import VsCGpm
+    except ImportError:
+        raise NotImplementedError(
+            'This notebook does not support VentureScript.')
+    return VsCGpm(outputs, inputs, rng, *args, **kwds)
+
+def InlineVsCGpm(outputs, inputs, rng, *args, **kwds):
+    try:
+        from cgpm.venturescript.vsinline import InlineVsCGpm
+    except ImportError:
+        raise NotImplementedError(
+            'This notebook does not support VentureScript.')
+    return InlineVsCGpm(outputs, inputs, rng, *args, **kwds)
+
+
 def convert_from_stack_dict(stack_dict):
+    import venture.lite.value as vv
     venture_value = vv.VentureValue.fromStackDict(stack_dict)
     return convert_from_venture_value(venture_value)
 
 
 def convert_from_venture_value(venture_value):
     """Convert a stack dict to python object."""
+    import venture.lite.value as vv
+    from venture.lite.types import Dict
     if isinstance(venture_value, vv.VentureDict):
         shallow = Dict().asPythonNoneable(venture_value)
         deep = OrderedDict()
@@ -116,13 +130,26 @@ class VentureMagics(Magics):
         super(VentureMagics, self).__init__(shell)
         self._bdb = None
         self._path = None
-        self._ripl = vs.make_lite_ripl()
+        self.__ripl = None
+        self._riplseed = None
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
         username = getpass.getuser()
         # TODO add SQLLogger
         self.session = Session(
             username, [TextLogger()], '.iventure_logs')
+
+    @property
+    def _ripl(self):
+        if self.__ripl is None:
+            try:
+                import venture.shortcuts as vs
+            except ImportError:
+                raise NotImplementedError(
+                    'This notebook does not support VentureScript.')
+            self.__ripl = vs.make_lite_ripl(seed=self._riplseed)
+        assert self.__ripl is not None
+        return self.__ripl
 
     def _retrieve_raw(self, line, cell=None):
         return '\n'.join([
@@ -161,13 +188,10 @@ class VentureMagics(Magics):
         parser.add_argument(
             '--plugins', type=str, nargs = '+',  help='list of plugins')
         args = parser.parse_args(line.split())
-        if self._ripl is not None:
-            self._ripl = None
+        self.__ripl = None
         if args.seed is not None:
-            self._ripl = vs.make_lite_ripl(seed=args.seed)
+            self._riplseed = args.seed
             print 'Set seed of a new VentureScript RIPL to %.2f.' % (args.seed,)
-        else:
-            self._ripl = vs.make_lite_ripl()
         if args.plugins is not None:
             for plugin in args.plugins:
                 print 'Loading plugin: %s' % (plugin,)
