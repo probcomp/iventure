@@ -22,6 +22,56 @@ import numpy as np
 import pandas as pd
 
 
+def density(df, ax=None, **kwargs):
+    """Density plot of the data in df.
+
+    If df has one column, then a regular kdeplot is produced. If df has two
+    columns, then the final column is used as the label for each data point.
+    """
+    if df.shape[1] not in [1, 2]:
+        raise ValueError('Only one or two columns allowed: %s' % df.columns)
+    else:
+        df = _preprocess_dataframe(df)
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = ax.get_figure()
+    labels, colors = _retrieve_labels_colors(
+        df.iloc[:,1] if df.shape[1] == 2 else [0] * len(df))
+    if 'colors' in kwargs:
+        assert len(kwargs['colors']) == len(labels)
+        colors = kwargs['colors']
+    if 'shade' in kwargs:
+        assert kwargs['shade'] in ['True', 'False']
+        if kwargs['shade'] == 'False':
+            shade = False
+    else:
+        shade = True
+    if 'rug' in kwargs:
+        assert kwargs['rug'] in ['True', 'False']
+        if kwargs['rug'] == 'False':
+            rug = False
+    else:
+        rug = True
+    import seaborn.apionly as sns
+    sns.set_style('white')
+    for label, color in zip(labels, colors):
+        points = _filter_points(df, labels, label)
+        sns.kdeplot(
+            points.iloc[:,0], color=color, shade=shade, ax=ax, legend=False)
+        if rug:
+            sns.rugplot(points.iloc[:,0], color=color, ax=ax)
+    ax.set_xlabel(df.columns[0], fontweight='bold')
+    ax.grid()
+
+    # Adjust limits.
+    if kwargs:
+        _handle_kwargs(ax, **kwargs)
+
+    ax.get_figure().set_size_inches(4, 3.5)
+
+    return fig
+
 def scatter(df, ax=None, **kwargs):
     """Scatter the NUMERICAL data points in df.
 
@@ -375,6 +425,8 @@ def _handle_kwargs(ax, **kwargs):
         ax.set_xscale('log', basex=int(kwargs['xlog']))
     if 'ylog' in kwargs:
         ax.set_yscale('log', basey=int(kwargs['ylog']))
+    if 'ylabel' in kwargs:
+        ax.set_ylabel(kwargs['ylabel'], fontweight='bold')
 
 
 def _filter_points(df, labels, label):
