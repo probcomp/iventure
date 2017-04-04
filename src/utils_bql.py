@@ -17,6 +17,7 @@
 import pandas as pd
 
 from bayeslite import bql_quote_name
+from bayeslite.core import bayesdb_has_table
 from bayeslite.core import bayesdb_population_generators
 from bayeslite.core import bayesdb_variable_names
 from bayeslite.core import bayesdb_variable_number
@@ -26,6 +27,8 @@ from bayeslite.util import cursor_value
 
 def nullify(bdb, table, value):
     """Replace specified values in a SQL table with ``NULL``."""
+    if not bayesdb_has_table(bdb, table):
+        raise ValueError('No such table: %s' % (table,))
     qtable = bql_quote_name(table)
     cursor = bdb.sql_execute('pragma table_info(%s)' % (qtable,))
     columns = [row[1] for row in cursor]

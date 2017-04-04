@@ -105,6 +105,9 @@ def barh(df, ax=None, **kwargs):
     else:
         fig = ax.get_figure()
 
+    # XXX Reverse the rows of the heatmap!
+    df = df.reindex(index=df.index[::-1])
+
     ylabels = df.ix[:,0].values
     if len(set(ylabels)) != len(ylabels):
         raise ValueError('Unique nominal values required: %s.' % (ylabels,))
@@ -116,8 +119,8 @@ def barh(df, ax=None, **kwargs):
     ax.set_ylim([-1, df.shape[0]-.5])
     ax.set_xlim([None, 1.1 * df.ix[:,1].max()])
 
-    ax.set_ylabel(df.columns[0])
-    ax.set_xlabel(df.columns[1])
+    ax.set_ylabel(df.columns[0], fontweight='bold')
+    ax.set_xlabel(df.columns[1], fontweight='bold')
     ax.grid()
 
     return fig
@@ -269,7 +272,12 @@ def heatmap(df, ax=None, **kwargs):
         (vmin, vmax) = (0, 1)
     # Apply the optimal ordering from a clustermap.
     D = pivot.as_matrix()
-    (xordering, yordering) = _clustermap_ordering(D)
+    if 'xordering' in kwargs and 'yordering' in kwargs:
+        xordering = kwargs['xordering']
+        yordering = kwargs['yordering']
+    else:
+        (xordering, yordering) = _clustermap_ordering(D)
+    assert D.shape == (len(yordering), len(xordering))
     xticklabels = np.asarray(pivot.columns)[xordering]
     yticklabels = np.asarray(pivot.index)[yordering]
     D = D[:,xordering]
@@ -280,7 +288,7 @@ def heatmap(df, ax=None, **kwargs):
         yticklabels=yticklabels,
         linewidths=0.2,
         cbar=kwargs.get('cbar', True),
-        cmap='BuGn',
+        cmap=kwargs.get('cmap', 'BuGn'),
         ax=ax,
         vmin=vmin,
         vmax=vmax,
