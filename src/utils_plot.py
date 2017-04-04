@@ -17,7 +17,6 @@
 import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 import numpy as np
 import pandas as pd
@@ -54,18 +53,22 @@ def density(df, ax=None, **kwargs):
             rug = False
     else:
         rug = True
+    import seaborn.apionly as sns
+    sns.set_style('white')
     for label, color in zip(labels, colors):
         points = _filter_points(df, labels, label)
         sns.kdeplot(
-            points.iloc[:,0], color=color, shade=shade, ax=ax, legend=True)
+            points.iloc[:,0], color=color, shade=shade, ax=ax, legend=False)
         if rug:
             sns.rugplot(points.iloc[:,0], color=color, ax=ax)
-    ax.grid(True)
     ax.set_xlabel(df.columns[0], fontweight='bold')
+    ax.grid()
 
     # Adjust limits.
     if kwargs:
         _handle_kwargs(ax, **kwargs)
+
+    ax.get_figure().set_size_inches(4, 3.5)
 
     return fig
 
