@@ -17,6 +17,7 @@
 import StringIO
 import argparse
 import getpass
+import json
 import re
 import sys
 import traceback
@@ -478,18 +479,21 @@ class VentureMagics(Magics):
         population_name = query.strip()
         population_id = bayesdb_get_population(self._bdb, population_name)
         table_name = bayesdb_population_table(self._bdb, population_id)
-        table_name = table_name.encode('ascii','strict')
-        qt = bql_quote_name(table_name)
-        raw_c = self._bdb.execute('SELECT * FROM %s;' % (qt,))
-        raw_df = utils_bql.cursor_to_df(raw_c)
-        qt = bql_quote_name(population_name)
-        depprob_c = self._bdb.execute(
-            '''SELECT name0, name1, value FROM
-                (ESTIMATE DEPENDENCE PROBABILITY
-                    FROM PAIRWISE COLUMNS OF %s);''' % (qt,))
-        depprob_df = utils_bql.cursor_to_df(depprob_c)
+        # Retrieve data from the table.
+        qt = bql_quote_name(table_name.encode('ascii', 'strict'))
+        df_data = utils_bql.query(self._bdb, 'SELECT * FROM %s' % (qt,))
+        # Retrieve pairwise dependence probabilities.
+        qp = bql_quote_name(population_name)
+        df_dep = utils_bql.query(self._bdb, '''
+            SELECT name0, name1, value FROM (
+                ESTIMATE DEPENDENCE PROBABILITY
+                FROM PAIRWISE VARIABLES OF %s
+            );''' % (qp,))
+        # Retrieve the schema.
         schema = utils_bql.get_schema_as_list(self._bdb, population_id)
-        return utils_plot.interactive_depprob(raw_df, depprob_df, schema)
+        schema_str = json.dumps(schema)
+        # Go!
+        return utils_plot.interactive_depprob(df_dep, df_data, schema_str)
 
     _CMDS = {
         'guess_schema': _cmd_guess_schema,

@@ -21,6 +21,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from iventure import jsviz
+
 
 def density(df, ax=None, **kwargs):
     """Density plot of the data in df.
@@ -374,10 +376,10 @@ def _clustermap_ordering(D):
     yordering = zmatrix.dendrogram_row.reordered_ind
     return (xordering, yordering)
 
-def interactive_depprob(raw_df, depprob_df, schema, **kwargs):
+
+def interactive_depprob(df_dep, df_data, schema, **kwargs):
     """Create an interactive dependence probability visualization."""
-    import vizgpm
-    return vizgpm.depprob(raw_df, depprob_df, schema)
+    return jsviz.depprob(df_dep, df_data, schema)
 
 
 def tidy_pairwise(array, index, columns, xlabel=None, ylabel=None, vlabel=None):

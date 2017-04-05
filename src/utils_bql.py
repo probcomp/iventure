@@ -84,34 +84,29 @@ def query(bdb, bql, bindings=None, logger=None):
 
 def get_schema_as_list(bdb, population_id):
     generator_ids = bayesdb_population_generators(bdb, population_id)
-    if len(generator_ids) != 1:
-        raise ValueError('More than one generator for population.')
+    if len(generator_ids) == 0:
+        raise ValueError('At least 1 metamodel required in population.')
     generator_id = generator_ids[0]
-    variable_names = bayesdb_variable_names(bdb, population_id,
-        generator_id)
+    variable_names = bayesdb_variable_names(bdb, population_id, None)
     schema = []
     for variable_name in variable_names:
-        colno =  bayesdb_variable_number(bdb, population_id,
-            generator_id, variable_name)
-        stattype = bayesdb_variable_stattype(bdb, population_id,
-            colno)
+        colno =  bayesdb_variable_number(
+            bdb, population_id, None, variable_name)
+        stattype = bayesdb_variable_stattype(bdb, population_id, colno)
         stattype_lookup = {
-            'numerical':'realAdditive',
-            'nominal':'categorical'
+            'numerical'     : 'realAdditive',
+            'nominal'       : 'categorical',
+            'categorical'   : 'categorical',
         }
         schema_entry = {
             'name' : variable_name,
             'stat_type' : stattype_lookup[stattype]
         }
         if stattype == 'nominal':
-            res = bdb.execute('''
+            cursor = bdb.execute('''
                 SELECT value FROM bayesdb_cgpm_category
-                WHERE generator_id=%d AND colno=%d;
-            ''' % (generator_id, colno))
-            unique_values = []
-            for item in res.fetchall():
-                assert len(item) == 1
-                unique_values.append(item[0])
-            schema_entry['unique_values'] = unique_values
+                WHERE generator_id = ? AND colno = ?;
+            ''', (generator_id, colno))
+            schema_entry['unique_values'] = [row[0] for row in cursor]
         schema.append(schema_entry)
     return schema
