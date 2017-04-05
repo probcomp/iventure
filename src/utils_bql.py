@@ -95,8 +95,15 @@ def get_schema_as_list(bdb, population_id):
             generator_id, variable_name)
         stattype = bayesdb_variable_stattype(bdb, population_id,
             colno)
-        schema_entry = { 'name' : variable_name, 'stattype' : stattype }
-        if stattype == 'categorical':
+        stattype_lookup = {
+            'numerical':'realAdditive',
+            'nominal':'categorical'
+        }
+        schema_entry = {
+            'name' : variable_name,
+            'stat_type' : stattype_lookup[stattype]
+        }
+        if stattype == 'nominal':
             res = bdb.execute('''
                 SELECT value FROM bayesdb_cgpm_category
                 WHERE generator_id=%d AND colno=%d;
