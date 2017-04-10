@@ -37,6 +37,7 @@ from bayeslite.parse import bql_string_complete_p
 
 from cgpm.factor.factor import FactorAnalysis
 from cgpm.kde.mvkde import MultivariateKde
+from cgpm.k_means.k_means import KMeans
 from cgpm.knn.mvknn import MultivariateKnn
 from cgpm.regressions.forest import RandomForest
 from cgpm.regressions.linreg import LinearRegression
@@ -255,6 +256,7 @@ class VentureMagics(Magics):
             'ordinary_least_squares': OrdinaryLeastSquares,
             'random_forest': RandomForest,
             'venturescript': _VsCGpm,
+            'k_means': KMeans,
         }
         mm = CGPM_Metamodel(cgpm_registry, multiprocess=args.j)
         bayesdb_register_metamodel(self._bdb, mm)
