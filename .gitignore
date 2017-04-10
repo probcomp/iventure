@@ -1,2 +1,12 @@
 /build/
 /src/version.py
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# vim swap files.
+*.swp
+
+# Linux file artifacts.
+.fuse_hidden*
