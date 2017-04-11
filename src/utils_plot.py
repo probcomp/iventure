@@ -61,7 +61,8 @@ def density(df, ax=None, **kwargs):
             points.iloc[:,0], color=color, shade=shade, ax=ax, legend=False)
         if rug:
             sns.rugplot(points.iloc[:,0], color=color, ax=ax)
-    ax.set_xlabel(df.columns[0], fontweight='bold')
+    ax.set_xlabel('MI', fontweight='bold')
+    ax.set_ylabel('Density', fontweight='bold')
     ax.grid()
 
     # Adjust limits.
