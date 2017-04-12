@@ -132,9 +132,14 @@ setup(
     ],
     packages=[
         'iventure',
+        'iventure.jsviz',
     ],
     package_dir={
         'iventure': 'src',
+        'iventure.jsviz': 'src/jsviz',
+    },
+    package_data={
+        'iventure.jsviz': '*.js'
     },
     cmdclass={
         'build_py': local_build_py,

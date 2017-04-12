@@ -55,6 +55,7 @@ from iventure.sessions import TextLogger
 from iventure import utils_bql
 from iventure import utils_mml
 from iventure import utils_plot
+from iventure.jsviz import jsviz
 
 
 def VsCGpm(outputs, inputs, rng, *args, **kwds):
@@ -347,6 +348,10 @@ class VentureMagics(Magics):
         switch = False if line == 'off' else True
         self._bdb.metamodels['cgpm'].set_multiprocess(switch)
 
+    @line_magic
+    def vizgpm(self, line, cell=None):
+        return jsviz.enable_inline()
+
     def _cmd(self, cmd, sql=None):
         assert cmd[0] == '.'
         space = cmd.find(' ')
@@ -475,6 +480,11 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.histogram_numerical(df, **kwargs)
 
+    def _cmd_interactive_heatmap(self, query, sql=None, **kwargs):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        return jsviz.interactive_depprob(df)
+
     def _cmd_interactive_depprob(self, query, **kwargs):
         population_name = query.strip()
         population_id = bayesdb_get_population(self._bdb, population_name)
@@ -493,7 +503,7 @@ class VentureMagics(Magics):
         schema = utils_bql.get_schema_as_list(self._bdb, population_id)
         schema_str = json.dumps(schema)
         # Go!
-        return utils_plot.interactive_depprob(df_dep, df_data, schema_str)
+        return jsviz.interactive_depprob(df_dep, df_data, schema_str)
 
     _CMDS = {
         'guess_schema': _cmd_guess_schema,
@@ -511,6 +521,7 @@ class VentureMagics(Magics):
         'histogram_nominal': _cmd_histogram_nominal,
         'histogram_numerical': _cmd_histogram_numerical,
         'interactive_depprob' : _cmd_interactive_depprob,
+        'interactive_heatmap' : _cmd_interactive_heatmap,
         'scatter': _cmd_scatter,
     }
 

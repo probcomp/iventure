@@ -377,11 +377,6 @@ def _clustermap_ordering(D):
     return (xordering, yordering)
 
 
-def interactive_depprob(df_dep, df_data, schema, **kwargs):
-    """Create an interactive dependence probability visualization."""
-    return jsviz.depprob(df_dep, df_data, schema)
-
-
 def tidy_pairwise(array, index, columns, xlabel=None, ylabel=None, vlabel=None):
     """Convert a pairwise matrix into a tidy data frame."""
     assert array.shape == (len(index), len(columns))
