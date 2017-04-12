@@ -94,3 +94,56 @@ def test_barh_smoke(axname, dfname):
             uplt.barh(df, ax=ax)
     else:
         uplt.barh(df, ax=ax)
+
+
+HISTNOM_DF = {
+    'DF1': pd.DataFrame(['foo', 'foo', 'bar', 'foo', 'quux']),
+    'DF2': pd.DataFrame([('f',0), ('f',1), ('b',2), ('f',3), ('q',4)]),
+}
+
+HISTNOM_NORMED = {
+    'None': None,
+    'True': True,
+    'False': False,
+}
+
+
+@pytest.mark.parametrize('axname,dfname,normedname',
+    [(axname, dfname, normedname)
+        for axname in sorted(AX.keys())
+        for dfname in sorted(HISTNOM_DF.keys())
+        for normedname in sorted(HISTNOM_NORMED.keys())])
+def test_histogram_nominal_smoke(axname, dfname, normedname):
+    ax = AX[axname]()
+    df = HISTNOM_DF[dfname]
+    normed = HISTNOM_NORMED[normedname]
+    kwargs = {} if normed is None else {'normed': normed}
+    uplt.histogram_nominal(df, ax=ax, **kwargs)
+
+
+HISTNUM_DF = {
+    'DF1': pd.DataFrame([41.2, 87, -3, -3, 41.2]),
+    'DF2': pd.DataFrame([(41.2,'x'),(87,'y'),(-3,'z'),(-3,'w'),(41.2,'v')]),
+}
+
+HISTNUM_NORMED = {
+    'None': None,
+    'True': True,
+    'False': False,
+}
+
+
+@pytest.mark.parametrize('axname,dfname,normedname',
+    [(axname, dfname, normedname)
+        for axname in sorted(AX.keys())
+        for dfname in sorted(HISTNUM_DF.keys())
+        for normedname in sorted(HISTNUM_NORMED.keys())])
+def test_histogram_numerical_smoke(axname, dfname, normedname):
+    if dfname == 'DF1':
+        # XXX pytest.xfail() doesn't fail if the test passes.  Grr.
+        pytest.xfail('automatic labelling is broken')
+    ax = AX[axname]()
+    df = HISTNUM_DF[dfname]
+    normed = HISTNUM_NORMED[normedname]
+    kwargs = {} if normed is None else {'normed': normed}
+    uplt.histogram_numerical(df, ax=ax, **kwargs)
