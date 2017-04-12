@@ -139,7 +139,7 @@ setup(
         'iventure.jsviz': 'src/jsviz',
     },
     package_data={
-        'iventure.jsviz': '*.js'
+        'iventure.jsviz': ['*.js']
     },
     cmdclass={
         'build_py': local_build_py,
