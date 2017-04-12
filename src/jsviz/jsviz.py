@@ -58,10 +58,7 @@ def interactive_depprob(df_dep, df_data=None, schema=None):
 
 
 def interactive_heatmap(df):
-    """Create an interactive heatmap visualization.
-
-    XXX TODO: Test whether this works.
-    """
+    """Create an interactive heatmap visualization."""
     js_src = resource_string('iventure.jsviz', 'heatmap.js')
 
     pivot = df.pivot(
@@ -76,7 +73,7 @@ def interactive_heatmap(df):
     return Javascript(
         js_src \
         + 'heatmap(' \
-        + df.to_json() \
+        + df.to_json(orient='split') \
         + ',' \
         + json.dumps(labels) \
         + ')'
