@@ -63,7 +63,7 @@ def density(df, ax=None, **kwargs):
             points.iloc[:,0], color=color, shade=shade, ax=ax, legend=False)
         if rug:
             sns.rugplot(points.iloc[:,0], color=color, ax=ax)
-    ax.set_xlabel('MI', fontweight='bold')
+    ax.set_xlabel(df.columns[0], fontweight='bold')
     ax.set_ylabel('Density', fontweight='bold')
     ax.grid()
 
@@ -423,6 +423,8 @@ def _handle_kwargs(ax, **kwargs):
         ax.set_xscale('log', basex=int(kwargs['xlog']))
     if 'ylog' in kwargs:
         ax.set_yscale('log', basey=int(kwargs['ylog']))
+    if 'xlabel' in kwargs:
+        ax.set_xlabel(kwargs['xlabel'], fontweight='bold')
     if 'ylabel' in kwargs:
         ax.set_ylabel(kwargs['ylabel'], fontweight='bold')
 
