@@ -510,6 +510,11 @@ class VentureMagics(Magics):
         # Go!
         return jsviz.interactive_depprob(df_dep, df_data, schema_str)
 
+    def _cmd_interactive_scatter(self, query, sql=None, **kwargs):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        return jsviz.interactive_scatter(df)
+
     _CMDS = {
         'guess_schema': _cmd_guess_schema,
         'nullify': _cmd_nullify,
@@ -527,6 +532,7 @@ class VentureMagics(Magics):
         'histogram_numerical': _cmd_histogram_numerical,
         'interactive_depprob' : _cmd_interactive_depprob,
         'interactive_heatmap' : _cmd_interactive_heatmap,
+        'interactive_scatter' : _cmd_interactive_scatter,
         'scatter': _cmd_scatter,
     }
 

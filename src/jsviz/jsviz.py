@@ -78,3 +78,13 @@ def interactive_heatmap(df):
         + json.dumps(labels) \
         + ')'
     )
+
+def interactive_scatter(df):
+    """Create an interactive scatter plot visualization."""
+    js_src = resource_string('iventure.jsviz', 'scatter.js')
+    return Javascript(
+        js_src \
+        + ';scatter(' \
+        + df.to_json(orient='split') \
+        + ')'
+    )
