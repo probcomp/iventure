@@ -37,7 +37,7 @@ def interactive_depprob(df_dep, df_data=None, schema=None):
     js_src = resource_string('iventure.jsviz', 'depprob.js')
     assert len(df_dep.columns) == 3
     df_dep.columns = ['name0', 'name1', 'value']
-    if df_data and schema:
+    if df_data is not None and schema is not None:
         return Javascript(
             js_src \
             + 'depprob_demo(' \
