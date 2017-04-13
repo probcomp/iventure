@@ -483,7 +483,7 @@ class VentureMagics(Magics):
     def _cmd_interactive_heatmap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        return jsviz.interactive_heatmap(df)
+        return jsviz.interactive_heatmap(df.iloc[:, -3:])
 
     def _cmd_interactive_depprob(self, query, **kwargs):
         population_name = query.strip()
