@@ -147,3 +147,39 @@ def test_histogram_numerical_smoke(axname, dfname, normedname):
     normed = HISTNUM_NORMED[normedname]
     kwargs = {} if normed is None else {'normed': normed}
     uplt.histogram_numerical(df, ax=ax, **kwargs)
+
+
+CHMAP_DF = {
+    'DF': pd.DataFrame([
+        ['foo', 'foo', 42],
+        ['foo', 'bar', 41],
+        ['foo', 'baz', 43],
+        ['bar', 'foo', 48],
+        ['bar', 'bar', 40],
+        ['bar', 'baz', 47],
+        ['baz', 'foo', 39],
+        ['baz', 'bar', 40],
+        ['baz', 'baz', 41],
+    ]),
+}
+
+
+@pytest.mark.parametrize('axname,dfname',
+    [(axname, dfname)
+        for axname in sorted(AX.keys())
+        for dfname in sorted(CHMAP_DF.keys())])
+def test_clustermap_smoke(axname, dfname):
+    ax = AX[axname]()
+    df = CHMAP_DF[dfname]
+    # XXX figsize
+    uplt.clustermap(df, ax=ax)
+
+@pytest.mark.parametrize('axname,dfname',
+    [(axname, dfname)
+        for axname in sorted(AX.keys())
+        for dfname in sorted(CHMAP_DF.keys())])
+def test_heatmap_smoke(axname, dfname):
+    ax = AX[axname]()
+    df = CHMAP_DF[dfname]
+    # XXX figsize
+    uplt.heatmap(df, ax=ax)
