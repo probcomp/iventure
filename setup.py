@@ -133,10 +133,16 @@ setup(
     packages=[
         'iventure',
         'iventure.jsviz',
+        'iventure.seaborn',
+        'iventure.seaborn.external',
+        #'iventure.seaborn.tests',
+        'iventure.tests',
     ],
     package_dir={
         'iventure': 'src',
         'iventure.jsviz': 'src/jsviz',
+        'iventure.seaborn': 'external/seaborn/dist/seaborn',
+        'iventure.tests': 'tests',
     },
     package_data={
         'iventure.jsviz': ['*.js']
@@ -147,5 +153,9 @@ setup(
     },
     install_requires=[
         'bayeslite>=0.2.0rc1',
+        'matplotlib',
+        'numpy',
+        'pandas',
+        'scipy',
     ],
 )
