@@ -1,0 +1,7 @@
+seaborn - Statistical data visualization library based on matplotlib
+
+https://seaborn.pydata.org/
+
+We have had trouble with version skew and bugs in seaborn in the
+past, but it is relatively small and self-contained, so we commit to
+a particular version that we can patch for our needs here.
