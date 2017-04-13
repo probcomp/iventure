@@ -255,7 +255,7 @@ def heatmap(df, ax=None, **kwargs):
     """
     if len(df.columns) < 3:
         raise ValueError('At least three columns requried: %s' % (df.columns,))
-    import seaborn.apionly as sns
+    from .seaborn import apionly as sns
     # Pivot the matrix.
     pivot = df.pivot(
         index=df.columns[-3],
@@ -296,7 +296,7 @@ def heatmap(df, ax=None, **kwargs):
 
 def _clustermap(
         D, xticklabels=None, yticklabels=None, vmin=None, vmax=None, **kwargs):
-    import seaborn as sns
+    from . import seaborn as sns
     sns.set_style('white')
     if xticklabels is None:
         xticklabels = range(D.shape[0])

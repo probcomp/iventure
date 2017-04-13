@@ -80,7 +80,6 @@ requests==2.10.0
 rsa==3.4.2
 scikit-learn==0.17.1
 scipy==0.17.1
-seaborn==0.7.0
 simplegeneric==0.8.1
 simplejson==3.8.2
 singledispatch==3.4.0.3

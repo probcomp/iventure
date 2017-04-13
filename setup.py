@@ -132,9 +132,13 @@ setup(
     ],
     packages=[
         'iventure',
+        'iventure.seaborn',
+        'iventure.seaborn.external',
+        'iventure.seaborn.tests',
     ],
     package_dir={
         'iventure': 'src',
+        'iventure.seaborn': 'external/seaborn/dist/seaborn',
     },
     cmdclass={
         'build_py': local_build_py,
@@ -142,5 +146,9 @@ setup(
     },
     install_requires=[
         'bayeslite>=0.2.0rc1',
+        'matplotlib',
+        'numpy',
+        'pandas',
+        'scipy',
     ],
 )
