@@ -1,2 +1,2 @@
-from seaborn import *
+from . import *
 reset_orig()
