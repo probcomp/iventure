@@ -480,6 +480,11 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.histogram_numerical(df, **kwargs)
 
+    def _cmd_interactive_bar(self, query, sql=None, **kwargs):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        return jsviz.interactive_bar(df)
+
     def _cmd_interactive_heatmap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
@@ -530,6 +535,7 @@ class VentureMagics(Magics):
         'heatmap' : _cmd_heatmap,
         'histogram_nominal': _cmd_histogram_nominal,
         'histogram_numerical': _cmd_histogram_numerical,
+        'interactive_bar' : _cmd_interactive_bar,
         'interactive_depprob' : _cmd_interactive_depprob,
         'interactive_heatmap' : _cmd_interactive_heatmap,
         'interactive_scatter' : _cmd_interactive_scatter,

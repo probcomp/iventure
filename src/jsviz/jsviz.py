@@ -88,3 +88,14 @@ def interactive_scatter(df):
         + df.to_json(orient='split') \
         + ')'
     )
+
+
+def interactive_bar(df):
+    """Create an interactive barplot visualization."""
+    js_src = resource_string('iventure.jsviz', 'bar.js')
+    return Javascript(
+        js_src \
+        + ';bar(' \
+        + df.to_json(orient='split') \
+        + ')'
+    )
