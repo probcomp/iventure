@@ -483,6 +483,11 @@ class VentureMagics(Magics):
     def _cmd_interactive_heatmap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
+        # XXX Pass in the last three columns of the dataframe. This behavior is
+        # intended to allow BQL PAIRWISE queries to be passed through directly
+        # to %bql .interactive_heatmap. Unfortunately, PAIRWISE will return
+        # four columns, where the first column is the population_id, and the
+        # second, third, and fourth are name0, name1, and value, respectively.
         return jsviz.interactive_heatmap(df.iloc[:, -3:])
 
     def _cmd_interactive_depprob(self, query, **kwargs):
