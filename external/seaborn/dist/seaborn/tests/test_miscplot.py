@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from . import PlotTestCase
 from .. import miscplot as misc
-from seaborn import color_palette
+from .. import color_palette
 
 
 class TestPalPlot(PlotTestCase):
