@@ -134,11 +134,13 @@ setup(
         'iventure',
         'iventure.seaborn',
         'iventure.seaborn.external',
-        'iventure.seaborn.tests',
+        #'iventure.seaborn.tests',
+        'iventure.tests',
     ],
     package_dir={
         'iventure': 'src',
         'iventure.seaborn': 'external/seaborn/dist/seaborn',
+        'iventure.tests': 'tests',
     },
     cmdclass={
         'build_py': local_build_py,
