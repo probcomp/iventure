@@ -27,6 +27,19 @@ function depprob_demo(depprob, rows, schema) {
     element.classList[state ? 'add' : 'remove'](className)
   }
 
+
+  if (schema) {
+    for (const col of schema) {
+      if (col.stat_type = 'numerical') {
+        col.stat_type = 'realAdditive';
+      }
+
+      if (col.stat_type = 'nominal') {
+        col.stat_type = 'categorical';
+      }
+    }
+  }
+
   // convert the data to an MI object for VizGPM
   var associations = {}
   // very strangely, the pandas data frame json looks like an object
