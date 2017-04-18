@@ -31,6 +31,15 @@ def enable_inline():
     js_src = resource_string('iventure.jsviz', 'inline.js')
     return Javascript(js_src)
 
+def interactive_bar(df):
+    """Create an interactive barplot visualization."""
+    js_src = resource_string('iventure.jsviz', 'bar.js')
+    return Javascript(
+        js_src \
+        + ';bar(' \
+        + df.to_json(orient='split') \
+        + ')'
+    )
 
 def interactive_depprob(df_dep, df_data=None, schema=None):
     """Create an interactive dependence probability visualization."""
@@ -55,7 +64,6 @@ def interactive_depprob(df_dep, df_data=None, schema=None):
             + df_dep.to_json() \
             + ')'
         )
-
 
 def interactive_heatmap(df):
     """Create an interactive heatmap visualization."""
@@ -85,17 +93,6 @@ def interactive_scatter(df):
     return Javascript(
         js_src \
         + ';scatter(' \
-        + df.to_json(orient='split') \
-        + ')'
-    )
-
-
-def interactive_bar(df):
-    """Create an interactive barplot visualization."""
-    js_src = resource_string('iventure.jsviz', 'bar.js')
-    return Javascript(
-        js_src \
-        + ';bar(' \
         + df.to_json(orient='split') \
         + ')'
     )
