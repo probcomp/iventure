@@ -495,26 +495,6 @@ class VentureMagics(Magics):
         # second, third, and fourth are name0, name1, and value, respectively.
         return jsviz.interactive_heatmap(df.iloc[:, -3:])
 
-    def _cmd_interactive_depprob(self, query, **kwargs):
-        population_name = query.strip()
-        population_id = bayesdb_get_population(self._bdb, population_name)
-        table_name = bayesdb_population_table(self._bdb, population_id)
-        # Retrieve data from the table.
-        qt = bql_quote_name(table_name.encode('ascii', 'strict'))
-        df_data = utils_bql.query(self._bdb, 'SELECT * FROM %s' % (qt,))
-        # Retrieve pairwise dependence probabilities.
-        qp = bql_quote_name(population_name)
-        df_dep = utils_bql.query(self._bdb, '''
-            SELECT name0, name1, value FROM (
-                ESTIMATE DEPENDENCE PROBABILITY
-                FROM PAIRWISE VARIABLES OF %s
-            );''' % (qp,))
-        # Retrieve the schema.
-        schema = utils_bql.get_schema_as_list(self._bdb, population_id)
-        schema_str = json.dumps(schema)
-        # Go!
-        return jsviz.interactive_depprob(df_dep, df_data, schema_str)
-
     def _cmd_interactive_scatter(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
@@ -536,7 +516,6 @@ class VentureMagics(Magics):
         'histogram_nominal': _cmd_histogram_nominal,
         'histogram_numerical': _cmd_histogram_numerical,
         'interactive_bar' : _cmd_interactive_bar,
-        'interactive_depprob' : _cmd_interactive_depprob,
         'interactive_heatmap' : _cmd_interactive_heatmap,
         'interactive_scatter' : _cmd_interactive_scatter,
         'scatter': _cmd_scatter,
