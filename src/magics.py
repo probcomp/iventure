@@ -495,6 +495,15 @@ class VentureMagics(Magics):
         # second, third, and fourth are name0, name1, and value, respectively.
         return jsviz.interactive_heatmap(df.iloc[:, -3:])
 
+    def _cmd_interactive_pairplot(self, query, sql=None, **kwargs):
+        population = kwargs.get('population', None)
+        if population is None:
+            raise ValueError('Specify --population=<name> argument.')
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        schema = utils_mml.get_schema_as_list(self._bdb, population)
+        return jsviz.interactive_pairplot(df, schema)
+
     def _cmd_interactive_scatter(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
@@ -517,6 +526,7 @@ class VentureMagics(Magics):
         'histogram_numerical': _cmd_histogram_numerical,
         'interactive_bar' : _cmd_interactive_bar,
         'interactive_heatmap' : _cmd_interactive_heatmap,
+        'interactive_pairplot' : _cmd_interactive_pairplot,
         'interactive_scatter' : _cmd_interactive_scatter,
         'scatter': _cmd_scatter,
     }

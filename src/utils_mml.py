@@ -17,6 +17,7 @@
 import StringIO
 
 from bayeslite import bql_quote_name
+from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_population_generators
 from bayeslite.core import bayesdb_variable_names
 from bayeslite.core import bayesdb_variable_number
@@ -96,7 +97,8 @@ def guess_schema(bdb, table, reasons):
     schema.close()
     return result
 
-def get_schema_as_list(bdb, population_id):
+def get_schema_as_list(bdb, population_name):
+    population_id = bayesdb_get_population(bdb, population_name)
     generator_ids = bayesdb_population_generators(bdb, population_id)
     if len(generator_ids) == 0:
         raise ValueError('At least 1 metamodel required in population.')

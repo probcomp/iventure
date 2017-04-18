@@ -87,6 +87,18 @@ def interactive_heatmap(df):
         + ')'
     )
 
+def interactive_pairplot(df, schema):
+    """Create an interactive pairplot visualization."""
+    js_src = resource_string('iventure.jsviz', 'pairplot.js')
+    return Javascript(
+        js_src \
+        + ';pairplot(' \
+        + df.to_json(orient='split') \
+        + ',' \
+        + json.dumps(schema) \
+        + ')'
+    )
+
 def interactive_scatter(df):
     """Create an interactive scatter plot visualization."""
     js_src = resource_string('iventure.jsviz', 'scatter.js')
