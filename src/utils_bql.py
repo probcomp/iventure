@@ -17,10 +17,6 @@
 import pandas as pd
 
 from bayeslite import bql_quote_name
-from bayeslite.core import bayesdb_population_generators
-from bayeslite.core import bayesdb_variable_names
-from bayeslite.core import bayesdb_variable_number
-from bayeslite.core import bayesdb_variable_stattype
 from bayeslite.util import cursor_value
 
 
@@ -80,33 +76,3 @@ def query(bdb, bql, bindings=None, logger=None):
         logger.info("BQL [%s] %s", bql, bindings)
     cursor = bdb.execute(bql, bindings)
     return cursor_to_df(cursor)
-
-
-def get_schema_as_list(bdb, population_id):
-    generator_ids = bayesdb_population_generators(bdb, population_id)
-    if len(generator_ids) == 0:
-        raise ValueError('At least 1 metamodel required in population.')
-    generator_id = generator_ids[0]
-    variable_names = bayesdb_variable_names(bdb, population_id, None)
-    schema = []
-    for variable_name in variable_names:
-        colno =  bayesdb_variable_number(
-            bdb, population_id, None, variable_name)
-        stattype = bayesdb_variable_stattype(bdb, population_id, colno)
-        stattype_lookup = {
-            'numerical'     : 'realAdditive',
-            'nominal'       : 'categorical',
-            'categorical'   : 'categorical',
-        }
-        schema_entry = {
-            'name' : variable_name,
-            'stat_type' : stattype_lookup[stattype]
-        }
-        if stattype == 'nominal':
-            cursor = bdb.execute('''
-                SELECT value FROM bayesdb_cgpm_category
-                WHERE generator_id = ? AND colno = ?;
-            ''', (generator_id, colno))
-            schema_entry['unique_values'] = [row[0] for row in cursor]
-        schema.append(schema_entry)
-    return schema
