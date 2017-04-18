@@ -30,11 +30,11 @@ function depprob_demo(depprob, rows, schema) {
 
   if (schema) {
     for (const col of schema) {
-      if (col.stat_type = 'numerical') {
+      if (col.stat_type == 'numerical') {
         col.stat_type = 'realAdditive';
       }
 
-      if (col.stat_type = 'nominal') {
+      if (col.stat_type == 'nominal') {
         col.stat_type = 'categorical';
       }
     }
