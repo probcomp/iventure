@@ -488,12 +488,26 @@ class VentureMagics(Magics):
     def _cmd_interactive_heatmap(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
-        # XXX Pass in the last three columns of the dataframe. This behavior is
+        # XXX Take the last three columns of the dataframe. This behavior is
         # intended to allow BQL PAIRWISE queries to be passed through directly
         # to %bql .interactive_heatmap. Unfortunately, PAIRWISE will return
         # four columns, where the first column is the population_id, and the
         # second, third, and fourth are name0, name1, and value, respectively.
-        return jsviz.interactive_heatmap(df.iloc[:, -3:])
+        df = df.iloc[:,-3:]
+        table = kwargs.get('table', None)
+        label0 = kwargs.get('label0', None)
+        label1 = kwargs.get('label1', None)
+        if table and label0 and label1:
+            qt = bql_quote_name(table)
+            qc0 = bql_quote_name(label0)
+            qc1 = bql_quote_name(label1)
+            c = self._bdb.sql_execute('''
+                SELECT %s, %s FROM %s
+            ''' % (qc0, qc1, qt))
+            df_lookup = utils_bql.cursor_to_df(c)
+            lookup = dict(zip(df_lookup[label0], df_lookup[label1]))
+            df = df.replace({df.columns[0]: lookup, df.columns[1]: lookup})
+        return jsviz.interactive_heatmap(df)
 
     def _cmd_interactive_pairplot(self, query, sql=None, **kwargs):
         population = kwargs.get('population', None)
