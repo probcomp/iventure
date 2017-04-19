@@ -26,19 +26,17 @@ function bar(df) {
     throw new Error("There must be exactly two columns");
   }
 
-  if (!df.data.length) {
-    throw new Error("No data in the table");
-  }
+  // restrict data to only numeric data
+  const rows = df.data.filter( ([,number]) => typeof number === 'number' );
 
-  if (typeof df.data[0][1] !== 'number') {
-    throw new Error("Expected second column to contain a number");
+  if (!rows.length) {
+    throw new Error("No rows contain numbers in the second column");
   }
 
   VizGPMReady
   .then(VizGPM => {
     const _ = VizGPM._;
     const root = myCell.empty()[0];
-    const rows = df.data;
     const [ xName, yName ] = df.columns;
 
     const xValue = d => d[0];
