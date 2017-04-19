@@ -35,10 +35,25 @@ function scatter(df) {
     throw new Error("Expected second column to contain a number");
   }
 
+  const [ xName, yName, colorName ] = df.columns;
+  const container = $("<div>").css({ display: 'flex', flexDiection: 'row' }).appendTo(myCell.empty());
+
+
+  function $s(elem) {
+    return $(document.createElementNS('http://www.w3.org/2000/svg', elem));
+  }
+  const svg = $s('svg').attr({ width: 15, height: 500 })
+    .append($s('text').attr({transform: "rotate(270) translate(-250 12)", size:"12", style: "fill: #000000", 'text-anchor': "middle", 'font-weight': 'bold'}).text(yName));
+
+  $('<div style="flex: 0 0 15px">').append(svg).appendTo(container);
+
+  const middleContainer = $('<div style="display: flex; flex-direction: column">').appendTo(container);
+  middleContainer.append($('<div style="text-align: center; font-weight: bold">').text(xName));
+
   VizGPMReady
   .then(VizGPM => {
     const _ = VizGPM._;
-    const root = $("<div>").css({ display: 'inline-block', width: 500, verticalAlign: 'top' }).appendTo(myCell.empty())[0];
+    const root = $("<div>").css({ display: 'inline-block', width: 500, verticalAlign: 'top' }).prependTo(middleContainer)[0];
 
     const xValue = d => d[0];
     const yValue = d => d[1];
@@ -46,7 +61,6 @@ function scatter(df) {
     const colorValue = d => d[2];
 
     const rows = df.data
-    const [ xName, yName, colorName ] = df.columns;
 
     const size = 500;
 
@@ -72,7 +86,8 @@ function scatter(df) {
     const colorMap = new Map([...categories].map((value, index) => [value, colors[index]]));
 
     if (isCategory) {
-      const legend = $("<ul>").css({ display: 'inline-block', margin: 0, padding: 0, listStyle: 'none' }).appendTo(myCell);
+      const legend = $("<ul>").css({ margin: 0, padding: 0, listStyle: 'none' }).appendTo(container);
+      $("<span style='margin: 0.25em; font-weight: bold'>").text(df.columns[2]).wrap("<li>").parent().appendTo(legend);
       for(const [category, color] of colorMap.entries()) {
         const item = $("<li>").appendTo(legend);
         $("<div>")

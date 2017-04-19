@@ -33,11 +33,25 @@ function bar(df) {
     throw new Error("No rows contain numbers in the second column");
   }
 
+  const [ xName, yName ] = df.columns;
+
+  const container = $("<div>").css({ display: 'flex', flexDiection: 'row' }).appendTo(myCell.empty());
+
+  function $s(elem) {
+    return $(document.createElementNS('http://www.w3.org/2000/svg', elem));
+  }
+  const svg = $s('svg').attr({ width: 15, height: 500 })
+    .append($s('text').attr({transform: "rotate(270) translate(-250 12)", size:"12", style: "fill: #000000", 'text-anchor': "middle", 'font-weight': 'bold'}).text(yName));
+
+  $('<div style="flex: 0 0 15px">').append(svg).appendTo(container);
+
+  const middleContainer = $('<div style="display: flex; flex-direction: column">').appendTo(container);
+  middleContainer.append($('<div style="text-align: center; font-weight: bold">').text(xName));
+
   VizGPMReady
   .then(VizGPM => {
     const _ = VizGPM._;
-    const root = myCell.empty()[0];
-    const [ xName, yName ] = df.columns;
+    const root = $("<div>").prependTo(middleContainer)[0];
 
     const xValue = d => d[0];
     const yValue = d => d[1];
