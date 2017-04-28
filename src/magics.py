@@ -17,7 +17,6 @@
 import StringIO
 import argparse
 import getpass
-import json
 import re
 import sys
 import traceback
@@ -31,7 +30,6 @@ from bayeslite import bql_quote_name
 
 from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_has_population
-from bayeslite.core import bayesdb_population_table
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
@@ -138,8 +136,7 @@ class VentureMagics(Magics):
         self._venturescript = []
         username = getpass.getuser()
         # TODO add SQLLogger
-        self.session = Session(
-            username, [TextLogger()], '.iventure_logs')
+        self.session = Session(username, [TextLogger()], '.iventure_logs')
 
     @property
     def _ripl(self):
