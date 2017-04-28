@@ -159,15 +159,26 @@ class VentureMagics(Magics):
 
     def logged_cell(func):
         def logged_cell_wrapper(self, line, cell=None):
+            # Attempts to write a log entry. As there is no guarantee that the
+            # target of the log file will always be writeable throughout the
+            # lifetime of the session, fail silently if the file cannot be
+            # written. Refer to https://github.com/probcomp/iventure/issues/15
             raw = self._retrieve_raw(line, cell)
             try:
                 output = func(self, line, cell)
             except:
                 exception = traceback.format_exc()
-                self.session.log(LogEntry(func.__name__, raw, None, exception))
+                try:
+                    self.session.log(
+                        LogEntry(func.__name__, raw, None, exception))
+                except IOError:
+                    pass
                 raise
             else:
-                self.session.log(LogEntry(__name__, raw, output, None))
+                try:
+                    self.session.log(LogEntry(__name__, raw, output, None))
+                except IOError:
+                    pass
                 return output
         return logged_cell_wrapper
 
