@@ -19,6 +19,7 @@ import StringIO
 from bayeslite import bql_quote_name
 from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_population_generators
+from bayeslite.core import bayesdb_population_table
 from bayeslite.core import bayesdb_variable_names
 from bayeslite.core import bayesdb_variable_number
 from bayeslite.core import bayesdb_variable_stattype
@@ -99,10 +100,8 @@ def guess_schema(bdb, table, reasons):
 
 def get_schema_as_list(bdb, population_name):
     population_id = bayesdb_get_population(bdb, population_name)
-    generator_ids = bayesdb_population_generators(bdb, population_id)
-    if len(generator_ids) == 0:
-        raise ValueError('At least 1 metamodel required in population.')
-    generator_id = generator_ids[0]
+    table_name = bayesdb_population_table(bdb, population_id)
+    qt = bql_quote_name(table_name)
     variable_names = bayesdb_variable_names(bdb, population_id, None)
     schema = []
     for variable_name in variable_names:
@@ -119,10 +118,12 @@ def get_schema_as_list(bdb, population_name):
             'stat_type' : stattype_lookup[stattype]
         }
         if stattype == 'nominal':
-            cursor = bdb.execute('''
-                SELECT value FROM bayesdb_cgpm_category
-                WHERE generator_id = ? AND colno = ?;
-            ''', (generator_id, colno))
-            schema_entry['unique_values'] = [row[0] for row in cursor]
+            qv = bql_quote_name(variable_name)
+            values = utils_bql.query(bdb, '''
+                SELECT DISTINCT(%s) FROM %s
+                WHERE %s IS NOT NULL
+            ''' % (qv, qt, qv,))
+            schema_entry['unique_values'] = \
+                values[variable_name].unique().tolist()
         schema.append(schema_entry)
     return schema
