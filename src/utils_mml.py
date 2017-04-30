@@ -18,7 +18,6 @@ import StringIO
 
 from bayeslite import bql_quote_name
 from bayeslite.core import bayesdb_get_population
-from bayeslite.core import bayesdb_population_generators
 from bayeslite.core import bayesdb_population_table
 from bayeslite.core import bayesdb_variable_names
 from bayeslite.core import bayesdb_variable_number
