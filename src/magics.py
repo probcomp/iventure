@@ -345,7 +345,7 @@ class VentureMagics(Magics):
                 self._bdb.execute(out.getvalue())
                 out = StringIO.StringIO()
                 ok = False
-            out.write('%s ' % (line, ))
+            out.write('%s\n' % (line,))
             if out.getvalue() and bql_string_complete_p(out.getvalue()):
                 ok = True
         cursor = self._bdb.execute(out.getvalue())
