@@ -123,6 +123,6 @@ def get_schema_as_list(bdb, population_name):
                 WHERE %s IS NOT NULL
             ''' % (qv, qt, qv,))
             schema_entry['unique_values'] = \
-                values[variable_name].unique().tolist()
+                values[values.columns[0]].unique().tolist()
         schema.append(schema_entry)
     return schema
