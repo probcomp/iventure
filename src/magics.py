@@ -393,7 +393,9 @@ class VentureMagics(Magics):
         table = tokens[0]
         expression = tokens[1]
         value = self._bdb.execute('SELECT %s' % (expression,)).fetchvalue()
-        return utils_bql.nullify(self._bdb, table, value)
+        cells_changed = utils_bql.nullify(self._bdb, table, value)
+        print "Nullified %d cells" % (cells_changed,)
+        return None
 
     def _cmd_table(self, args):
         '''Returns a table of the PRAGMA schema of <table>.

@@ -29,9 +29,14 @@ def nullify(bdb, table, value):
         sql = 'UPDATE %s SET {0} = NULL WHERE {0} = \'\'' % (qtable,)
     else:
         sql = 'UPDATE %s SET {0} = NULL WHERE {0} = ?' % (qtable,)
+    cells_changed = 0
     for col in columns:
         qcol = bql_quote_name(col)
+        old_changes = bdb._sqlite3.totalchanges()
         bdb.sql_execute(sql.format(qcol), (value,))
+        rows_changed = bdb._sqlite3.totalchanges() - old_changes
+        cells_changed += rows_changed
+    return cells_changed
 
 
 def cardinality(bdb, table, columns=None):
