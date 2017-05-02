@@ -524,6 +524,14 @@ class VentureMagics(Magics):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
         schema = utils_mml.get_schema_as_list(self._bdb, population)
+        for colname in df.columns:
+            drop = True
+            for entry in schema:
+                if entry['name'] == colname:
+                    drop = False
+            if drop:
+                print "Ignoring non-modelled column %s" % (colname,)
+                del df[colname]
         return jsviz.interactive_pairplot(df, schema)
 
     def _cmd_interactive_scatter(self, query, sql=None, **kwargs):
