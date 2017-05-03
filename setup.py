@@ -137,12 +137,14 @@ setup(
         'iventure.seaborn.external',
         #'iventure.seaborn.tests',
         'iventure.tests',
+        'jupyter_probcomp',
     ],
     package_dir={
         'iventure': 'src',
         'iventure.jsviz': 'src/jsviz',
         'iventure.seaborn': 'external/seaborn/dist/seaborn',
         'iventure.tests': 'tests',
+        'jupyter_probcomp': 'src/jupyter',
     },
     package_data={
         'iventure.jsviz': ['*.js']
