@@ -356,7 +356,9 @@ class VentureMagics(Magics):
     @line_magic
     def multiprocess(self, line, cell=None):
         switch = False if line == 'off' else True
-        self._bdb.metamodels['cgpm'].set_multiprocess(switch)
+        old = self._bdb.metamodels['cgpm'].set_multiprocess(switch)
+        def word(b): return "on" if b else "off"
+        print "Multiprocessing turned %s from %s." % (word(switch), word(old))
 
     @line_magic
     def vizgpm(self, line, cell=None):
