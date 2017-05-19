@@ -65,8 +65,10 @@ function depprob_demo(depprob, rows, schema) {
 
   var depProbContainer = $('<div style="flex: 1 1 100%;">').appendTo(container);
   var pairContainer = $('<div style="flex: 0 0 225px;">').appendTo(container);
+  $("<style>.vizgpm-pair-plot-header{ display: none}</style>").appendTo(container);
 
   VizGPMReady.then(function(VizGPM) {
+
     const _ = VizGPM._;
 
     const SP = VizGPM.StateProperty
