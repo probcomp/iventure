@@ -50,19 +50,23 @@ function heatmap(df, labels) {
     .appendTo(myCell);
 
   var depProbContainer = $('<div style="flex: 1 1 100%;">').appendTo(container);
-  var pairContainer = $('<div style="flex: 0 0 225px;">').appendTo(container);
+  var columnListContainer = $('<div style="flex: 0 0 200px;">').appendTo(container);
+
+  $("<style>.vizgpm-column-list .selected-columns-list .details{display: none !important;}</style>").appendTo(container);
 
   VizGPMReady.then(function(VizGPM) {
     const _ = VizGPM._;
 
     const SP = VizGPM.StateProperty
 
+    const schema = [...columns].map(name => ({name}));
+
     var stateManager = new VizGPM.StateManager({
-      // [SP.SCHEMA]: {columns: schema},
+      [SP.SCHEMA]: {columns: schema},
+      columns: [...columns],
       [SP.SELECTED_COLUMN_NAMES]: [],
-      // [SP.GET_COLUMN_FUNCTION]: col =>
-      //   VizGPM.GpmHandler.prototype._getColumn.call(stateManager, col),
-      // [SP.DISPLAYED_ROWS]: rows,
+      [SP.GET_COLUMN_FUNCTION]: col =>
+        VizGPM.GpmHandler.prototype._getColumn.call(stateManager, col),
     });
 
     // var debug = $('<pre>').appendTo(element);
@@ -73,123 +77,26 @@ function heatmap(df, labels) {
     //   debug.text(JSON.stringify(showState, false, '  '))
     // })
 
-    class SingleSelectSubgrid extends VizGPM.Charts.ColumnAssociationSubgrid {
-      // I used to have these sorts of events as parameters to the constructor,
-      // this is a private API but the only way I can handle making a "single
-      // select subgrid"
-      _handleGridMouseDown(event) {
-        return this._handleAllMouseEvents(event)
-      }
-
-      _handleGridMouseUp() {
-        // Doesn't actually get the event?  It's okay - we don't want to do anything anyway
-        return
-      }
-
-      _handleGridMouseMove(event) {
-        return this._handleAllMouseEvents(event)
-      }
-
-      _handleAllMouseEvents(event) {
-        const { x, y, error } = this._gridEventCoords(event) || { error: true };
-        if (!error && event.which) {
-          // if there was a button pressed, we want to set selected columns
-          const selectedColumns = [...new Set([
-              this._columnNameAtXIndex(x), this._columnNameAtYIndex(y)
-            ])]
-
-          // TODO: Don't thrash state so much when they are deep equal
-          this.setState({[SP.FOCUSED_COLUMN_NAMES]: selectedColumns})
-          this.setState({[SP.SELECTED_COLUMN_NAMES]: selectedColumns})
-        } else if (event.type === 'mousemove') {
-          // Otherwise, we want to still handle focused columns as we used to
-          super._handleGridMouseMove(event)
-        }
-      }
-
-      _handleXLabelClick(xIndex) {
-        this.setState({[SP.SELECTED_COLUMN_NAMES]: [this._columnNameAtXIndex(xIndex)]});
-      }
-
-      _handleYLabelClick(yIndex) {
-        this.setState({[SP.SELECTED_COLUMN_NAMES]: [this._columnNameAtXIndex(yIndex)]});
-      }
-
-      // customize the painting of selection to be [x, y] like focus is.
-      _updateSelectedAndFocusedColumns(state) {
-        const {
-          [SP.SELECTED_COLUMN_NAMES]: selected = [],
-          [SP.FOCUSED_COLUMN_NAMES]: focused = [],
-        } = state
-
-        for (const cell of this._grid.querySelectorAll('.grid-cell.focused,.grid-cell.selected')) {
-          cell.classList.remove('focused');
-          cell.classList.remove('selected');
-        }
-
-        // Make [x] into [x, x]
-        const [selX, selY = selX] = selected;
-        const [focX, focY = focX] = focused;
-        const indexer = {}
-        this._columnXLabels.forEach((label, index) => {
-          const name = this._columnNameAtXIndex(index)
-          if (selX === name) {
-            label.classList.add('selected')
-            indexer.selX = index;
-          } else {
-            label.classList.remove('selected')
-          }
-
-          if (focX === name) {
-            label.classList.add('focused')
-            indexer.focX = index;
-          } else {
-            label.classList.remove('focused')
-          }
-        })
-
-        this._columnYLabels.forEach((label, index) => {
-          const name = this._columnNameAtYIndex(index)
-          if (selY === name) {
-            label.classList.add('selected')
-            indexer.selY = index;
-          } else {
-            label.classList.remove('selected')
-          }
-
-          if (focY === name) {
-            label.classList.add('focused')
-            indexer.focY = index;
-          } else {
-            label.classList.remove('focused')
-          }
-        })
-
-        if ('selX' in indexer && 'selY' in indexer) {
-          this._gridCells[indexer.selY][indexer.selX].classList.add('selected');
-        }
-
-        if ('focX' in indexer && 'focY' in indexer && !_.isEqual(selected, focused)) {
-          this._gridCells[indexer.focY][indexer.focX].classList.add('focused');
-        }
-      }
-    }
-
     const chart = new VizGPM.ZoomableColumnAssociation({
       root: depProbContainer[0],
       stateManager: stateManager,
-      subgridClass: SingleSelectSubgrid,
+      // subgridClass: SingleSelectSubgrid,
       associationFn: function() {
         return mi
       },
-      subgridConfig: {
-        cellSelectedFn: ({ xColumn, yColumn, selectedColumns: [x, y = x] = [] }) =>
-          xColumn === x && yColumn === y,
-      },
-      miniMapConfig: {
-        cellSelectedFn: ({ xColumn, yColumn, selectedColumns: [x, y = x] = [] }) =>
-          xColumn === x || yColumn === y,
-      },
+      // subgridConfig: {
+        // cellSelectedFn: ({ xColumn, yColumn, selectedColumns: [x, y = x] = [] }) =>
+          // xColumn === x && yColumn === y,
+      // },
+      // miniMapConfig: {
+        // cellSelectedFn: ({ xColumn, yColumn, selectedColumns: [x, y = x] = [] }) =>
+          // xColumn === x || yColumn === y,
+      // },
+    })
+
+    const columnList = new VizGPM.UI.ColumnList({
+      root: columnListContainer[0],
+      stateManager,
     })
   })
 }
