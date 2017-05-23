@@ -102,8 +102,8 @@ def scatter(df, ax=None, **kwargs):
     ax.set_ylabel(df.columns[1], fontweight='bold')
     ax.grid()
 
-    # Plot the legend.
-    if len(labels) > 1:
+    # Plot the legend if there are three columns.
+    if df.shape[1] == 3:
         _plot_legend(fig, ax)
 
     # Adjust limits.
@@ -221,8 +221,8 @@ def histogram_nominal(df, ax=None, **kwargs):
     ax.set_xlim([0, 1.1*largest])
     ax.grid()
 
-    # Plot the legend.
-    if len(labels) > 1:
+    # Plot the legend if there are two columns.
+    if df.shape[1] == 2:
         _plot_legend(fig, ax)
 
     return fig
@@ -257,8 +257,8 @@ def histogram_numerical(df, ax=None, **kwargs):
     ax.set_ylim([0, 1.1*largest])
     ax.grid()
 
-    # Plot the legend.
-    if len(labels) > 1:
+    # Plot the legend if there are two columns.
+    if df.shape[1] == 2:
         _plot_legend(fig, ax)
 
     # Adjust limits.
