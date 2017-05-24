@@ -53,6 +53,7 @@ from iventure.sessions import TextLogger
 from iventure import utils_bql
 from iventure import utils_mml
 from iventure import utils_plot
+from iventure import utils_sql
 from iventure.jsviz import jsviz
 
 
@@ -448,6 +449,26 @@ class VentureMagics(Magics):
         # the raw string will not cause the notebook to pretty-print it.
         print schema
 
+    def _cmd_regress_sql(self, args):
+        '''Returns an SQL SELECT using the regression coefficients.
+
+        Usage: .regress_sql --table=<table> REGRESS ...
+        '''
+        # XXX Copypasta, write a proper parser.
+        # Find the keyword arguments, if any.
+        matches = re.findall('--[^\\s]+?=[^\\s]*', args)
+        kwargs = dict([re.split('--|=',m)[1:] for m in matches])
+        # Remove kwargs from args.
+        for m in matches:
+            args = str.replace(args, m, '')
+        args = str.strip(args)
+        if 'table' not in kwargs:
+            sys.stderr.write('Please specify --table=')
+        c = self._bdb.execute(args)
+        df = utils_bql.cursor_to_df(c)
+        select_query = utils_sql.regression_to_sql(df, table=kwargs['table'])
+        print select_query
+
     # Plotting.
 
     def _cmd_clustermap(self, query, sql=None, **kwargs):
@@ -545,6 +566,7 @@ class VentureMagics(Magics):
         'guess_schema': _cmd_guess_schema,
         'nullify': _cmd_nullify,
         'population': _cmd_population,
+        'regress_sql': _cmd_regress_sql,
         'table': _cmd_table,
     }
 
