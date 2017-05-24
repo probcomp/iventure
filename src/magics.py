@@ -45,6 +45,7 @@ from IPython.core.magic import Magics
 from IPython.core.magic import line_cell_magic
 from IPython.core.magic import line_magic
 from IPython.core.magic import magics_class
+from IPython.display import display_html
 
 from iventure.sessions import LogEntry
 from iventure.sessions import Session
@@ -464,10 +465,43 @@ class VentureMagics(Magics):
         args = str.strip(args)
         if 'table' not in kwargs:
             sys.stderr.write('Please specify --table=')
+            return
         c = self._bdb.execute(args)
         df = utils_bql.cursor_to_df(c)
         select_query = utils_sql.regression_to_sql(df, table=kwargs['table'])
         print select_query
+
+    def _cmd_assert(self, query, sql=None):
+        '''Displays an HTML div indicating whether a bql/sql test passed or
+        failed, i.e. whether the query returned true (1) or false (0).
+
+        Usage: .assert <query>
+        '''
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        if df.shape != (1,1):
+            sys.stderr.write(
+                'The query must return a table with exactly one '\
+                'row and one column, received shape: %s' % (df.shape,))
+            return
+        if df.iloc[0, 0] not in [0, 1]:
+            sys.stderr.write(
+                'The query must return 1 (True) or 0 (False), received: %s'
+                % (repr(df.iloc[0,0]))
+            )
+            return
+        if df.iloc[0, 0] == 1:
+            display_html("""
+                <div class="alert alert-success">
+                <strong>Test passed</strong>
+                </div>
+            """, raw=True)
+        else:
+            display_html("""
+                <div class="alert alert-danger">
+                <strong>Test failed</strong>
+                </div>
+            """, raw=True)
 
     # Plotting.
 
@@ -563,6 +597,7 @@ class VentureMagics(Magics):
         return jsviz.interactive_scatter(df)
 
     _CMDS = {
+        'assert': _cmd_assert,
         'guess_schema': _cmd_guess_schema,
         'nullify': _cmd_nullify,
         'population': _cmd_population,
