@@ -449,6 +449,11 @@ class VentureMagics(Magics):
         print schema
 
     def _cmd_assert(self, query, sql=None):
+        '''Displays an HTML div indicating whether a bql/sql test passed or
+        failed, i.e. whether the query returned true (1.0) or false (0.0).
+
+        Usage: .assert <query>
+        '''
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
         if df.shape[0] != 1 or df.shape[1] != 1:
