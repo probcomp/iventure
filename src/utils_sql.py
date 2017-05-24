@@ -16,8 +16,6 @@
 
 from StringIO import StringIO
 
-import pandas as pd
-
 from bayeslite import bql_quote_name
 
 
