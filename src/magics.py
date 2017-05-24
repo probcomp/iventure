@@ -448,6 +448,27 @@ class VentureMagics(Magics):
         # the raw string will not cause the notebook to pretty-print it.
         print schema
 
+    def _cmd_assert(self, query, sql=None):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        if df.shape[0] != 1 or df.shape[1] != 1:
+            sys.stderr.write('The query must return a table with exactly one ' \
+                    'row and one column.')
+            return
+        elif df.iloc[0, 0] not in [0, 1]:
+            sys.stderr.write('The query must return true or false.')
+            return
+        else:
+            from IPython.display import display_html
+            if df.iloc[0, 0] == 1:
+                display_html("""<div class="alert alert-success">
+                        <strong>Test passed</strong>
+                        </div>""", raw=True)
+            else:
+                display_html("""<div class="alert alert-danger">
+                        <strong>Test failed</strong>
+                        </div>""", raw=True)
+
     # Plotting.
 
     def _cmd_clustermap(self, query, sql=None, **kwargs):
@@ -542,6 +563,7 @@ class VentureMagics(Magics):
         return jsviz.interactive_scatter(df)
 
     _CMDS = {
+        'assert': _cmd_assert,
         'guess_schema': _cmd_guess_schema,
         'nullify': _cmd_nullify,
         'population': _cmd_population,
