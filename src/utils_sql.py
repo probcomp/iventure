@@ -46,7 +46,7 @@ def regression_to_sql(df, table=None):
     }
 
     def compile_numerical(variable, coefficient):
-        return '%1.4f\t*  %s' % (coefficient, bql_quote_name(variable))
+        return '%1.4f  *  %s' % (coefficient, bql_quote_name(variable))
     def compile_nominal_case(variable, categories):
         cases = str.join('\n', [
             '\t\t\tWHEN \'%s\' THEN %1.4f' % (category, coefficient)
