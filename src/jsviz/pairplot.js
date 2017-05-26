@@ -40,7 +40,19 @@ function pairplot(df, schema) {
       [SP.SELECTED_COLUMN_NAMES]: df.columns,
       [SP.GET_COLUMN_FUNCTION]: col =>
         VizGPM.GpmHandler.prototype._getColumn.call(stateManager, col),
+      [SP.DATA_ROWS]: rows,
       [SP.DISPLAYED_ROWS]: rows,
+    });
+
+    // When the selection query changes, update the selected rows
+    stateManager.subscribe(({ changed, state }) => {
+      if (changed.indexOf(SP.SELECTION_QUERY) !== -1) {
+        stateManager.set({
+          [SP.DISPLAYED_SELECTION_QUERY]: state[SP.SELECTION_QUERY],
+          [SP.SELECTED_ROWS]:
+              VizGPM.GpmHandler.prototype._getSelectedRows(state, state[SP.SELECTION_QUERY]),
+        });
+      }
     });
 
     const plot = new VizGPM.PairPlot({
