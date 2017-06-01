@@ -140,7 +140,7 @@ class _HeatMapper(object):
         # Get the positions and used label for the ticks
         nx, ny = data.T.shape
 
-        if xticklabels == []:
+        if len(xticklabels) == 0:
             self.xticks = []
             self.xticklabels = []
         else:
@@ -148,7 +148,7 @@ class _HeatMapper(object):
             self.xticks = np.arange(xstart, xend, xstep) + .5
             self.xticklabels = xticklabels[xstart:xend:xstep]
 
-        if yticklabels == []:
+        if len(yticklabels) == 0:
             self.yticks = []
             self.yticklabels = []
         else:
