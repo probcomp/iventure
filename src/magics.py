@@ -33,6 +33,7 @@ from bayeslite.core import bayesdb_has_population
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
+from bayeslite.util import casefold
 
 from cgpm.factor.factor import FactorAnalysis
 from cgpm.kde.mvkde import MultivariateKde
@@ -586,8 +587,9 @@ class VentureMagics(Magics):
         for colname in df.columns:
             drop = True
             for entry in schema:
-                if entry['name'] == colname:
+                if casefold(entry['name']) == casefold(colname):
                     drop = False
+                    entry['name'] = colname
             if drop:
                 print "Ignoring non-modelled column %s" % (colname,)
                 del df[colname]
