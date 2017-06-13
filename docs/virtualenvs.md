@@ -1,74 +1,61 @@
 # Setting up a python virtualenv with probcomp repositories and their dependencies.
 
-These instructions are tested on `Ubuntu 14.04.5`, different Linux distributions
+These instructions are tested on `Ubuntu 16.04.5`, different Linux distributions
 might require small modifications.
 
 #### Retrieve required packages from the Ubuntu standard repositories.
 
 ```bash
-sudo apt-get update -qq
-sudo apt-get upgrade -qq
-sudo apt-get install -qq build-essential
-sudo apt-get install -qq ccache
-sudo apt-get install -qq git
-sudo apt-get install -qq libboost-all-dev
-sudo apt-get install -qq libfreetype6-dev
-sudo apt-get install -qq libgsl0-dev
-sudo apt-get install -qq libjpeg8-dev
-sudo apt-get install -qq libpng12-dev
-sudo apt-get install -qq pandoc
-sudo apt-get install -qq pkg-config
-sudo apt-get install -qq python-apsw
-sudo apt-get install -qq python-pip
-sudo apt-get install -qq python-virtualenv
-```
-
-#### Create a fresh directory and store its path in `$WRKDIR` (for working directory).
-
-```bash
-$ export WRKDIR=/path/to/my/dir
-$ mkdir $WRKDIR
+sudo apt-get update -qq && \
+  sudo apt-get upgrade -qq && \
+  sudo apt-get install -qq \
+    build-essential \
+    ccache \
+    cython \
+    git \
+    libboost-all-dev \
+    libgsl0-dev \
+    pandoc \
+    python-apsw \
+    python-flask \
+    python-jsonschema \
+    python-matplotlib \
+    python-nose \
+    python-nose-testconfig \
+    python-numpy \
+    python-pandas \
+    python-pexpect \
+    python-pip \
+    python-pytest \
+    python-requests \
+    python-scipy \
+    python-six \
+    python-sklearn \
+    python-statsmodels \
+    python-virtualenv \
+    ; # end of package list
 ```
 
 #### Create a virtualenv in `$WRKDIR` called `.pyenv2.7`.
 
 ```bash
-$ cd $WRKDIR
-$ virtualenv -p /usr/bin/python .pyenv2.7
+$ virtualenv --system-site-packages /path/to/venv
 ```
 
-#### Activate the virtual environment, and ensure the right python interpreter is being referenced.
+#### Activate the virtual environment, and ensure the right python interpreter is being used.
 
 ```bash
-$ source .pyenv2.7/bin/activate
+$ . /path/to/venv/bin/activate
 $ which python
 ```
 
-#### Upgrade `pip` to the latest version.
+#### Install python requirements from `pip`, using the `requirements.txt` file from the toplevel directory of this repository.
 
 ```bash
-$ pip install -U pip
+$ pip install jupyter==1.0.0
 ```
 
-#### Install python requirements from `pip`, using the `requirements.txt` file from the toplevel directory of this repository (may take a while).
-
-```bash
-$ pip install -r /path/to/requirements.txt
-```
-
-### Add some environment variables to the virtualenv `activate` script.
-
-```bash
-$ echo '
-export PYTHONDONTWRITEBYTECODE=1
-export BAYESDB_DISABLE_VERSION_CHECK=1
-export BAYESDB_WIZARD_MODE=1
-export GPMCCDEBUG=1' >> .pyenv2.7/bin/activate
-
-$ source .pyenv2.7/bin/activate
-```
-
-#### Retrieve the probcomp repositories from Github.
+#### Retrieve probcomp repositories from Github.
 
 ```bash
 $ PROJECTS="
@@ -81,7 +68,7 @@ Venturecxx
 "
 
 $ for project in $PROJECTS; do
-    git clone git@github.com:probcomp/$project.git
+    git clone git@github.com:probcomp/"$project".git
   done
 ```
 
@@ -102,7 +89,7 @@ $ for project in $PROJECTS; do
 $ python -c 'import iventure.magics'
 ```
 
-### [[OPTIONAL]] Run the test suite for probcomp repositories (may take a while).
+### Optional: Run the test suite for probcomp repositories (may take a while).
 
 ```bash
 $ for project in bayeslite cgpm crosscat Venturecxx; do
@@ -110,39 +97,4 @@ $ for project in bayeslite cgpm crosscat Venturecxx; do
     ./check.sh
     cd ..
   done
-```
-
-### [[OPTIONAL]] Activate the `Qt` backend for `matplotlib`.
-
-#### Obtain `python-qt4` from the Ubuntu standard repositories.
-
-```bash
-sudo apt-get install python-qt4
-```
-
-#### Create soft links to the system install in the `.pyenv2.7` virtualenv.
-
-```bash
-$ cd .pyenv2.7/lib/python2.7/site-packages
-$ ln -s /usr/lib/python2.7/dist-packages/sip.so .
-$ ln -s /usr/lib/python2.7/dist-packages/PyQt4 .
-```
-
-### [[OPTIONAL]] Setting UNIX group permissions for the virtualenv.
-
-#### Create a new UNIX group `$GRP` for `$WRKDIR` and its subdirectories, and add yourself to the group.
-
-The purpose of the group `$GRP` is to control the file/access permissions for
-all users which are managed by `iventure_manager.py`.
-
-```bash
-$ addgroup $GRP
-$ adduser $USER $GRP
-```
-
-#### Change permissions of `$WRKDIR` to the new group `$GRP`.
-
-```bash
-$ chmod -R g+s $WRKDIR
-$ chown -R $USER:$GRP $WRKDIR
 ```
