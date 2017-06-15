@@ -26,21 +26,21 @@ described in "Optional arguments" below. Each dot command can take multiple
 optional arguments at once, each of the form `--<arg>=<value>`.
 
 	.bar [--<arg>=<value>] <query>
-Vertical barplot of the table returned by `<query>`. The first column is
-(nominal) names, and the second column is (numerical) values.
+Vertical barplot of the data points in the table returned by `<query>`. The
+first column is (nominal) names, and the second column is (numerical) values.
 
     .barh [--<arg>=<value>] <query>
-Horizontal barplot of the table returned by `<query>`. The first column is
-(nominal) names, and the second column is (numerical) values.
+Horizontal barplot of the data points in the table returned by `<query>`. The
+first column is (nominal) names, and the second column is (numerical) values.
 
     .clustermap [--<arg>=<value>] <query>
 Clustermap plotted by pivoting the last three columns of the table returned by
 `<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
 
     .density [--<arg>=<value>] <query>
-Density plot of the table returned by `<query>`. If the table has one column,
-then a regular density plot is produced. If the table has two columns, then the
-final column is used as the label for each data point.
+Density plot of the data points in the table returned by `<query>`. If the table
+has one column, then a regular density plot is produced. If the table has two
+columns, then the final column is used as the label for each data point.
 
     .heatmap [--<arg>=<value>] <query>
 Heatmap plotted by pivoting the last three columns of the table returned by
