@@ -23,17 +23,22 @@ import traceback
 
 from collections import OrderedDict
 
-
 from bayeslite import bayesdb_open
 from bayeslite import bayesdb_register_metamodel
 from bayeslite import bql_quote_name
 
+from bayeslite.core import bayesdb_generator_population
+from bayeslite.core import bayesdb_generator_table
+from bayeslite.core import bayesdb_get_generator
 from bayeslite.core import bayesdb_get_population
+from bayeslite.core import bayesdb_has_generator
 from bayeslite.core import bayesdb_has_population
+from bayeslite.core import bayesdb_variable_name
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
 from bayeslite.util import casefold
+from bayeslite.util import cursor_value
 
 from cgpm.factor.factor import FactorAnalysis
 from cgpm.kde.mvkde import MultivariateKde
@@ -395,6 +400,7 @@ class VentureMagics(Magics):
         tokens = args.split()   # XXX
         if len(tokens) != 2:
             sys.stderr.write('Usage: .nullify <table> <value>')
+            return
         table = tokens[0]
         expression = tokens[1]
         value = self._bdb.execute('SELECT %s' % (expression,)).fetchvalue()
@@ -600,28 +606,94 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         return jsviz.interactive_scatter(df)
 
+    def _cmd_render_crosscat(self, query, sql=None, **kwargs):
+        '''Returns a rendering of the specified crosscat state
+
+        Usage: .render_crosscat [options] <metamodel> <modelno>.
+
+        Options:
+            --progress=[True|False]
+            --width=<w>
+            --height=<c>
+            --rowlabels=<colname>
+        '''
+        tokens = query.split()
+        if len(tokens) != 2:
+            sys.stderr.write('Usage: .render_crosscat <metamodel> <modelno>')
+            return
+        metamodel = tokens[0]
+        modelno = int(tokens[1])
+        if not bayesdb_has_generator(self._bdb, None, metamodel):
+            sys.stderr.write('No such metamodel: %s.' % (metamodel,))
+            return
+        generator_id = bayesdb_get_generator(self._bdb, None, metamodel)
+        population_id = bayesdb_generator_population(self._bdb, generator_id)
+        engine = self._bdb.metamodels['cgpm']._engine(self._bdb, generator_id)
+        cursor = self._bdb.sql_execute('''
+            SELECT cgpm_modelno FROM bayesdb_cgpm_modelno
+            WHERE generator_id = ? AND modelno = ?
+        ''', (generator_id, modelno,))
+        cgpm_modelno = cursor_value(cursor, nullok=True)
+        if cgpm_modelno is None:
+            sys.stderr.write('No such model number: %d.' % (modelno,))
+            return
+        state = engine.get_state(cgpm_modelno)
+        col_names = [
+            bayesdb_variable_name(self._bdb, population_id, colno)
+            for colno in state.outputs
+        ]
+        row_names = None
+        row_index_column = kwargs.get('rowlabels', None)
+        if row_index_column is not None:
+            table_name = bayesdb_generator_table(self._bdb, generator_id)
+            qt = bql_quote_name(table_name)
+            qc = bql_quote_name(row_index_column)
+            cursor = self._bdb.sql_execute('''
+                SELECT %s FROM %s WHERE oid IN (
+                    SELECT table_rowid FROM bayesdb_cgpm_individual
+                    WHERE generator_id = ?
+                )
+            ''' % (qc, qt), (generator_id,))
+            row_names = [c[0] for c in cursor]
+        import cgpm.utils.render
+        axes = cgpm.utils.render.viz_state(
+            state,
+            col_names=col_names,
+            row_names=row_names,
+            progress=('progress' in kwargs),
+        )
+        fig = axes[0].get_figure()
+        (width, height) = fig.get_size_inches()
+        if 'width' in kwargs:
+            width = kwargs['width']
+            fig.set_size_inches(width, height)
+        if 'height' in kwargs:
+            height = kwargs['height']
+            fig.set_size_inches(width, height)
+
     _CMDS = {
-        'assert': _cmd_assert,
-        'guess_schema': _cmd_guess_schema,
-        'nullify': _cmd_nullify,
-        'population': _cmd_population,
-        'regress_sql': _cmd_regress_sql,
-        'table': _cmd_table,
+        'assert'               : _cmd_assert,
+        'guess_schema'         : _cmd_guess_schema,
+        'nullify'              : _cmd_nullify,
+        'population'           : _cmd_population,
+        'regress_sql'          : _cmd_regress_sql,
+        'table'                : _cmd_table,
     }
 
     _PLTS = {
-        'bar': _cmd_bar,
-        'barh': _cmd_barh,
-        'clustermap': _cmd_clustermap,
-        'density': _cmd_density,
-        'heatmap' : _cmd_heatmap,
-        'histogram_nominal': _cmd_histogram_nominal,
-        'histogram_numerical': _cmd_histogram_numerical,
-        'interactive_bar' : _cmd_interactive_bar,
-        'interactive_heatmap' : _cmd_interactive_heatmap,
+        'bar'                  : _cmd_bar,
+        'barh'                 : _cmd_barh,
+        'clustermap'           : _cmd_clustermap,
+        'density'              : _cmd_density,
+        'heatmap'              : _cmd_heatmap,
+        'histogram_nominal'    : _cmd_histogram_nominal,
+        'histogram_numerical'  : _cmd_histogram_numerical,
+        'interactive_bar'      : _cmd_interactive_bar,
+        'interactive_heatmap'  : _cmd_interactive_heatmap,
         'interactive_pairplot' : _cmd_interactive_pairplot,
-        'interactive_scatter' : _cmd_interactive_scatter,
-        'scatter': _cmd_scatter,
+        'interactive_scatter'  : _cmd_interactive_scatter,
+        'render_crosscat'      : _cmd_render_crosscat,
+        'scatter'              : _cmd_scatter,
     }
 
 
