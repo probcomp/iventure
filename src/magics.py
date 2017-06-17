@@ -23,7 +23,6 @@ import traceback
 
 from collections import OrderedDict
 
-
 from bayeslite import bayesdb_open
 from bayeslite import bayesdb_register_metamodel
 from bayeslite import bql_quote_name
@@ -401,6 +400,7 @@ class VentureMagics(Magics):
         tokens = args.split()   # XXX
         if len(tokens) != 2:
             sys.stderr.write('Usage: .nullify <table> <value>')
+            return
         table = tokens[0]
         expression = tokens[1]
         value = self._bdb.execute('SELECT %s' % (expression,)).fetchvalue()
@@ -672,28 +672,28 @@ class VentureMagics(Magics):
             fig.set_size_inches(width, height)
 
     _CMDS = {
-        'assert': _cmd_assert,
-        'guess_schema': _cmd_guess_schema,
-        'nullify': _cmd_nullify,
-        'population': _cmd_population,
-        'regress_sql': _cmd_regress_sql,
-        'table': _cmd_table,
+        'assert'               : _cmd_assert,
+        'guess_schema'         : _cmd_guess_schema,
+        'nullify'              : _cmd_nullify,
+        'population'           : _cmd_population,
+        'regress_sql'          : _cmd_regress_sql,
+        'table'                : _cmd_table,
     }
 
     _PLTS = {
-        'bar': _cmd_bar,
-        'barh': _cmd_barh,
-        'clustermap': _cmd_clustermap,
-        'density': _cmd_density,
-        'heatmap' : _cmd_heatmap,
-        'histogram_nominal': _cmd_histogram_nominal,
-        'histogram_numerical': _cmd_histogram_numerical,
-        'interactive_bar' : _cmd_interactive_bar,
-        'interactive_heatmap' : _cmd_interactive_heatmap,
+        'bar'                  : _cmd_bar,
+        'barh'                 : _cmd_barh,
+        'clustermap'           : _cmd_clustermap,
+        'density'              : _cmd_density,
+        'heatmap'              : _cmd_heatmap,
+        'histogram_nominal'    : _cmd_histogram_nominal,
+        'histogram_numerical'  : _cmd_histogram_numerical,
+        'interactive_bar'      : _cmd_interactive_bar,
+        'interactive_heatmap'  : _cmd_interactive_heatmap,
         'interactive_pairplot' : _cmd_interactive_pairplot,
-        'interactive_scatter' : _cmd_interactive_scatter,
-        'render_crosscat': _cmd_render_crosscat,
-        'scatter': _cmd_scatter,
+        'interactive_scatter'  : _cmd_interactive_scatter,
+        'render_crosscat'      : _cmd_render_crosscat,
+        'scatter'              : _cmd_scatter,
     }
 
 
