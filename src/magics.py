@@ -35,6 +35,7 @@ from bayeslite.core import bayesdb_get_population
 from bayeslite.core import bayesdb_has_generator
 from bayeslite.core import bayesdb_has_population
 from bayeslite.core import bayesdb_variable_name
+from bayeslite.core import bayesdb_variable_number
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
@@ -613,10 +614,15 @@ class VentureMagics(Magics):
         Usage: .render_crosscat [options] <metamodel> <modelno>.
 
         Options:
-            --progress=[True|False]
             --width=<w>
             --height=<c>
             --rowlabels=<colname>
+            --progress=[True|False]
+            --yticklabeslize=<fontsize>
+            --xticklabeslize=<fontsize>
+
+        The allowable fontsize strings are:
+            xx-small, x-small, # small, medium, large, x-large, xx-large
         '''
         tokens = query.split()
         if len(tokens) != 2:
@@ -639,10 +645,6 @@ class VentureMagics(Magics):
             sys.stderr.write('No such model number: %d.' % (modelno,))
             return
         state = engine.get_state(cgpm_modelno)
-        col_names = [
-            bayesdb_variable_name(self._bdb, population_id, colno)
-            for colno in state.outputs
-        ]
         row_names = None
         row_index_column = kwargs.get('rowlabels', None)
         if row_index_column is not None:
@@ -656,16 +658,36 @@ class VentureMagics(Magics):
                 )
             ''' % (qc, qt), (generator_id,))
             row_names = [c[0] for c in cursor]
-        import cgpm.utils.render
         if 'progress' in kwargs:
             sys.stdout.write('Creating figure...\n')
-        axes = cgpm.utils.render.viz_state(
-            state,
-            col_names=col_names,
-            row_names=row_names,
-            progress=('progress' in kwargs),
-        )
-        fig = axes[0].get_figure()
+        import cgpm.utils.render
+        if 'variable' not in kwargs:
+            # Plot the entire state.
+            col_names = [
+                bayesdb_variable_name(self._bdb, population_id, colno)
+                for colno in state.outputs
+            ]
+            fig, _ax = cgpm.utils.render.viz_state(
+                state,
+                col_names=col_names,
+                row_names=row_names,
+                **kwargs
+            )
+        else:
+            # Plot the view of the requested variable.
+            varno = bayesdb_variable_number(
+                self._bdb, population_id, generator_id, kwargs['variable'])
+            view = state.view_for(varno)
+            col_names = [
+                bayesdb_variable_name(self._bdb, population_id, colno)
+                for colno in view.outputs[1:]
+            ]
+            fig, _ax = cgpm.utils.render.viz_view(
+                view,
+                col_names=col_names,
+                row_names=row_names,
+                **kwargs
+            )
         (width, height) = fig.get_size_inches()
         if 'width' in kwargs:
             width = kwargs['width']
