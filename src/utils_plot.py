@@ -55,7 +55,7 @@ def density(df, ax=None, **kwargs):
             rug = False
     else:
         rug = True
-    import seaborn.apionly as sns
+    from .seaborn import apionly as sns
     sns.set_style('white')
     for label, color in zip(labels, colors):
         points = _filter_points(df, labels, label)
