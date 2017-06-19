@@ -614,6 +614,7 @@ class VentureMagics(Magics):
         Usage: .render_crosscat [options] <metamodel> <modelno>.
 
         Options:
+            --subsample=<n>
             --width=<w>
             --height=<c>
             --rowlabels=<colname>
