@@ -696,7 +696,7 @@ class VentureMagics(Magics):
             height = kwargs['height']
             fig.set_size_inches(width, height)
         if 'progress' in kwargs:
-            sys.stdout.write('Rendering figure...')
+            sys.stdout.write('Rendering figure...\n')
 
     _CMDS = {
         'assert'               : _cmd_assert,
