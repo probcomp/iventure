@@ -656,6 +656,8 @@ class VentureMagics(Magics):
             ''' % (qc, qt), (generator_id,))
             row_names = [c[0] for c in cursor]
         import cgpm.utils.render
+        if 'progress' in kwargs:
+            sys.stdout.write('Creating figure...\n')
         axes = cgpm.utils.render.viz_state(
             state,
             col_names=col_names,
@@ -670,6 +672,8 @@ class VentureMagics(Magics):
         if 'height' in kwargs:
             height = kwargs['height']
             fig.set_size_inches(width, height)
+        if 'progress' in kwargs:
+            sys.stdout.write('Rendering figure...')
 
     _CMDS = {
         'assert'               : _cmd_assert,
