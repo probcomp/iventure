@@ -20,6 +20,7 @@ import getpass
 import re
 import sys
 import traceback
+import warnings
 
 from collections import OrderedDict
 
@@ -133,8 +134,8 @@ def convert_from_venture_value(venture_value):
 class VentureMagics(Magics):
 
     def __init__(self, shell):
-        import warnings
         warnings.filterwarnings('ignore', category=DeprecationWarning)
+        warnings.filterwarnings('ignore', category=UserWarning)
         super(VentureMagics, self).__init__(shell)
         self._bdb = None
         self._path = None
