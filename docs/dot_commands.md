@@ -7,8 +7,8 @@ section should be prepended by `%sql` or `%%sql`.
 ## BQL
 - `%bql .assert <query>`
 
-	Returns a message indicating whether the test represented by `<query>` passed or
-	failed, i.e. whether `<query>` returned 1 or 0.
+	Returns a message indicating whether the test represented by `<query>`
+	passed or failed, i.e. whether `<query>` returned 1 or 0.
 
 - `%bql	.nullify <table> <value>`
 
@@ -56,23 +56,26 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 - `%bql .bar [options] <query>`
 
 	Vertical barplot of the data points in the table returned by `<query>`. The
-	first column is (nominal) names, and the second column is (numerical) values.
+	first column is (nominal) names, and the second column is (numerical)
+	values.
 
 - `%bql .barh [options] <query>`
 
-	Horizontal barplot of the data points in the table returned by `<query>`. The
-	first column is (nominal) names, and the second column is (numerical) values.
+	Horizontal barplot of the data points in the table returned by `<query>`.
+	The first column is (nominal) names, and the second column is (numerical)
+	values.
 
 - `%bql .clustermap [options] <query>`
 
-	Clustermap plotted by pivoting the last three columns of the table returned by
-	`<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
+	Clustermap plotted by pivoting the last three columns of the table returned
+	by `<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
 
 - `%bql .density [options] <query>`
 
-	Density plot of the data points in the table returned by `<query>`. If the table
-	has one column, then a regular density plot is produced. If the table has two
-	columns, then the final column is used as the label for each data point.
+	Density plot of the data points in the table returned by `<query>`. If the
+	table has one column, then a regular density plot is produced. If the table
+	has two columns, then the final column is used as the label for each data
+	point.
 
 - `%bql .heatmap [options] <query>`
 
@@ -81,15 +84,17 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
 - `%bql .histogram_nominal [options] <query>`
 
-	Histogram of the NOMINAL data points in the table returned by `<query>`. If the
-	table has one column, then a regular histogram is produced. If the table has two
-	columns, then the final column is used as the label for each data point.
+	Histogram of the NOMINAL data points in the table returned by `<query>`. If
+	the table has one column, then a regular histogram is produced. If the table
+	has two columns, then the final column is used as the label for each data
+	point.
 
 - `%bql .histogram_numerical [options] <query>`
 
-	Histogram of the NUMERICAL data points in the table returned by `<query>`. If
-	the table has one column, then a regular histogram is produced. If the table has
-	two columns, then the final column is used as the label for each data point.
+	Histogram of the NUMERICAL data points in the table returned by `<query>`.
+	If the table has one column, then a regular histogram is produced. If the
+	table has two columns, then the final column is used as the label for each
+	data point.
 
 - `%bql .render_crosscat [special_options] <metamodel_name> <model_number>`
 
@@ -126,10 +131,10 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
 - `%bql .scatter [options] <query>`
 
-	Scatter plot of the NUMERICAL data points in the table returned by `<query>`. If
-	the table has two columns, then a regular scatter plot is produced. If the table
-	has three columns, then the final column is used as the label for each data
-	point.
+	Scatter plot of the NUMERICAL data points in the table returned by
+	`<query>`. If the table has two columns, then a regular scatter plot is
+	produced. If the table has three columns, then the final column is used as
+	the label for each data point.
 
 ##### Optional arguments
 - `xmin=<value>`
@@ -148,15 +153,15 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
 	Sets the maximum y-axis value to `<value>`.
 
-- `xlog=<value>`
+- `xlog=[True|False]`
 
-	If `<value>` is `True`, sets the x scale to logarithmic. If `<value>` is `False`,
-	sets the x scale to linear.
+	If `<value>` is `True`, sets the x scale to logarithmic. If `False`, sets
+	the x scale to linear.
 
-- `ylog=<value>`
+- `ylog=[True|False]`
 
-	If `<value>` is `True`, sets the y scale to logarithmic. If `<value>` is `False`,
-	sets the y scale to linear.
+	If `True`, sets the y scale to logarithmic. If `False`, sets the y scale to
+	linear.
 
 - `xlabel=<value>`
 
@@ -166,16 +171,15 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
 	Sets the y-axis label to `<value>`.
 
-- `rug=<value>`
+- `rug=[True|False]`
 
-	For `.density` only. Default `<value>` is `True`. Setting `<value>` to
-	`False` turns off plotting rug marks (the tick marks on the x-axis
-	indicating individual values).
+	For `.density` only. Default `True`. Setting to `False` turns off plotting
+	rug marks (the tick marks on the x-axis indicating individual values).
 
-- `shade=<value>`
+- `shade=[True|False]`
 
-	For `.density` only. Default `<value>` is `True`. Setting `<value>` to
-	`False` turns off shading the area under the density curve.
+	For `.density` only. Default `True`. Setting to `False` turns off shading
+	the area under the density curve.
 
 ## MML
 - `%mml .guess_schema [--reasons] <table>`
