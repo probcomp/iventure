@@ -421,7 +421,7 @@ class VentureMagics(Magics):
         return utils_bql.cursor_to_df(cursor)
 
     def _cmd_subsample_columns(self, args):
-        '''Subsample <limit> columns from <table>, optionally keeping a
+        '''Randomly subsample <limit> columns from <table>, optionally keeping a
         subset of columns specified by the user. Modifies <table>.
 
         Usage .subsample_columns [--keep=[col1,col2,col3...]] <table> <limit>
