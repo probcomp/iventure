@@ -5,113 +5,136 @@ the MML section should be prepended by `%mml` or `%%mml` and those in the SQL
 section should be prepended by `%sql` or `%%sql`.
 
 ## BQL
-	.assert <query>
-Returns a message indicating whether the test represented by `<query>` passed or
-failed, i.e. whether `<query>` returned 1 or 0.
+- `%bql .assert <query>`
 
-	.nullify <table> <value>
-Converts all instances of `<value>` in `<table>` to SQL `NULL`.
+	Returns a message indicating whether the test represented by `<query>` passed or
+	failed, i.e. whether `<query>` returned 1 or 0.
 
-	.population <population>
-Returns a table of the variables (including their statistical types) and
-metamodels for `<population>`.
+- `%bql	.nullify <table> <value>`
 
-	.table <table>
-Returns a table of the PRAGMA schema of `<table>`.
+	Converts all instances of `<value>` in `<table>` to SQL `NULL`.
+
+- `%bql	.population <population>`
+
+	Returns a table of the variables (including their statistical types) and
+	metamodels for `<population>`.
+
+- `%bql	.table <table>`
+
+	Returns a table of the PRAGMA schema of `<table>`.
 
 ### Plotting
+#### Interactive
+Interactive plotting can be enabled by running `%vizgpm inline`.
+The following dot commands work the same as their standard equivalents below,
+with additional capabilities for scrolling around and selecting data in the
+plots.
+
+- `%bql .interactive_bar <query>`
+
+- `%bql .interactive_heatmap <query>`
+
+- `%bql .interactive_scatter <query>`
+
+Additionally, interactive plotting includes pairplots:
+
+- `%bql .interactive_pairplot <query>`
+
+	Pairplot of the data points in the table returned by `<query>`.
+
 #### Standard
 The following plotting dot commands can take several optional arguments,
 described in "Optional arguments" below. Each dot command can take multiple
 optional arguments at once, each of the form `--<arg>=<value>`.
 
-	.bar [--<arg>=<value>] <query>
-Vertical barplot of the data points in the table returned by `<query>`. The
-first column is (nominal) names, and the second column is (numerical) values.
+- `%bql .bar [--<arg>=<value>] <query>`
 
-    .barh [--<arg>=<value>] <query>
-Horizontal barplot of the data points in the table returned by `<query>`. The
-first column is (nominal) names, and the second column is (numerical) values.
+	Vertical barplot of the data points in the table returned by `<query>`. The
+	first column is (nominal) names, and the second column is (numerical) values.
 
-    .clustermap [--<arg>=<value>] <query>
-Clustermap plotted by pivoting the last three columns of the table returned by
-`<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
+- `%bql .barh [--<arg>=<value>] <query>`
 
-    .density [--<arg>=<value>] <query>
-Density plot of the data points in the table returned by `<query>`. If the table
-has one column, then a regular density plot is produced. If the table has two
-columns, then the final column is used as the label for each data point.
+	Horizontal barplot of the data points in the table returned by `<query>`. The
+	first column is (nominal) names, and the second column is (numerical) values.
 
-    .heatmap [--<arg>=<value>] <query>
-Heatmap plotted by pivoting the last three columns of the table returned by
-`<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
+- `%bql .clustermap [--<arg>=<value>] <query>`
 
-    .histogram_nominal [--<arg>=<value>] <query>
-Histogram of the NOMINAL data points in the table returned by `<query>`. If the
-table has one column, then a regular histogram is produced. If the table has two
-columns, then the final column is used as the label for each data point.
+	Clustermap plotted by pivoting the last three columns of the table returned by
+	`<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
 
-    .histogram_numerical [--<arg>=<value>] <query>
-Histogram of the NUMERICAL data points in the table returned by `<query>`. If
-the table has one column, then a regular histogram is produced. If the table has
-two columns, then the final column is used as the label for each data point.
+- `%bql .density [--<arg>=<value>] <query>`
 
-    .scatter [--<arg>=<value>] <query>
-Scatter plot of the NUMERICAL data points in the table returned by `<query>`. If
-the table has two columns, then a regular scatter plot is produced. If the table
-has three columns, then the final column is used as the label for each data
-point.
+	Density plot of the data points in the table returned by `<query>`. If the table
+	has one column, then a regular density plot is produced. If the table has two
+	columns, then the final column is used as the label for each data point.
+
+- `%bql .heatmap [--<arg>=<value>] <query>`
+
+	Heatmap plotted by pivoting the last three columns of the table returned by
+	`<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
+
+- `%bql .histogram_nominal [--<arg>=<value>] <query>`
+
+	Histogram of the NOMINAL data points in the table returned by `<query>`. If the
+	table has one column, then a regular histogram is produced. If the table has two
+	columns, then the final column is used as the label for each data point.
+
+- `%bql .histogram_numerical [--<arg>=<value>] <query>`
+
+	Histogram of the NUMERICAL data points in the table returned by `<query>`. If
+	the table has one column, then a regular histogram is produced. If the table has
+	two columns, then the final column is used as the label for each data point.
+
+- `%bql .scatter [--<arg>=<value>] <query>`
+
+	Scatter plot of the NUMERICAL data points in the table returned by `<query>`. If
+	the table has two columns, then a regular scatter plot is produced. If the table
+	has three columns, then the final column is used as the label for each data
+	point.
 
 ##### Optional arguments
-	xmin=<value>
-Sets the minimum x-axis value to `<value>`.
+- `xmin=<value>`
 
-	xmax=<value>
-Sets the maximum x-axis value to `<value>`.
+	Sets the minimum x-axis value to `<value>`.
 
-	ymin=<value>
-Sets the minimum y-axis value to `<value>`.
+- `xmax=<value>`
 
-	ymax=<value>
-Sets the maximum y-axis value to `<value>`.
+	Sets the maximum x-axis value to `<value>`.
 
-	xlog=<value>
-If `<value>` is `True`, sets the x scale to logarithmic. If `<value>` is false,
-sets the x scale to linear.
+- `ymin=<value>`
 
-	ylog=<value>
-If `<value>` is `True`, sets the y scale to logarithmic. If `<value>` is false,
-sets the y scale to linear.
+	Sets the minimum y-axis value to `<value>`.
 
-	xlabel=<value>
-Sets the x-axis label to `<value>`.
+- `ymax=<value>`
 
-	ylabel=<value>
-Sets the y-axis label to `<value>`.
+	Sets the maximum y-axis value to `<value>`.
 
-#### Interactive
-Interactive plotting can be enabled by running `%vizgpm inline`.
-The following dot commands work the same as their standard equivalents above,
-with additional capabilities for scrolling around and selecting data in the
-plots.
+- `xlog=<value>`
 
-	.interactive_bar <query>
+	If `<value>` is `True`, sets the x scale to logarithmic. If `<value>` is `False`,
+	sets the x scale to linear.
 
-	.interactive_heatmap <query>
+- `ylog=<value>`
 
-	.interactive_scatter <query>
+	If `<value>` is `True`, sets the y scale to logarithmic. If `<value>` is `False`,
+	sets the y scale to linear.
 
-Additionally, interactive plotting includes pairplots:
+- `xlabel=<value>`
 
-	.interactive_pairplot <query>
-Pairplot of the data points in the table returned by `<query>`.
+	Sets the x-axis label to `<value>`.
+
+- `ylabel=<value>`
+
+	Sets the y-axis label to `<value>`.
 
 ## MML
-	.guess_schema [--reasons] <table>
-Returns an MML schema using the guessed statistical types for the columns of
-`<table>`. Using the `--reasons` flag includes the heuristic reasons for the
-statistical type guesses.
+- `%mml .guess_schema [--reasons] <table>`
+
+	Returns an MML schema using the guessed statistical types for the columns of
+	`<table>`. Using the `--reasons` flag includes the heuristic reasons for the
+	statistical type guesses.
 
 ## SQL
-	.regress_sql [--table=<table>] <query>
-Returns a table of the results of a BQL REGRESS `<query>`.
+- `%sql .regress_sql [--table=<table>] <query>`
+
+	Returns a table of the results of a BQL REGRESS `<query>`.
