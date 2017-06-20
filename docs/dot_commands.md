@@ -127,6 +127,17 @@ optional arguments at once, each of the form `--<arg>=<value>`.
 
 	Sets the y-axis label to `<value>`.
 
+- `rug=<value>`
+
+	For `.density` only. Default `<value>` is `True`. Setting `<value>` to
+	`False` turns off plotting rug marks (the tick marks on the x-axis
+	indicating individual values).
+
+- `shade=<value>`
+
+	For `.density` only. Default `<value>` is `True`. Setting `<value>` to
+	`False` turns off shading the area under the density curve.
+
 ## MML
 - `%mml .guess_schema [--reasons] <table>`
 
