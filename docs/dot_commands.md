@@ -91,6 +91,39 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 	the table has one column, then a regular histogram is produced. If the table has
 	two columns, then the final column is used as the label for each data point.
 
+- `%bql .render_crosscat [special_options] <metamodel_name> <model_number>`
+
+	Renders the state of the CrossCat model <model_number> in <metamodel_name>.
+	Instead of the standard optional arguments, this function takes the
+	following special optional arguments:
+	- `--subsample=<n>`
+
+		Number of rows to subsample (recommend <50).
+
+    - `--width=<w>`
+
+    	Width of the figure.
+
+    - `--height=<c>`
+
+    	Height of the figure.
+
+    - `--rowlabels=<colname>`
+
+    	Name of the column in the base table to use as row labels.
+
+    - `--progress=[True|False]`
+
+    	Whether to show a progress bar.
+
+    - `--yticklabeslize=<fontsize>`
+
+    	Size of the row labels.
+
+    - `--xticklabeslize=<fontsize>`
+
+    	Size of the column labels.
+
 - `%bql .scatter [options] <query>`
 
 	Scatter plot of the NUMERICAL data points in the table returned by `<query>`. If
