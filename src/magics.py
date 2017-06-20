@@ -421,73 +421,30 @@ class VentureMagics(Magics):
         return utils_bql.cursor_to_df(cursor)
 
     def _cmd_subsample_columns(self, args):
-        '''Randomly subsample <limit> columns from <table>, optionally keeping a
-        subset of columns specified by the user. Modifies <table>.
+        '''Randomly subsample <limit> columns from <table> into <new_table>.
 
-        Usage .subsample_columns [--keep=[col1,col2,col3...]] <table> <limit>
-        Note: no spaces or quotation marks in the --keep column list.
+        Usage .subsample_columns [options] <table> <new_table> <limit>
+
+        [options]
+            --keep=[col1,col2,col3...]  List of columns that must be kept.
         '''
-        tokens = args.split()
-        cols_to_keep = []
-        if len(tokens) == 2:
-            table = tokens[0]
-            limit = int(tokens[1])
-        else:
-            # XXX is there a better way to handle this arg?
-            cols_to_keep = [t for t in tokens[0][8:-1].split(',')]
-            table = tokens[1]
-            limit = int(tokens[2])
-        if limit <=0:
-            raise Exception('Limit must be a positive integer.')
-        num_cols_to_sample = limit - len(cols_to_keep)
-        if num_cols_to_sample < 0:
-            raise Exception('''
-                    Must sample at least as many columns as specified to keep.
-                    Keeping: %d, Sampling: %d
-                ''' %(len(cols_to_keep), limit))
-        qt = bql_quote_name(table)
-        cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (qt,))
-        df = utils_bql.cursor_to_df(cursor)
-        col_names = [str(n).lower() for n in df['name'].tolist()]
-        if limit > len(col_names):
-            raise Exception('''
-                    Number of columns to sample exceeds total number of columns.
-                    Total: %d, Sampling: %d
-                    ''' %(len(col_names), limit))
-        for col in cols_to_keep:
-            col_names.remove(str(col).lower())
-        col_names_table = bql_quote_name('%s_col_names' %(str(table)))
-        self._bdb.sql_execute('''
-                DROP TABLE IF EXISTS %s; CREATE TABLE %s (col_name TEXT)
-            ''' %(col_names_table, col_names_table))
-        sampled_cols = []
-        if num_cols_to_sample > 0:
-            self._bdb.sql_execute('''
-                    INSERT INTO %s (col_name) VALUES %s
-                ''' %(col_names_table,
-                    ', '.join(["(\"%s\")" %(c) for c in col_names]))
-                )
-            cursor = self._bdb.execute('''
-                    SELECT col_name FROM %s ORDER BY RANDOM() LIMIT %d
-                ''' %(col_names_table, int(num_cols_to_sample)))
-            df = utils_bql.cursor_to_df(cursor)
-            sampled_cols = [str(n).lower() for n in df['col_name'].tolist()]
-        desired_cols = cols_to_keep + sampled_cols
-        dropped_cols = list(set(col_names) - set(desired_cols))
-        subsampled_table_name = '%s_subsample' %(table)
-        self._bdb.execute('DROP TABLE IF EXISTS %s' %(subsampled_table_name))
-        self._bdb.execute('CREATE TABLE %s AS SELECT %s FROM %s' %(
-                    subsampled_table_name, ', '.join(desired_cols), qt))
-        self._bdb.execute('DROP TABLE %s' %(qt))
-        self._bdb.execute('''
-                CREATE TABLE %s AS SELECT * FROM %s
-            ''' %(qt, subsampled_table_name))
-        if len(dropped_cols) == 0:
-            print '''Already fewer than or exactly %d columns, did not drop any.
-                ''' %(limit)
-        else:
-            print 'Dropped %s.' %(', '.join(dropped_cols))
-        return None
+        parser = argparse.ArgumentParser()
+        parser.add_argument('table',
+            help='Name of existing table.')
+        parser.add_argument('new_table',
+            help='Name of new table.')
+        parser.add_argument('limit', type=int,
+            help='Number of cols to subsample.')
+        parser.add_argument('--keep', default='',
+            help='Comma-separated list of columns to keep.')
+        pargs = parser.parse_args(args.split())
+        try:
+            return utils_bql.subsample_table_columns(
+                self._bdb, pargs.table, pargs.new_table, pargs.limit,
+                pargs.keep.split(','))
+        except ValueError as e:
+            sys.stderr.write('%s\n' % e.args)
+
 
     def _cmd_population(self, args):
         '''Returns a table of the variables and metamodels for <population>.
