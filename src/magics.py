@@ -443,7 +443,8 @@ class VentureMagics(Magics):
         if num_cols_to_sample < 0:
             raise Exception('''
                     Must sample at least as many columns as specified to keep.
-                ''')
+                    Keeping: %d, Sampling: %d
+                ''' %(len(cols_to_keep), limit))
         qt = bql_quote_name(table)
         cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (qt,))
         df = utils_bql.cursor_to_df(cursor)
@@ -451,7 +452,8 @@ class VentureMagics(Magics):
         if limit > len(col_names):
             raise Exception('''
                     Number of columns to sample exceeds total number of columns.
-                ''')
+                    Total: %d, Sampling: %d
+                    ''' %(len(col_names), limit))
         for col in cols_to_keep:
             col_names.remove(str(col).lower())
         col_names_table = bql_quote_name('%s_col_names' %(str(table)))
