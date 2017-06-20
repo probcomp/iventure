@@ -426,7 +426,7 @@ class VentureMagics(Magics):
         Usage .subsample_columns [options] <table> <new_table> <limit>
 
         [options]
-            --keep=[col1,col2,col3...]  List of columns that must be kept.
+            --keep=col1,col2,col3...  List of columns that must be kept.
         '''
         parser = argparse.ArgumentParser()
         parser.add_argument('table',
