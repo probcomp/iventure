@@ -51,47 +51,47 @@ Additionally, interactive plotting includes pairplots:
 #### Standard
 The following plotting dot commands can take several optional arguments,
 described in "Optional arguments" below. Each dot command can take multiple
-optional arguments at once, each of the form `--<arg>=<value>`.
+optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
-- `%bql .bar [--<arg>=<value>] <query>`
+- `%bql .bar [options] <query>`
 
 	Vertical barplot of the data points in the table returned by `<query>`. The
 	first column is (nominal) names, and the second column is (numerical) values.
 
-- `%bql .barh [--<arg>=<value>] <query>`
+- `%bql .barh [options] <query>`
 
 	Horizontal barplot of the data points in the table returned by `<query>`. The
 	first column is (nominal) names, and the second column is (numerical) values.
 
-- `%bql .clustermap [--<arg>=<value>] <query>`
+- `%bql .clustermap [options] <query>`
 
 	Clustermap plotted by pivoting the last three columns of the table returned by
 	`<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
 
-- `%bql .density [--<arg>=<value>] <query>`
+- `%bql .density [options] <query>`
 
 	Density plot of the data points in the table returned by `<query>`. If the table
 	has one column, then a regular density plot is produced. If the table has two
 	columns, then the final column is used as the label for each data point.
 
-- `%bql .heatmap [--<arg>=<value>] <query>`
+- `%bql .heatmap [options] <query>`
 
 	Heatmap plotted by pivoting the last three columns of the table returned by
 	`<query>` (typically an `ESTIMATE PAIRWISE` query in BQL).
 
-- `%bql .histogram_nominal [--<arg>=<value>] <query>`
+- `%bql .histogram_nominal [options] <query>`
 
 	Histogram of the NOMINAL data points in the table returned by `<query>`. If the
 	table has one column, then a regular histogram is produced. If the table has two
 	columns, then the final column is used as the label for each data point.
 
-- `%bql .histogram_numerical [--<arg>=<value>] <query>`
+- `%bql .histogram_numerical [options] <query>`
 
 	Histogram of the NUMERICAL data points in the table returned by `<query>`. If
 	the table has one column, then a regular histogram is produced. If the table has
 	two columns, then the final column is used as the label for each data point.
 
-- `%bql .scatter [--<arg>=<value>] <query>`
+- `%bql .scatter [options] <query>`
 
 	Scatter plot of the NUMERICAL data points in the table returned by `<query>`. If
 	the table has two columns, then a regular scatter plot is produced. If the table
