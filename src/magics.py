@@ -427,6 +427,7 @@ class VentureMagics(Magics):
 
         [options]
             --keep=col1,col2,col3...  List of columns that must be kept.
+            --seed=<s>                Seed of the subsampler.
         '''
         parser = argparse.ArgumentParser()
         parser.add_argument('table',
@@ -437,11 +438,13 @@ class VentureMagics(Magics):
             help='Number of cols to subsample.')
         parser.add_argument('--keep', default='',
             help='Comma-separated list of columns to keep.')
+        parser.add_argument('--seed', type=int, default=1,
+            help='Seed of the subsampler.')
         pargs = parser.parse_args(args.split())
         try:
             return utils_bql.subsample_table_columns(
                 self._bdb, pargs.table, pargs.new_table, pargs.limit,
-                pargs.keep.split(','))
+                pargs.keep.split(','), pargs.seed)
         except ValueError as e:
             sys.stderr.write('%s\n' % e.args)
 

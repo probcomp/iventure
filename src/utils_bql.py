@@ -17,6 +17,7 @@
 import itertools
 
 import pandas as pd
+import numpy as np
 
 from bayeslite import bql_quote_name
 
@@ -90,7 +91,7 @@ def query(bdb, bql, bindings=None, logger=None):
     return cursor_to_df(cursor)
 
 
-def subsample_table_columns(bdb, table, new_table, limit, keep):
+def subsample_table_columns(bdb, table, new_table, limit, keep, seed):
     """Return a subsample of the columns in the table."""
     if not bayesdb_has_table(bdb, table):
         raise ValueError('No such table: %s' % (table,))
@@ -106,7 +107,8 @@ def subsample_table_columns(bdb, table, new_table, limit, keep):
         column for column in bayesdb_table_column_names(bdb, table)
         if column not in keep
     ]
-    subsample_columns = bdb.np_prng.choice(
+    rng = np.random.RandomState(seed)
+    subsample_columns = rng.choice(
         subselect_columns,
         replace=False,
         size=min(len(subselect_columns), num_sample)
