@@ -182,11 +182,10 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 	the area under the density curve.
 
 ## MML
-- `%mml .guess_schema [--reasons] <table>`
+- `%mml .guess_schema <table>`
 
 	Returns an MML schema using the guessed statistical types for the columns of
-	`<table>`. Using the `--reasons` flag includes the heuristic reasons for the
-	statistical type guesses.
+	`<table>`.
 
 ## SQL
 - `%sql .regress_sql [--table=<table>] <query>`
