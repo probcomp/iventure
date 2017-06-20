@@ -420,6 +420,32 @@ class VentureMagics(Magics):
         cursor = self._bdb.sql_execute('PRAGMA table_info(%s)' % (qt,))
         return utils_bql.cursor_to_df(cursor)
 
+    def _cmd_subsample_columns(self, args):
+        '''Randomly subsample <limit> columns from <table> into <new_table>.
+
+        Usage .subsample_columns [options] <table> <new_table> <limit>
+
+        [options]
+            --keep=[col1,col2,col3...]  List of columns that must be kept.
+        '''
+        parser = argparse.ArgumentParser()
+        parser.add_argument('table',
+            help='Name of existing table.')
+        parser.add_argument('new_table',
+            help='Name of new table.')
+        parser.add_argument('limit', type=int,
+            help='Number of cols to subsample.')
+        parser.add_argument('--keep', default='',
+            help='Comma-separated list of columns to keep.')
+        pargs = parser.parse_args(args.split())
+        try:
+            return utils_bql.subsample_table_columns(
+                self._bdb, pargs.table, pargs.new_table, pargs.limit,
+                pargs.keep.split(','))
+        except ValueError as e:
+            sys.stderr.write('%s\n' % e.args)
+
+
     def _cmd_population(self, args):
         '''Returns a table of the variables and metamodels for <population>.
 
@@ -705,6 +731,7 @@ class VentureMagics(Magics):
         'nullify'              : _cmd_nullify,
         'population'           : _cmd_population,
         'regress_sql'          : _cmd_regress_sql,
+        'subsample_columns'    : _cmd_subsample_columns,
         'table'                : _cmd_table,
     }
 

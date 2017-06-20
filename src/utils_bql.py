@@ -14,9 +14,16 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import itertools
+
 import pandas as pd
 
 from bayeslite import bql_quote_name
+
+from bayeslite.core import bayesdb_has_table
+from bayeslite.core import bayesdb_table_column_names
+from bayeslite.core import bayesdb_table_has_column
+
 from bayeslite.util import cursor_value
 
 
@@ -80,4 +87,34 @@ def query(bdb, bql, bindings=None, logger=None):
     if logger:
         logger.info("BQL [%s] %s", bql, bindings)
     cursor = bdb.execute(bql, bindings)
+    return cursor_to_df(cursor)
+
+
+def subsample_table_columns(bdb, table, new_table, limit, keep):
+    """Return a subsample of the columns in the table."""
+    if not bayesdb_has_table(bdb, table):
+        raise ValueError('No such table: %s' % (table,))
+    if bayesdb_has_table(bdb, new_table):
+        raise ValueError('Table already exists: %s' % (new_table,))
+    unknown = [k for k in keep if not bayesdb_table_has_column(bdb, table, k)]
+    if unknown:
+        raise ValueError('No such columns: %s' % (unknown,))
+    num_sample = limit - len(keep)
+    if num_sample < 0:
+        raise ValueError('Must sample at least as many columns to keep.')
+    subselect_columns = [
+        column for column in bayesdb_table_column_names(bdb, table)
+        if column not in keep
+    ]
+    subsample_columns = bdb.np_prng.choice(
+        subselect_columns,
+        replace=False,
+        size=min(len(subselect_columns), num_sample)
+    )
+    qt = bql_quote_name(table)
+    qnt = bql_quote_name(new_table)
+    qc = ','.join(map(bql_quote_name, itertools.chain(keep, subsample_columns)))
+    cursor = bdb.execute('''
+        CREATE TABLE %s AS SELECT %s FROM %s
+    ''' % (qnt, qc, qt))
     return cursor_to_df(cursor)
