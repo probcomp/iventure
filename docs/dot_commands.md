@@ -155,8 +155,8 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
 - `xlog=[True|False]`
 
-	If `<value>` is `True`, sets the x scale to logarithmic. If `False`, sets
-	the x scale to linear.
+	If `True`, sets the x scale to logarithmic. If `False`, sets the x scale to
+	linear.
 
 - `ylog=[True|False]`
 
