@@ -421,9 +421,11 @@ class VentureMagics(Magics):
         return utils_bql.cursor_to_df(cursor)
 
     def _cmd_subsample_columns(self, args):
-        '''Subsample <limit> columns from <table>.
+        '''Subsample <limit> columns from <table>, optionally keeping a
+        subset of columns specified by the user. Modifies <table>.
 
         Usage .subsample_columns [--keep=[col1,col2,col3...]] <table> <limit>
+        Note: no spaces or quotation marks in the --keep column list.
         '''
         tokens = args.split()
         cols_to_keep = []
@@ -431,6 +433,7 @@ class VentureMagics(Magics):
             table = tokens[0]
             limit = int(tokens[1])
         else:
+            # XXX is there a better way to handle this arg?
             cols_to_keep = [t for t in tokens[0][8:-1].split(',')]
             table = tokens[1]
             limit = int(tokens[2])
