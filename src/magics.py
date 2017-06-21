@@ -24,6 +24,8 @@ import warnings
 
 from collections import OrderedDict
 
+import pandas as pd
+
 from bayeslite import bayesdb_open
 from bayeslite import bayesdb_register_metamodel
 from bayeslite import bql_quote_name
@@ -147,6 +149,9 @@ class VentureMagics(Magics):
         username = getpass.getuser()
         # TODO add SQLLogger
         self.session = Session(username, [TextLogger()], '.iventure_logs')
+        # Display entire dataframe.
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
 
     @property
     def _ripl(self):
