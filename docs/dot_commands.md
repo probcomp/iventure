@@ -98,9 +98,9 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
 - `%bql .render_crosscat [special_options] <metamodel_name> <model_number>`
 
-	Renders the state of the CrossCat model <model_number> in <metamodel_name>.
-	Instead of the standard optional arguments, this function takes the
-	following special optional arguments:
+	Renders the state of the CrossCat model `<model_number>` in
+	`<metamodel_name>`. Instead of the standard optional arguments, this
+	function takes the following special optional arguments:
 	- `--subsample=<n>`
 
 		Number of rows to subsample (recommend <50).
