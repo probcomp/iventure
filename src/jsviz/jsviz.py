@@ -101,6 +101,7 @@ def interactive_pairplot(df, schema):
 
 def interactive_scatter(df):
     """Create an interactive scatter plot visualization."""
+    df.dropna(inplace=True)
     js_src = resource_string('iventure.jsviz', 'scatter.js')
     return Javascript(
         js_src \
