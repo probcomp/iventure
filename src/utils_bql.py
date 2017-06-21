@@ -26,6 +26,7 @@ from bayeslite.core import bayesdb_table_column_names
 from bayeslite.core import bayesdb_table_has_column
 
 from bayeslite.util import cursor_value
+from bayeslite.util import casefold
 
 
 def nullify(bdb, table, value):
@@ -97,6 +98,7 @@ def subsample_table_columns(bdb, table, new_table, limit, keep, seed):
         raise ValueError('No such table: %s' % (table,))
     if bayesdb_has_table(bdb, new_table):
         raise ValueError('Table already exists: %s' % (new_table,))
+    keep = map(casefold, keep)
     unknown = [k for k in keep if not bayesdb_table_has_column(bdb, table, k)]
     if unknown:
         raise ValueError('No such columns: %s' % (unknown,))
@@ -105,7 +107,7 @@ def subsample_table_columns(bdb, table, new_table, limit, keep, seed):
         raise ValueError('Must sample at least as many columns to keep.')
     subselect_columns = [
         column for column in bayesdb_table_column_names(bdb, table)
-        if column not in keep
+        if casefold(column) not in keep
     ]
     rng = np.random.RandomState(seed)
     subsample_columns = rng.choice(
