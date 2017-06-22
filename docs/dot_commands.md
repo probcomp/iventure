@@ -153,15 +153,13 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 
 	Sets the maximum y-axis value to `<value>`.
 
-- `xlog=[True|False]`
+- `xlog=<base>`
 
-	If `True`, sets the x scale to logarithmic. If `False`, sets the x scale to
-	linear.
+	Sets the x scale to logarithmic with base `<base>`.
 
-- `ylog=[True|False]`
+- `ylog=<base>`
 
-	If `True`, sets the y scale to logarithmic. If `False`, sets the y scale to
-	linear.
+	Sets the y scale to logarithmic with base `<base>`.
 
 - `xlabel=<value>`
 
