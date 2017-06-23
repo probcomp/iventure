@@ -437,7 +437,7 @@ def _filter_points(df, labels, label):
 def _retrieve_labels_colors(items):
     """Returns unique entries (and assigns a color to each) from a list."""
     # Extract unique labels.
-    labels = set(items)
+    labels = sorted(set(items))
     # Retrieve the colors.
     mapper = matplotlib.cm.ScalarMappable(
         cmap=matplotlib.cm.jet,
