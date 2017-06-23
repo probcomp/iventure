@@ -1,4 +1,4 @@
-# iventure dot commands
+# jupyter_probcomp dot commands
 Dot commands in the BQL section below should be prepended by `%bql` (for
 single-line commands) or `%%bql` (for multi-line commands). Similarly, those in
 the MML section should be prepended by `%mml` or `%%mml` and those in the SQL
