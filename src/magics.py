@@ -187,14 +187,14 @@ class VentureMagics(Magics):
             raw = self._retrieve_raw(line, cell)
             try:
                 output = func(self, line, cell)
-            except:
+            except Exception as e:
                 exception = traceback.format_exc()
                 try:
                     self.session.log(
                         LogEntry(func.__name__, raw, None, exception))
                 except IOError:
                     pass
-                raise
+                sys.stderr.write('%s\n' % (str(e),))
             else:
                 try:
                     exception = self.session.stderr_cache
