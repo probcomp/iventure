@@ -191,7 +191,8 @@ class VentureMagics(Magics):
                 raise
             else:
                 try:
-                    self.session.log(LogEntry(__name__, raw, output, None))
+                    self.session.log(
+                        LogEntry(func.__name__, raw, output, None))
                 except IOError:
                     pass
                 return output
