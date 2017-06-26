@@ -18,6 +18,7 @@ import StringIO
 import argparse
 import getpass
 import re
+import socket
 import sys
 import traceback
 import warnings
@@ -146,9 +147,9 @@ class VentureMagics(Magics):
         self._riplseed = None
         # self._ripl.set_mode('church_prime')
         self._venturescript = []
-        username = getpass.getuser()
         # TODO add SQLLogger
         # TODO cache stderr in a better way.
+        username = '%s@%s' % (getpass.getuser(), socket.getfqdn())
         self.session = Session(username, [TextLogger()], '.iventure_logs')
         self.session.stderr_cache = None
         # Display entire dataframe.
