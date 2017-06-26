@@ -148,7 +148,9 @@ class VentureMagics(Magics):
         self._venturescript = []
         username = getpass.getuser()
         # TODO add SQLLogger
+        # TODO cache stderr in a better way.
         self.session = Session(username, [TextLogger()], '.iventure_logs')
+        self.session.stderr_cache = None
         # Display entire dataframe.
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
@@ -171,6 +173,9 @@ class VentureMagics(Magics):
             cell if cell is not None else ''
         ])
 
+    def write_stderr(self, content):
+        sys.stderr.write(content)
+        self.session.stderr_cache = content
 
     def logged_cell(func):
         def logged_cell_wrapper(self, line, cell=None):
@@ -190,8 +195,10 @@ class VentureMagics(Magics):
                     pass
             else:
                 try:
+                    exception = self.session.stderr_cache
                     self.session.log(
-                        LogEntry(func.__name__, raw, output, None))
+                        LogEntry(func.__name__, raw, None, exception))
+                    self.session.stderr_cache = None
                 except IOError:
                     pass
                 return output
@@ -396,7 +403,7 @@ class VentureMagics(Magics):
             args = str.strip(args)
             return self._PLTS[dot_command](self, args, sql=sql, **kwargs)
         else:
-            sys.stderr.write('Unknown command: %s\n' % (dot_command,))
+            self.write_stderr('Unknown command: %s\n' % (dot_command,))
             return
 
     def _cmd_nullify(self, args):
@@ -406,7 +413,7 @@ class VentureMagics(Magics):
         '''
         tokens = args.split()   # XXX
         if len(tokens) != 2:
-            sys.stderr.write('Usage: .nullify <table> <value>')
+            self.write_stderr('Usage: .nullify <table> <value>')
             return
         table = tokens[0]
         expression = tokens[1]
@@ -451,7 +458,7 @@ class VentureMagics(Magics):
                 self._bdb, pargs.table, pargs.new_table, pargs.limit,
                 pargs.keep.split(','), pargs.seed)
         except ValueError as e:
-            sys.stderr.write('%s\n' % e.args)
+            self.write_stderr('%s\n' % e.args)
 
 
     def _cmd_population(self, args):
@@ -509,7 +516,7 @@ class VentureMagics(Magics):
             args = str.replace(args, m, '')
         args = str.strip(args)
         if 'table' not in kwargs:
-            sys.stderr.write('Please specify --table=')
+            self.write_stderr('Please specify --table=')
             return
         c = self._bdb.execute(args)
         df = utils_bql.cursor_to_df(c)
@@ -525,12 +532,12 @@ class VentureMagics(Magics):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
         if df.shape != (1,1):
-            sys.stderr.write(
+            self.write_stderr(
                 'The query must return a table with exactly one '\
                 'row and one column, received shape: %s' % (df.shape,))
             return
         if df.iloc[0, 0] not in [0, 1]:
-            sys.stderr.write(
+            self.write_stderr(
                 'The query must return 1 (True) or 0 (False), received: %s'
                 % (repr(df.iloc[0,0]))
             )
@@ -661,12 +668,12 @@ class VentureMagics(Magics):
         '''
         tokens = query.split()
         if len(tokens) != 2:
-            sys.stderr.write('Usage: .render_crosscat <metamodel> <modelno>')
+            self.write_stderr('Usage: .render_crosscat <metamodel> <modelno>')
             return
         metamodel = tokens[0]
         modelno = int(tokens[1])
         if not bayesdb_has_generator(self._bdb, None, metamodel):
-            sys.stderr.write('No such metamodel: %s.' % (metamodel,))
+            self.write_stderr('No such metamodel: %s.' % (metamodel,))
             return
         generator_id = bayesdb_get_generator(self._bdb, None, metamodel)
         population_id = bayesdb_generator_population(self._bdb, generator_id)
@@ -677,7 +684,7 @@ class VentureMagics(Magics):
         ''', (generator_id, modelno,))
         cgpm_modelno = cursor_value(cursor, nullok=True)
         if cgpm_modelno is None:
-            sys.stderr.write('No such model number: %d.' % (modelno,))
+            self.write_stderr('No such model number: %d.' % (modelno,))
             return
         state = engine.get_state(cgpm_modelno)
         row_names = None
