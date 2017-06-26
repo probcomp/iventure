@@ -194,6 +194,7 @@ class VentureMagics(Magics):
                         LogEntry(func.__name__, raw, None, exception))
                 except IOError:
                     pass
+                raise
             else:
                 try:
                     exception = self.session.stderr_cache
