@@ -188,7 +188,6 @@ class VentureMagics(Magics):
                         LogEntry(func.__name__, raw, None, exception))
                 except IOError:
                     pass
-                raise
             else:
                 try:
                     self.session.log(
