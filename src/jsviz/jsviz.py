@@ -28,46 +28,74 @@ from iventure import utils_plot
 
 def enable_inline():
     """Enable inline JavaScript code to execute in an iventure notebook."""
-    js_src = resource_string('iventure.jsviz', 'inline.js')
-    return Javascript(js_src)
+    js_src = resource_string('iventure.jsviz', 'iventure-jsviz.js')
+    loader_src = resource_string('iventure.jsviz', 'loader.js')
+    return Javascript(js_src + ';' + loader_src)
+
+
+def enable_dev_inline(host = 'localhost', port = '9999'):
+    """Enable inline JavaScript using the dev server for iventure-jsviz"""
+    script = '''
+var cell = element.is('.output_subarea') ? element : element.next();
+window.iventureReady = new Promise(resolve => {{
+    $.getScript('http://{host}:{port}/iventure-jsviz.js', function() {{
+        cell.append('<p>Loaded iventure-jsviz dev mode from {host}:{port}</p>');
+        cell.append('<p>Version: ' + iventureJsviz.VERSION + '</p>');
+        resolve();
+    }})
+}});
+    '''
+    return Javascript(script.format(host=host, port=port))
+
+
+def whenReady(script):
+    """execute your JS script when iventure-jsviz is ready"""
+    return Javascript("""
+        var cell = element.is('.output_subarea') ? element : element.next();
+        if (typeof iventureReady === 'undefined') {
+          throw new Error('iventure-jsviz not loaded, did you enable_inline?');
+        }
+        iventureReady.then(function() {
+        """ + script + """
+        })
+        .catch(function(error) {
+          cell.append('Error Loading Viz:');
+          cell.append($('<pre>').text(error.stack));
+          console.error(error);
+        })
+    """)
+
 
 def interactive_bar(df):
     """Create an interactive barplot visualization."""
-    js_src = resource_string('iventure.jsviz', 'bar.js')
-    return Javascript(
-        js_src \
-        + ';bar(' \
-        + df.to_json(orient='split') \
-        + ')'
+    return whenReady(
+        'interactive_bar(cell, %s)' % (
+            df.to_json(orient='split')
+        )
     )
+
 
 def interactive_depprob(df_dep, df_data=None, schema=None):
     """Create an interactive dependence probability visualization."""
-    js_src = resource_string('iventure.jsviz', 'depprob.js')
     assert len(df_dep.columns) == 3
-    df_dep.columns = ['name0', 'name1', 'value']
     if df_data is not None and schema is not None:
-        return Javascript(
-            js_src \
-            + 'depprob_demo(' \
-            + df_dep.to_json()
-            + ', ' \
-            + df_data.to_json(orient='records') \
-            + ', ' \
-            + schema \
-            + ')'
+        return whenReady(
+            'interactive_depprob(cell, %s, %s, %s)' % (
+                df_dep.to_json(orient='split'),
+                df_data.to_json(orient='records'),
+                schema
+            )
         )
     else:
-        return Javascript(
-            js_src \
-            + 'depprob_demo(' \
-            + df_dep.to_json() \
-            + ')'
+        return whenReady(
+            'interactive_depprob(cell, %s)' % (
+                df_dep.to_json(orient='split')
+            )
         )
+
 
 def interactive_heatmap(df):
     """Create an interactive heatmap visualization."""
-    js_src = resource_string('iventure.jsviz', 'heatmap.js')
 
     pivot = df.pivot(
         index=df.columns[-3],
@@ -78,34 +106,29 @@ def interactive_heatmap(df):
     D = pivot.as_matrix()
     ordering = utils_plot._clustermap_ordering(D)
     labels = list(np.asarray(pivot.columns)[ordering[0]])
-    return Javascript(
-        js_src \
-        + 'heatmap(' \
-        + df.to_json(orient='split') \
-        + ',' \
-        + json.dumps(labels) \
-        + ')'
+    return whenReady(
+        'interactive_heatmap(cell, %s, %s)' % (
+            df.to_json(orient='split'),
+            json.dumps(labels)
+        )
     )
+
 
 def interactive_pairplot(df, schema):
     """Create an interactive pairplot visualization."""
-    js_src = resource_string('iventure.jsviz', 'pairplot.js')
-    return Javascript(
-        js_src \
-        + ';pairplot(' \
-        + df.to_json(orient='split') \
-        + ',' \
-        + json.dumps(schema) \
-        + ')'
+    return whenReady(
+        'interactive_pairplot(cell, %s, %s)' % (
+            df.to_json(orient='split'),
+            json.dumps(schema),
+        )
     )
+
 
 def interactive_scatter(df):
     """Create an interactive scatter plot visualization."""
     df.dropna(inplace=True)
-    js_src = resource_string('iventure.jsviz', 'scatter.js')
-    return Javascript(
-        js_src \
-        + ';scatter(' \
-        + df.to_json(orient='split') \
-        + ')'
+    return whenReady(
+        'interactive_scatter(cell, %s)' % (
+            df.to_json(orient='split')
+        )
     )

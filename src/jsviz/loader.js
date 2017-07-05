@@ -12,14 +12,11 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-var myCell = element
-window.VizGPMReady = new Promise(resolve => {
-  $.getScript('https://probcomp-2.csail.mit.edu/vizgpm/vizgpm.js', function() {
-    myCell.append('Loaded VizGPM v' + VizGPM.version);
-    $.getScript('https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js', function() {
-      myCell.append('Loaded lodash v' + _.VERSION);
-      VizGPM._ = _.noConflict();
-      resolve(VizGPM)
-    });
-  })
-})
+
+var cell = element.is('.output_subarea') ? element : element.next();
+// When loading from the `iventure-jsviz.js` file we don't have anything async load
+// so we can be immediately ready.
+window.iventureReady = Promise.resolve();
+
+cell.append('<p>Loaded bundled iventure-jsviz.js</p>');
+cell.append('<p>Version ' + iventureJsviz.VERSION + '</p>');
