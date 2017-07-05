@@ -50,8 +50,8 @@ window.iventureReady = new Promise(resolve => {{
     return Javascript(script.format(host=host, port=port))
 
 
-def whenReady(script):
-    """execute your JS script when iventure-jsviz is ready"""
+def when_ready(script):
+    """Execute JavaScript `script` when iventure-jsviz is ready."""
     return Javascript("""
         var cell = element.is('.output_subarea') ? element : element.next();
         if (typeof iventureReady === 'undefined') {
@@ -70,9 +70,9 @@ def whenReady(script):
 
 def interactive_bar(df):
     """Create an interactive barplot visualization."""
-    return whenReady(
+    return when_ready(
         'interactive_bar(cell, %s)' % (
-            df.to_json(orient='split')
+            df.to_json(orient='split'),
         )
     )
 
@@ -81,17 +81,17 @@ def interactive_depprob(df_dep, df_data=None, schema=None):
     """Create an interactive dependence probability visualization."""
     assert len(df_dep.columns) == 3
     if df_data is not None and schema is not None:
-        return whenReady(
+        return when_ready(
             'interactive_depprob(cell, %s, %s, %s)' % (
                 df_dep.to_json(orient='split'),
                 df_data.to_json(orient='records'),
-                schema
+                schema,
             )
         )
     else:
-        return whenReady(
+        return when_ready(
             'interactive_depprob(cell, %s)' % (
-                df_dep.to_json(orient='split')
+                df_dep.to_json(orient='split'),
             )
         )
 
@@ -108,17 +108,17 @@ def interactive_heatmap(df):
     D = pivot.as_matrix()
     ordering = utils_plot._clustermap_ordering(D)
     labels = list(np.asarray(pivot.columns)[ordering[0]])
-    return whenReady(
+    return when_ready(
         'interactive_heatmap(cell, %s, %s)' % (
             df.to_json(orient='split'),
-            json.dumps(labels)
+            json.dumps(labels),
         )
     )
 
 
 def interactive_pairplot(df, schema):
     """Create an interactive pairplot visualization."""
-    return whenReady(
+    return when_ready(
         'interactive_pairplot(cell, %s, %s)' % (
             df.to_json(orient='split'),
             json.dumps(schema),
@@ -129,8 +129,8 @@ def interactive_pairplot(df, schema):
 def interactive_scatter(df):
     """Create an interactive scatter plot visualization."""
     df.dropna(inplace=True)
-    return whenReady(
+    return when_ready(
         'interactive_scatter(cell, %s)' % (
-            df.to_json(orient='split')
+            df.to_json(orient='split'),
         )
     )
