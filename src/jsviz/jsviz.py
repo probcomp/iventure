@@ -28,6 +28,8 @@ from iventure import utils_plot
 
 def enable_inline():
     """Enable inline JavaScript code to execute in an iventure notebook."""
+    # The source for iventure-jsviz.js comes from
+    # https://github.com/probcomp/iventure-jsviz
     js_src = resource_string('iventure.jsviz', 'iventure-jsviz.js')
     loader_src = resource_string('iventure.jsviz', 'loader.js')
     return Javascript(js_src + ';' + loader_src)
