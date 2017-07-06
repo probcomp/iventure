@@ -49,9 +49,10 @@ $ . /path/to/venv/bin/activate
 $ which python
 ```
 
-#### Install python requirements from `pip`, using the `requirements.txt` file from the toplevel directory of this repository.
+#### Upgrade pip and install python requirements from `pip`, using the `requirements.txt` file from the toplevel directory of this repository.
 
 ```bash
+$ pip install --upgrade pip
 $ pip install jupyter==1.0.0
 ```
 
