@@ -26,7 +26,7 @@ Features
 - Coloring model, observation, inference, and query code
 - Optional manual highlights to code points of interest
 - Controllable document width
-- Emits embedable .pdf or .png graphics for iterating with
+- Emits embeddable .pdf or .png graphics for iterating with
   collaborators, or \input-able .tex source for inclusion in
   publications.
 
@@ -290,7 +290,7 @@ def parser():
     p.add_argument('-s', '--standalone', action='store_true',
         help='Produce standalone (not inputtable) tex output')
     p.add_argument('-w', '--width',
-        help='Tex distance to use as text width, e.g. 0.5\textwidth for half')
+        help='Tex distance to use as text width, e.g. 0.5\\textwidth for half')
     p.add_argument('--no-color', action='store_true',
         help='Suppress coloring code blocks by type.')
     return p
