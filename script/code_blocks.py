@@ -192,7 +192,8 @@ annot=r'^\s*//\s*-[*]-\s*([0-9a-zA-Z_-]+\s+)?(hide|model|observation|inference|q
 
 class ResultBuilder(object):
     """Accumulate a parsing result from incoming pieces."""
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.blocks = []
         self._mode = 'hide'
         self.indent = 0
@@ -237,8 +238,8 @@ class ResultBuilder(object):
     def num_selected_lines(self):
         return sum(len(b.lines) for b in self.blocks)
 
-def parse_to_blocks(items):
-    ans = ResultBuilder()
+def parse_to_blocks(items, name):
+    ans = ResultBuilder(name)
     for filename in items:
         with open(filename, 'r') as f:
             for line in f.readlines():
@@ -293,6 +294,7 @@ def parser():
         help='Tex distance to use as text width, e.g. 0.5\\textwidth for half')
     p.add_argument('--no-color', action='store_true',
         help='Suppress coloring code blocks by type.')
+    p.add_argument('--name', help='Include only blocks with the given name.')
     return p
 
 def write_output(result, target, args):
@@ -324,7 +326,7 @@ def main():
     p = parser()
     args = p.parse_args()
     target = os.path.realpath(args.output)
-    result = parse_to_blocks(args.file)
+    result = parse_to_blocks(args.file, args.name)
     write_output(result, target, args)
 
 if __name__ == '__main__':
