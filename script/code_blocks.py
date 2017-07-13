@@ -267,9 +267,12 @@ def parse_to_blocks(items, name):
                 ans.consume_line(line)
     return ans
 
-def colorize_hash_tags(line):
+def colorize_special_syntax(line):
+    # Venturescript hash tags
     line = re.sub(r'#(.*):', r'/|#|/\1/|:|/', line)
     line = re.sub(r'#([^|])', r'/|#|/\1', line)
+    # Metaprob @ accessors
+    line = re.sub(r'@([^|])', r'/|@|/\1', line)
     return line
 
 def print_latex(result, stream, args):
@@ -282,7 +285,7 @@ def print_latex(result, stream, args):
             stream.write(r'backgroundcolor=\color{' + block.mode + 'block}')
         print >>stream, ']'
         for line in block.lines:
-            stream.write(colorize_hash_tags(line))
+            stream.write(colorize_special_syntax(line))
         print >>stream, r'\end{lstlisting}'
 
 def embeddable_tex_file(result, basename, args):
