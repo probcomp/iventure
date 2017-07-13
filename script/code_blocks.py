@@ -26,6 +26,7 @@ Features
 - Coloring model, observation, inference, and query code
 - Optional manual highlights to code points of interest
 - Controllable document width
+- Present parts of the same source file in multiple different figures
 - Emits embeddable .pdf or .png graphics for iterating with
   collaborators, or \input-able .tex source for inclusion in
   publications.
@@ -84,6 +85,16 @@ The number tells Code Blocks to indent (outdent, if negative) the
 following lines that many additional spaces.  This may be helpful for
 showing a code snippet that is indented for some reason (e.g., is
 inside a function definition) as though it were not indented.
+
+You may optionally name your block, like this:
+  // -*- george model
+  assume ...
+
+Then code_blocks.py --name george will make a figure consisting of
+only the blocks named 'george'.  This is useful for showing different
+parts of the same source file in different figures.  Running
+code_blocks.py without passing --name causes it to show all blocks,
+regardless of name.
 
 You may highlight code snippets by surrounding them in special inline
 comments, namely /*{*/ some important code here /*}*/.  This is
