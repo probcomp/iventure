@@ -198,14 +198,24 @@ class ResultBuilder(object):
         self._mode = 'hide'
         self.indent = 0
 
+    def _name_match(self, m):
+        if self.name is None:
+            return True
+        if m.group(1) is None:
+            return False
+        return self.name == m.group(1).strip()
+
     def consume_line(self, line):
         m = re.match(annot, line)
         if m:
-            self.set_mode(m.group(2))
-            if m.group(3) == '':
-                self.indent = 0
+            if self._name_match(m):
+                self.set_mode(m.group(2))
+                if m.group(3) == '':
+                    self.indent = 0
+                else:
+                    self.indent = int(m.group(3))
             else:
-                self.indent = int(m.group(3))
+                self.set_mode('hide')
         else:
             if self._mode != 'hide':
                 self._start_block_if_needed()
