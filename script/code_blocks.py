@@ -188,7 +188,7 @@ class Block(object):
     def add_line(self, line):
         self.lines.append(line)
 
-annot=r'^\s*//\s*-[*]-\s*(hide|model|observation|inference|query)\s*([0-9-]*)?'
+annot=r'^\s*//\s*-[*]-\s*([0-9a-zA-Z_-]+\s+)?(hide|model|observation|inference|query)\s*([0-9-]*)?'
 
 class ResultBuilder(object):
     """Accumulate a parsing result from incoming pieces."""
@@ -200,11 +200,11 @@ class ResultBuilder(object):
     def consume_line(self, line):
         m = re.match(annot, line)
         if m:
-            self.set_mode(m.group(1))
-            if m.group(2) == '':
+            self.set_mode(m.group(2))
+            if m.group(3) == '':
                 self.indent = 0
             else:
-                self.indent = int(m.group(2))
+                self.indent = int(m.group(3))
         else:
             if self._mode != 'hide':
                 self._start_block_if_needed()
