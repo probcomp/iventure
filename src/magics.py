@@ -41,6 +41,7 @@ from bayeslite.core import bayesdb_variable_name
 from bayeslite.core import bayesdb_variable_number
 from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
 from bayeslite.metamodels.crosscat import CrosscatMetamodel
+from bayeslite.metamodels.loom_metamodel import LoomMetamodel
 from bayeslite.parse import bql_string_complete_p
 from bayeslite.util import casefold
 from bayeslite.util import cursor_value
@@ -271,6 +272,9 @@ class VentureMagics(Magics):
         metamodel = CrosscatMetamodel(crosscat)
         bayesdb_register_metamodel(self._bdb, metamodel)
 
+        # Register loom.
+        lm = LoomMetamodel()
+        bayesdb_register_metamodel(self._bdb, lm)
 
         # Small hack for the VsCGpm, which takes in the venturescript source
         # from %venturescript cells!
