@@ -1,0 +1,24 @@
+FROM            ubuntu:14.04
+MAINTAINER      MIT Probabilistic Computing Project
+
+RUN             apt-get update -qq && apt-get install -qq \
+                        git \
+                        python-jsonschema \
+                        python-numpy \
+                        python-pandas \
+                        python-pytest \
+                        python-scipy \
+                        python-six \
+                        python-matplotlib \
+                        ; # end of package list
+
+ADD             . /iventure
+WORKDIR         /iventure
+RUN \
+                ./docker/deps/bayeslite-apsw/pythenv.sh \
+                ./docker/deps/bayeslite/pythenv.sh \
+                ./docker/deps/cgpm/pythenv.sh \
+                ./docker/deps/crosscat/pythenv.sh \
+                ./check.sh
+RUN             python setup.py sdist
+RUN             python setup.py bdist
