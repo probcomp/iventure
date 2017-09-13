@@ -16,5 +16,5 @@ install:
 
 script:
   - conda build .
-  - conda install . --use-local
+  - conda install iventure --use-local
 
