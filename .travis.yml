@@ -1,8 +1,7 @@
+language: python
 branches:
   only:
-  - travis
-
-language: python
+  - conda
 python:
   - 2.7
 install:
