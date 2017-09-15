@@ -18,6 +18,7 @@ install:
   - conda install conda-build
 
 script:
+  - export GIT_VERSION_TAG="$(git describe | sed 's/^v//')"
   - conda build .
   - conda install iventure --use-local
 
