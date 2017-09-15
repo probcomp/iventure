@@ -1,6 +1,6 @@
 package:
   name: iventure
-  version: "0.1"
+  version: {{ GIT_DESCRIBE_TAG }}
 
 source:
   path: ../
