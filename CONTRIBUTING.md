@@ -128,7 +128,7 @@ associated with test -- fixing bugs should preferably include a test as well
 
 #### Entropy
 
-Please, never, ever used global random state when avoidable. Every source of
+Please, never, ever use global random state when avoidable. Every source of
 random bits must be managed explicitly.
 
 A notable exception is Julia code, which has less support for manging entropy
