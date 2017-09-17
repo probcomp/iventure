@@ -734,10 +734,10 @@ class VentureMagics(Magics):
             )
         (width, height) = fig.get_size_inches()
         if 'width' in kwargs:
-            width = kwargs['width']
+            width = float(kwargs['width'])
             fig.set_size_inches(width, height)
         if 'height' in kwargs:
-            height = kwargs['height']
+            height = float(kwargs['height'])
             fig.set_size_inches(width, height)
         if 'progress' in kwargs:
             sys.stdout.write('Rendering figure...\n')
