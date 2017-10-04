@@ -444,3 +444,43 @@ def _retrieve_labels_colors(items):
         norm=matplotlib.colors.Normalize(vmin=0, vmax=len(labels)-1))
     colors = mapper.to_rgba(xrange(len(labels)))
     return labels, colors
+
+def show_histograms(df, column1=None, column2=None):
+    if column1 is None:
+        raise ValueError('Specify target columm as `--column1`')
+    if column2 is None:
+        raise ValueError('Specify columm to condition on as `--column2`')
+    unique_vals_col2 = sorted(
+        [value for value in df[column2].unique() if not np.isnan(value)]
+    )
+    if len(unique_vals_col2) < 4:
+        fig, axes = plt.subplots(1, len(unique_vals_col2) + 1)
+        fig.set_size_inches(10, 3)
+    else:
+        fig, axes = plt.subplots(len(unique_vals_col2) + 1, 1)
+        fig.set_size_inches(5, 15)
+    all_counts = df[column1].value_counts().sort_index()
+    all_counts.plot(kind='bar', ax=axes[0])
+    # Note all possible values to assign 0 after.
+    all_values = all_counts.index.values
+    axes[0].set_title('Marginal:\nP(%s)' % column1, y=1.05)
+    axes[0].set_ylabel('Frequency')
+    axes[0].set_xlabel(column1)
+    for i, value in enumerate(unique_vals_col2):
+        temp = df[df[column2]==value]
+        conditional_counts = temp[column1].value_counts()
+        cond_values = conditional_counts.index.values
+        for value in all_values:
+            if not (value in cond_values):
+                conditional_counts.set_value(value, 0)
+        conditional_counts.sort_index().plot(
+            kind='bar', ax=axes[i+1]
+        )
+        axes[i+1].set_title(
+            'Conditional:\nP(%s | %s = %s)' % (column1, column2, str(value),),
+            y=1.05
+        )
+        axes[i+1].set_xlabel(column1)
+        if len(unique_vals_col2) > 3:
+            axes[i+1].set_ylabel('Frequency')
+    fig.tight_layout()

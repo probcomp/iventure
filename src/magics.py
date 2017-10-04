@@ -599,6 +599,20 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.histogram_numerical(df, **kwargs)
 
+    # XXX the name proposed by VKM is not consistent with other naming. Mayb VKM
+    # suggested this only for the demo with childmind.
+    def _cmd_show_histograms(self, line, sql=None, **kwargs):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--table', type=str,  help='Target table')
+        parser.add_argument('--column1', type=str,  help='Target column')
+        parser.add_argument('--column2', type=str,  help='Condition column')
+        args = parser.parse_args(line.split())
+        query = 'SELECT * FROM %s' % args.table
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.show_histograms(df, column1=args.column1, column2=args.column2)
+
+
     def _cmd_interactive_bar(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
@@ -766,6 +780,7 @@ class VentureMagics(Magics):
         'interactive_scatter'  : _cmd_interactive_scatter,
         'render_crosscat'      : _cmd_render_crosscat,
         'scatter'              : _cmd_scatter,
+        'show_histograms'      : _cmd_show_histograms,
     }
 
 
