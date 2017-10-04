@@ -1,3 +1,6 @@
 /build/
 /src/version.py
 .ipynb_checkpoints*
+
+# Ignore all vim swap files.
+*.swp
