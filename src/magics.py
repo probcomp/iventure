@@ -249,6 +249,18 @@ class VentureMagics(Magics):
 
     @logged_cell
     @line_magic
+    def register_metamodel(self, line, cell=None):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('metamodel', help='Name of metamodel to register.')
+        parser.add_argument('path', help='Path for metamodel.')
+        args = parser.parse_args(line.split())
+        if args.metamodel.lower() == 'loom':
+            from bayeslite.metamodels.loom_metamodel import LoomMetamodel
+            metamodel = LoomMetamodel(loom_store_path=args.path)
+            bayesdb_register_metamodel(self._bdb, metamodel)
+
+    @logged_cell
+    @line_magic
     def bayesdb(self, line, cell=None):
         parser = argparse.ArgumentParser()
         parser.add_argument('path', help='Path of bdb file.')
