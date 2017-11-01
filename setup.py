@@ -153,11 +153,4 @@ setup(
         'build_py': local_build_py,
         'sdist': local_sdist,
     },
-    install_requires=[
-        'bayeslite>=0.2.0rc1',
-        'matplotlib',
-        'numpy',
-        'pandas',
-        'scipy',
-    ],
 )
