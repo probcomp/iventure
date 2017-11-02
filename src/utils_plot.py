@@ -327,13 +327,19 @@ def heatmap(df, ax=None, **kwargs):
     yticklabels = np.asarray(pivot.index)[yordering]
     D = D[:,xordering]
     D = D[yordering,:]
+    # Apply 0-1 binary thresholding.
+    threshold = kwargs.get('threshold', None)
+    if threshold is not None:
+        D[D<threshold] = 0
+        D[D>=threshold] = 1
+    # Plot the heatmap.
     ax = sns.heatmap(
         D,
         xticklabels=xticklabels,
         yticklabels=yticklabels,
         linewidths=0.2,
         cbar=kwargs.get('cbar', True),
-        cmap='BuGn',
+        cmap=kwargs.get('cmap', 'BuGn'),
         ax=ax,
         vmin=vmin,
         vmax=vmax,
@@ -378,8 +384,13 @@ def _clustermap_ordering(D):
     return (xordering, yordering)
 
 
-def tidy_pairwise(array, index, columns, xlabel=None, ylabel=None, vlabel=None):
+def tidy_pairwise(array, index=None, columns=None, xlabel=None, ylabel=None,
+        vlabel=None):
     """Convert a pairwise matrix into a tidy data frame."""
+    if index is None:
+        index = range(np.shape(array)[0])
+    if columns is None:
+        columns = range(np.shape(array)[0])
     assert array.shape == (len(index), len(columns))
     xlabel = xlabel or 'var0'
     ylabel = ylabel or 'var1'
