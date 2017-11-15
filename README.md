@@ -1,5 +1,7 @@
 ## Interactive Environment For Probabilistic Programming in Venturescript, Metamodeling Language, and Bayesian Query Language
 
+[![Build Status](https://travis-ci.org/probcomp/iventure.svg?branch=master)](https://travis-ci.org/probcomp/iventure)
+
 ## Installing
 
 ```
