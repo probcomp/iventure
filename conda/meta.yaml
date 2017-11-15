@@ -1,0 +1,30 @@
+package:
+  name: iventure
+  version: {{ CONDA_PACKAGE_VERSION }}
+
+source:
+  path: ../
+
+build:
+  script: python setup.py install
+
+requirements:
+  build:
+    - git
+    - python 2.7.*
+  run:
+    # add bayeslite>0.2.0rc1 when it's packaged
+    - matplotlib 1.5.*
+    - numpy 1.11.*
+    - pandas 0.18.*
+    - scipy 0.17.*
+
+test:
+  requires:
+    - pytest 2.8.*
+    - python 2.7.*
+  commands:
+    - python -m pytest --pyargs iventure -k "not __ci_"
+
+about:
+  home: https://github.com/probcomp/iventure
