@@ -1,17 +1,27 @@
-## Interactive Environment For Probabilistic Programming in Venturescript, Metamodeling Language, and Bayesian Query Language
+## Interactive Environment For Probabilistic Programming for Probabilistic Data Analysis
 
 [![Build Status](https://travis-ci.org/probcomp/iventure.svg?branch=master)](https://travis-ci.org/probcomp/iventure)
 
+## About
+
+iventure serves as a jupyter-based front-end for [BayesDB](https://github.com/probcomp/bayeslite).
+
 ## Installing
 
-```
-$ git clone git@github.com:probcomp/iventure
-$ python setup.py build
-```
+For access to iventure, please refer to the release webpage of the
+[Probabilistic Computing Stack](http://probcomp.org/open-probabilistic-programming-stack/).
 
-Make sure to add `iventure` to your `PYTHONPATH`. The two key source files are
-`magics.py`, which provides Jupyter notebook cell magics, and `manager.py`,
-which provides server management for Jupyter kernels.
+## Tutorial Notebooks
+
+Please refer to the following tutorial notebooks for illustrative probabilistic
+data analysis tasks on real-world datasets:
+
+- [Exploratory analysis](https://probcomp-1.csail.mit.edu/20170720-darpa/gapminder-exploratory.html)
+  on Gapminder, a dataset of global macroeconomic indicators of education,
+  poverty, environment and health.
+
+- [Predictive analysis](https://probcomp-1.csail.mit.edu/20170720-darpa/satellites-predictive.html)
+  on a table of Earth satellites from the Union of Concerned Scientists.
 
 ## Magics Usage
 
