@@ -92,22 +92,30 @@ def query(bdb, bql, bindings=None, logger=None):
     return cursor_to_df(cursor)
 
 
-def subsample_table_columns(bdb, table, new_table, limit, keep, seed):
+def subsample_table_columns(bdb, table, new_table, limit, keep, drop, seed):
     """Return a subsample of the columns in the table."""
     if not bayesdb_has_table(bdb, table):
         raise ValueError('No such table: %s' % (table,))
     if bayesdb_has_table(bdb, new_table):
         raise ValueError('Table already exists: %s' % (new_table,))
     keep = map(casefold, keep)
-    unknown = [k for k in keep if not bayesdb_table_has_column(bdb, table, k)]
+    drop = map(casefold, drop)
+    skip = keep + drop
+    unknown = [
+        column for column in skip
+        if not bayesdb_table_has_column(bdb, table, column)
+    ]
     if unknown:
         raise ValueError('No such columns: %s' % (unknown,))
+    overlap = [column for column in drop if column in keep]
+    if overlap:
+        raise ValueError('Cannot both drop and keep columns: %s' % (overlap,))
     num_sample = limit - len(keep)
     if num_sample < 0:
         raise ValueError('Must sample at least as many columns to keep.')
     subselect_columns = [
         column for column in bayesdb_table_column_names(bdb, table)
-        if casefold(column) not in keep
+        if casefold(column) not in skip
     ]
     rng = np.random.RandomState(seed)
     subsample_columns = rng.choice(
