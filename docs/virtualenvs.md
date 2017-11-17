@@ -36,54 +36,28 @@ sudo apt-get update -qq && \
     ; # end of package list
 ```
 
-#### Create a virtualenv in `$WRKDIR` called `.pyenv2.7`.
+#### Create a virtual environment and install jupyter.
 
 ```bash
 $ virtualenv --system-site-packages /path/to/venv
-```
-
-#### Activate the virtual environment, and ensure the right python interpreter is being used.
-
-```bash
 $ . /path/to/venv/bin/activate
-$ which python
-```
-
-#### Upgrade pip and install python requirements from `pip`, using the `requirements.txt` file from the toplevel directory of this repository.
-
-```bash
 $ pip install --upgrade pip
 $ pip install jupyter==1.0.0
 ```
 
-#### Retrieve probcomp repositories from Github.
+#### Retrieve probcomp repositories from Github and build.
 
 ```bash
-$ PROJECTS="
-bayeslite
-cgpm
-crosscat
-iventure
-Venturecxx
-"
-
-$ for project in $PROJECTS; do
-    git clone git@github.com:probcomp/"$project".git
-  done
-```
-
-#### Build the probcomp repositories.
-
-```bash
-$ for project in $PROJECTS; do
-    cd $project
+$ for project in bayeslite cgpm crosscat iventure Venturecxx; do
+    git clone git@github.com:probcomp/"${project}".git
+    cd "${project}"
     python setup.py build
     pip install --no-deps .
     cd ..
   done
-````
+```
 
-#### Verify the installation is successful.
+#### Verify import of iventure.
 
 ```bash
 $ python -c 'import iventure.magics'
@@ -92,8 +66,8 @@ $ python -c 'import iventure.magics'
 ### Optional: Run the test suite for probcomp repositories (may take a while).
 
 ```bash
-$ for project in bayeslite cgpm crosscat Venturecxx; do
-    cd $project
+$ for project in bayeslite cgpm crosscat iventure Venturecxx; do
+    cd "${project}"
     ./check.sh
     cd ..
   done
