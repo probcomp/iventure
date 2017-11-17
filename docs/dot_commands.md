@@ -22,8 +22,9 @@ section should be prepended by `%sql` or `%%sql`.
 - `%bql .subsample_columns <table> <subsampled_table> <limit> [--keep <col> [<col> ...]] [--seed SEED]`
 
 	Creates a new table named `<subsampled_table>` containing `<limit>` columns
-	from `<table>`. Any columns listed after the `--keep` flag are kept, and the
-	remainder are randomly sampled from `<table>`.
+	from `<table>`. Any columns listed after the `--keep` flag are kept, columns
+	listed after `--drop` flag are dropped, and the remainder are randomly
+	sampled from `<table>`.
 
 - `%bql	.table <table>`
 
