@@ -60,7 +60,6 @@ $ pip install jupyter==1.0.0
 
 ```bash
 $ PROJECTS="
-bayeslite-apsw
 bayeslite
 cgpm
 crosscat
