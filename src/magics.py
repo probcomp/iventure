@@ -18,6 +18,7 @@ import StringIO
 import argparse
 import getpass
 import re
+import shlex
 import socket
 import sys
 import traceback
@@ -437,11 +438,11 @@ class VentureMagics(Magics):
     def _cmd_subsample_columns(self, args):
         '''Randomly subsample <limit> columns from <table> into <new_table>.
 
-        Usage .subsample_columns [options] <table> <new_table> <limit>
+        Usage .subsample_columns <table> <new_table> <limit> [options]
 
         [options]
-            --keep=col1,col2,col3...  List of columns that must be kept.
-            --seed=<s>                Seed of the subsampler.
+            --seed <s>                      Seed of the subsampler.
+            --keep <col1> <col2> <col3>...  List of columns that must be kept.
         '''
         parser = argparse.ArgumentParser()
         parser.add_argument('table',
@@ -450,15 +451,15 @@ class VentureMagics(Magics):
             help='Name of new table.')
         parser.add_argument('limit', type=int,
             help='Number of cols to subsample.')
-        parser.add_argument('--keep', default='',
-            help='Comma-separated list of columns to keep.')
+        parser.add_argument('--keep', type=str, default=[], nargs='+',
+            help='List of columns to keep.')
         parser.add_argument('--seed', type=int, default=1,
             help='Seed of the subsampler.')
-        pargs = parser.parse_args(args.split())
+        pargs = parser.parse_args(shlex.split(args))
         try:
             return utils_bql.subsample_table_columns(
                 self._bdb, pargs.table, pargs.new_table, pargs.limit,
-                pargs.keep.split(','), pargs.seed)
+                pargs.keep, pargs.seed)
         except ValueError as e:
             self.write_stderr('%s\n' % e.args)
 
