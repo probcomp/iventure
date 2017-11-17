@@ -63,7 +63,7 @@ $ for project in bayeslite cgpm crosscat iventure Venturecxx; do
 $ python -c 'import iventure.magics'
 ```
 
-### Optional: Run the test suite for probcomp repositories (may take a while).
+#### Optional: Run the test suite for probcomp repositories (may take a while).
 
 ```bash
 $ for project in bayeslite cgpm crosscat iventure Venturecxx; do
