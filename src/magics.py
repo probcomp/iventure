@@ -29,9 +29,11 @@ from collections import OrderedDict
 import pandas as pd
 
 from bayeslite import bayesdb_open
-from bayeslite import bayesdb_register_metamodel
+from bayeslite import bayesdb_register_backend
 from bayeslite import bql_quote_name
 
+from bayeslite.backends.cgpm_backend import CGPM_Backend
+from bayeslite.core import bayesdb_generator_backend
 from bayeslite.core import bayesdb_generator_population
 from bayeslite.core import bayesdb_generator_table
 from bayeslite.core import bayesdb_get_generator
@@ -40,8 +42,6 @@ from bayeslite.core import bayesdb_has_generator
 from bayeslite.core import bayesdb_has_population
 from bayeslite.core import bayesdb_variable_name
 from bayeslite.core import bayesdb_variable_number
-from bayeslite.metamodels.cgpm_metamodel import CGPM_Metamodel
-from bayeslite.metamodels.crosscat import CrosscatMetamodel
 from bayeslite.parse import bql_string_complete_p
 from bayeslite.util import casefold
 from bayeslite.util import cursor_value
@@ -260,18 +260,7 @@ class VentureMagics(Magics):
             self._bdb = None
 
         self._path = args.path
-        self._bdb = bayesdb_open(pathname=args.path, builtin_metamodels=False)
-
-        # Register lovecat.
-        if args.j:
-            import crosscat.MultiprocessingEngine as ccme
-            crosscat = ccme.MultiprocessingEngine(cpu_count=None)
-        else:
-            import crosscat.LocalEngine as ccle
-            crosscat = ccle.LocalEngine()
-        metamodel = CrosscatMetamodel(crosscat)
-        bayesdb_register_metamodel(self._bdb, metamodel)
-
+        self._bdb = bayesdb_open(pathname=args.path, builtin_backends=False)
 
         # Small hack for the VsCGpm, which takes in the venturescript source
         # from %venturescript cells!
@@ -280,7 +269,7 @@ class VentureMagics(Magics):
                 kwds['source'] = '\n'.join(self._venturescript)
             return VsCGpm(outputs, inputs, rng, *args, **kwds)
 
-        # Register cgpm.
+        # Register cgpm backend.
         cgpm_registry = {
             'factor_analysis': FactorAnalysis,
             'inline_venturescript': InlineVsCGpm,
@@ -291,8 +280,8 @@ class VentureMagics(Magics):
             'random_forest': RandomForest,
             'venturescript': _VsCGpm,
         }
-        mm = CGPM_Metamodel(cgpm_registry, multiprocess=args.j)
-        bayesdb_register_metamodel(self._bdb, mm)
+        mm = CGPM_Backend(cgpm_registry, multiprocess=args.j)
+        bayesdb_register_backend(self._bdb, mm)
         return 'Loaded: %s' % (self._path)
 
     @logged_cell
@@ -379,7 +368,7 @@ class VentureMagics(Magics):
     @line_magic
     def multiprocess(self, line, cell=None):
         switch = False if line == 'off' else True
-        old = self._bdb.metamodels['cgpm'].set_multiprocess(switch)
+        old = self._bdb.backends['cgpm'].set_multiprocess(switch)
         def word(b): return "on" if b else "off"
         print "Multiprocessing turned %s from %s." % (word(switch), word(old))
 
@@ -468,7 +457,7 @@ class VentureMagics(Magics):
 
 
     def _cmd_population(self, args):
-        '''Returns a table of the variables and metamodels for <population>.
+        '''Returns a table of the variables and generators for <population>.
 
         Usage: .population <population>
         '''
@@ -481,7 +470,7 @@ class VentureMagics(Magics):
                 FROM bayesdb_variable
                 WHERE population_id = :population_id
             UNION
-            SELECT 'generator' AS type, name, metamodel AS value
+            SELECT 'generator' AS type, name, generator AS value
                 FROM bayesdb_generator
                 WHERE population_id = :population_id
         ''', {'population_id': population_id})
@@ -658,7 +647,7 @@ class VentureMagics(Magics):
     def _cmd_render_crosscat(self, query, sql=None, **kwargs):
         '''Returns a rendering of the specified crosscat state
 
-        Usage: .render_crosscat [options] <metamodel> <modelno>.
+        Usage: .render_crosscat [options] <generator> <modelno>.
 
         Options:
             --subsample=<n>
@@ -674,16 +663,21 @@ class VentureMagics(Magics):
         '''
         tokens = query.split()
         if len(tokens) != 2:
-            self.write_stderr('Usage: .render_crosscat <metamodel> <modelno>')
+            self.write_stderr('Usage: .render_crosscat <generator> <modelno>')
             return
-        metamodel = tokens[0]
+        generator = tokens[0]
         modelno = int(tokens[1])
-        if not bayesdb_has_generator(self._bdb, None, metamodel):
-            self.write_stderr('No such metamodel: %s.' % (metamodel,))
+        if not bayesdb_has_generator(self._bdb, None, generator):
+            self.write_stderr('No such generator: %s.' % (generator,))
             return
-        generator_id = bayesdb_get_generator(self._bdb, None, metamodel)
+        generator_id = bayesdb_get_generator(self._bdb, None, generator)
         population_id = bayesdb_generator_population(self._bdb, generator_id)
-        engine = self._bdb.metamodels['cgpm']._engine(self._bdb, generator_id)
+        backend = bayesdb_generator_backend(self._bdb, generator_id)
+        if backend.name() != 'cgpm':
+            self.write_stderr('.render_crosscat requires generator from the '
+                'cgpm backend')
+            return
+        engine = backend._engine(self._bdb, generator_id)
         cursor = self._bdb.sql_execute('''
             SELECT cgpm_modelno FROM bayesdb_cgpm_modelno
             WHERE generator_id = ? AND modelno = ?
@@ -712,7 +706,7 @@ class VentureMagics(Magics):
         if 'variable' not in kwargs:
             # Plot the entire state.
             col_names = [
-                bayesdb_variable_name(self._bdb, population_id, colno)
+                bayesdb_variable_name(self._bdb, population_id, None, colno)
                 for colno in state.outputs
             ]
             fig, _ax = cgpm.utils.render.viz_state(
@@ -727,7 +721,7 @@ class VentureMagics(Magics):
                 self._bdb, population_id, generator_id, kwargs['variable'])
             view = state.view_for(varno)
             col_names = [
-                bayesdb_variable_name(self._bdb, population_id, colno)
+                bayesdb_variable_name(self._bdb, population_id, None, colno)
                 for colno in view.outputs[1:]
             ]
             fig, _ax = cgpm.utils.render.viz_view(

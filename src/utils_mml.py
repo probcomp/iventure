@@ -106,7 +106,7 @@ def get_schema_as_list(bdb, population_name):
     for variable_name in variable_names:
         colno =  bayesdb_variable_number(
             bdb, population_id, None, variable_name)
-        stattype = bayesdb_variable_stattype(bdb, population_id, colno)
+        stattype = bayesdb_variable_stattype(bdb, population_id, None, colno)
         stattype_lookup = {
             'numerical'     : 'realAdditive',
             'nominal'       : 'categorical',

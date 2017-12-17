@@ -17,7 +17,7 @@ section should be prepended by `%sql` or `%%sql`.
 - `%bql	.population <population>`
 
 	Returns a table of the variables (including their statistical types) and
-	metamodels for `<population>`.
+	generators for `<population>`.
 
 - `%bql .subsample_columns <table> <subsampled_table> <limit> [--keep <col> [<col> ...]] [--seed SEED]`
 
@@ -97,10 +97,10 @@ optional arguments in `[options]`, each of the form `--<arg>=<value>`.
 	table has two columns, then the final column is used as the label for each
 	data point.
 
-- `%bql .render_crosscat [special_options] <metamodel_name> <model_number>`
+- `%bql .render_crosscat [special_options] <generator_name> <model_number>`
 
 	Renders the state of the CrossCat model `<model_number>` in
-	`<metamodel_name>`. Instead of the standard optional arguments, this
+	`<generator_name>`. Instead of the standard optional arguments, this
 	function takes the following special optional arguments:
 	- `--subsample=<n>`
 
