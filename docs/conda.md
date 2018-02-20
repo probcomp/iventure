@@ -36,3 +36,5 @@ $ conda create -n probcomp --yes \
 $ conda activate probcomp
 $ python -m pytest --pyargs bayeslite --pyargs iventure
 ```
+
+Remember to update your `PATH` so that the `conda` command can be found.
