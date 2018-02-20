@@ -38,3 +38,14 @@ $ python -m pytest --pyargs bayeslite --pyargs iventure
 ```
 
 Remember to update your `PATH` so that the `conda` command can be found.
+
+#### Developing a project.
+
+To develop a project, such as bayeslite, first uninstall it from conda, and
+build the source directly.
+
+```bash
+$ conda remove --force bayeslite
+$ git clone git@github.com:probcomp/bayeslite
+$ python setup.py install
+```
