@@ -1,11 +1,11 @@
-# Setting up a conda environment with probcomp repositories and their dependencies.
+# Setting up a conda environment with probcomp repositories and their dependencies
 
 These instructions are tested on `Ubuntu 16.04.5`, different Linux distributions
 might require small modifications. All of these commands perform a local
 installation for the current user, they do not modify any system-wide state or
 require root access.
 
-#### Retrieve the installation required files.
+#### Retrieve the required installation files.
 
 ```bash
 $ wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
