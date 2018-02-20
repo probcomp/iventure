@@ -33,6 +33,6 @@ $ conda create -n probcomp --yes \
 #### Activate the environment and run some tests.
 
 ```bash
-$ source activate probcomp
+$ conda activate probcomp
 $ python -m pytest --pyargs bayeslite --pyargs iventure
 ```
