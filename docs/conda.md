@@ -26,7 +26,7 @@ $ conda install --yes conda-build
 
 ```bash
 $ conda create -n probcomp --yes \
-    -c probcomp -c cidermole -c fritzo -c ursusest \
+    -c probcomp/label/edge -c cidermole -c fritzo -c ursusest \
     python=2.7 --file /tmp/conda_python2.txt --file /tmp/conda_probcomp_edge.txt
 ```
 
