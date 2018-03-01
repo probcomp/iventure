@@ -13,26 +13,19 @@ $ wget https://raw.githubusercontent.com/probcomp/notebook/master/files/conda_py
 $ wget https://raw.githubusercontent.com/probcomp/notebook/master/files/conda_probcomp_edge.txt -O /tmp/conda_probcomp_edge.txt
 ```
 
-#### Install conda.
+#### Install conda and environment containing the probcomp software.
 
 ```bash
 $ bash /tmp/miniconda.sh -b -p ${HOME}/miniconda
 $ . ${HOME}/miniconda/etc/profile.d/conda.sh
-$ conda update conda
-$ conda install --yes conda-build
+$ conda create -n probcomp --yes \
+    -c probcomp/label/edge -c cidermole -c fritzo -c ursusest \
+    python=2.7 --file /tmp/conda_python2.txt --file /tmp/conda_probcomp_edge.txt
 ```
 
 Optional: The line `. ${HOME}/miniconda/etc/profile.d/conda.sh` needs to be run
 for the `conda` command to be available, consider adding this line to your
 `.bashrc` or `.zshrc` file.
-
-#### Create a conda environment containing the software.
-
-```bash
-$ conda create -n probcomp --yes \
-    -c probcomp/label/edge -c cidermole -c fritzo -c ursusest \
-    python=2.7 --file /tmp/conda_python2.txt --file /tmp/conda_probcomp_edge.txt
-```
 
 #### Activate the environment and run some tests.
 
