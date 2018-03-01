@@ -17,10 +17,14 @@ $ wget https://raw.githubusercontent.com/probcomp/notebook/master/files/conda_pr
 
 ```bash
 $ bash /tmp/miniconda.sh -b -p ${HOME}/miniconda
-$ export PATH="${HOME}/miniconda/bin:${PATH}"
+$ . ${HOME}/miniconda/etc/profile.d/conda.sh
 $ conda update conda
 $ conda install --yes conda-build
 ```
+
+Optional: The line `. ${HOME}/miniconda/etc/profile.d/conda.sh` needs to be run
+for the `conda` command to be available, consider adding this line to your
+`.bashrc` or `.zshrc` file.
 
 #### Create a conda environment containing the software.
 
@@ -36,8 +40,6 @@ $ conda create -n probcomp --yes \
 $ conda activate probcomp
 $ python -m pytest --pyargs bayeslite --pyargs iventure
 ```
-
-Remember to update your `PATH` so that the `conda` command can be found.
 
 #### Developing a project.
 
