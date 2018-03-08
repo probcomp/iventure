@@ -20,6 +20,7 @@ import getpass
 import re
 import shlex
 import socket
+import struct
 import sys
 import traceback
 import warnings
@@ -253,6 +254,7 @@ class VentureMagics(Magics):
     def bayesdb(self, line, cell=None):
         parser = argparse.ArgumentParser()
         parser.add_argument('path', help='Path of bdb file.')
+        parser.add_argument('-s', type=int, default=0, help='Seed.')
         parser.add_argument('-j', action='store_true', help='Multiprocessing.')
         args = parser.parse_args(line.split())
         if self._bdb is not None:
@@ -260,7 +262,9 @@ class VentureMagics(Magics):
             self._bdb = None
 
         self._path = args.path
-        self._bdb = bayesdb_open(pathname=args.path, builtin_backends=False)
+        seed = struct.pack('<QQQQ', 0, 0, 0, args.s)
+        self._bdb = bayesdb_open(pathname=args.path, seed=seed,
+            builtin_backends=False)
 
         # Small hack for the VsCGpm, which takes in the venturescript source
         # from %venturescript cells!
