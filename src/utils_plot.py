@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 import pandas as pd
+import seaborn as sb
 
 from iventure import jsviz
 
@@ -75,6 +76,13 @@ def density(df, ax=None, **kwargs):
 
     return fig
 
+def pairplot(df):
+    """
+    Use seaborn to generate a pairplot of the datapoints in df.
+    """
+    df = _preprocess_dataframe(df)
+    sb.pairplot(df)
+    
 def scatter(df, ax=None, **kwargs):
     """Scatter the NUMERICAL data points in df.
 
@@ -82,6 +90,7 @@ def scatter(df, ax=None, **kwargs):
     three columns, then the final column is used as the label for each data
     point.
     """
+
     if df.shape[1] not in [2, 3]:
         raise ValueError('Only two or three columns allowed: %s' % df.columns)
     else:

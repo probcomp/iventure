@@ -586,6 +586,11 @@ class VentureMagics(Magics):
         df = utils_bql.cursor_to_df(c)
         utils_plot.scatter(df, **kwargs)
 
+    def _cmd_pairplot(self, query, sql=None, **kwargs):
+        c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
+        df = utils_bql.cursor_to_df(c)
+        utils_plot.pairplot(df, **kwargs)
+
     def _cmd_histogram_nominal(self, query, sql=None, **kwargs):
         c = self._bdb.sql_execute(query) if sql else self._bdb.execute(query)
         df = utils_bql.cursor_to_df(c)
@@ -768,6 +773,7 @@ class VentureMagics(Magics):
         'interactive_scatter'  : _cmd_interactive_scatter,
         'render_crosscat'      : _cmd_render_crosscat,
         'scatter'              : _cmd_scatter,
+        'pairplot'             : _cmd_pairplot,
     }
 
 
