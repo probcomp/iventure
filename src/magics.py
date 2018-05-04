@@ -290,6 +290,28 @@ class VentureMagics(Magics):
 
     @logged_cell
     @line_cell_magic
+    def register(self, line, cell=None):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('backend',
+            help='Name of backend to register.')
+        parser.add_argument('args', type=str, default=[], nargs='*',
+            help='List of arguments to provide the initialization.')
+        args = parser.parse_args(shlex.split(line))
+        if args.backend == 'loom':
+            try:
+                from bayeslite.backends.loom_backend import LoomBackend
+            except ImportError:
+                raise ValueError('Failed to import loom backend.')
+            if len(args.args) == 0:
+                raise ValueError('Specify <path> for loom.')
+            loom_store_path = args.args[0]
+            bayesdb_register_backend(self._bdb,
+                LoomBackend(loom_store_path=loom_store_path))
+        else:
+            raise ValueError('Unknown backend: %s' % (args.backend,))
+
+    @logged_cell
+    @line_cell_magic
     def sql(self, line, cell=None):
         if cell is None:
             ucmds = [line]
