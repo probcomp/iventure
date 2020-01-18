@@ -423,7 +423,7 @@ class VentureMagics(Magics):
                 'cgpm backend')
             return
         j = backend.json_ready_models(self._bdb, population_id, generator_id)
-        path = population_name + "_models.json"
+        path = population_name + '_models.json'
         with open(path, 'w') as outfile:
             json.dump(j, outfile, indent=2)
 
