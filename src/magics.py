@@ -17,6 +17,7 @@
 import StringIO
 import argparse
 import getpass
+import json
 import re
 import shlex
 import socket
@@ -39,6 +40,7 @@ from bayeslite.core import bayesdb_generator_population
 from bayeslite.core import bayesdb_generator_table
 from bayeslite.core import bayesdb_get_generator
 from bayeslite.core import bayesdb_get_population
+from bayeslite.core import bayesdb_population_generators
 from bayeslite.core import bayesdb_has_generator
 from bayeslite.core import bayesdb_has_population
 from bayeslite.core import bayesdb_variable_name
@@ -401,6 +403,29 @@ class VentureMagics(Magics):
     @line_magic
     def vizgpm(self, line, cell=None):
         return jsviz.enable_inline()
+
+    @line_magic
+    def dump_models(self, line, cell=None):
+        population_name = line
+        if not bayesdb_has_population(self._bdb, population_name):
+            raise ValueError('No such population: %r' % (population_name,))
+        population_id = bayesdb_get_population(self._bdb, population_name)
+        generators = bayesdb_population_generators(
+            self._bdb, population_id)
+        if len(generators) == 0:
+            raise ValueError('No generator for population %r' % (population_name,))
+        if len(generators) > 1:
+            raise ValueError('Generator not unique for population %r' % (population_name,))
+        generator_id = generators[0]
+        backend = bayesdb_generator_backend(self._bdb, generator_id)
+        if backend.name() != 'cgpm':
+            self.write_stderr('%dump_models requires generator from the '
+                'cgpm backend')
+            return
+        j = backend.json_ready_models(self._bdb, population_id, generator_id)
+        path = population_name + '_models.json'
+        with open(path, 'w') as outfile:
+            json.dump(j, outfile, indent=2)
 
     def _cmd(self, cmd, sql=None):
         assert cmd[0] == '.'
