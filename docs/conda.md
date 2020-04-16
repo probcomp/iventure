@@ -33,7 +33,7 @@ for the `conda` command to be available, consider adding this line to your
 
 ```bash
 $ conda activate probcomp
-$ python -m pytest --pyargs bayeslite --pyargs iventure
+$ python -m pytest --pyargs bayeslite
 ```
 
 #### Developing a project.
