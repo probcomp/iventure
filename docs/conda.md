@@ -1,6 +1,6 @@
 # Setting up a conda environment with probcomp repositories and their dependencies
 
-These instructions are tested on `Ubuntu 16.04.5`, different Linux distributions
+These instructions are tested on `Ubuntu 18.04`, different Linux distributions
 might require small modifications. All of these commands perform a local
 installation for the current user, they do not modify any system-wide state or
 require root access.
@@ -10,7 +10,7 @@ require root access.
 ```bash
 $ wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
 $ wget https://raw.githubusercontent.com/probcomp/notebook/master/files/conda_python2.txt -O /tmp/conda_python2.txt
-$ wget https://raw.githubusercontent.com/probcomp/notebook/master/files/conda_probcomp_edge.txt -O /tmp/conda_probcomp_edge.txt
+$ wget https://raw.githubusercontent.com/probcomp/notebook/master/files/conda_probcomp.txt -O /tmp/conda_probcomp.txt
 ```
 
 #### Install conda and environment containing the probcomp software.
@@ -18,9 +18,11 @@ $ wget https://raw.githubusercontent.com/probcomp/notebook/master/files/conda_pr
 ```bash
 $ bash /tmp/miniconda.sh -b -p ${HOME}/miniconda
 $ . ${HOME}/miniconda/etc/profile.d/conda.sh
-$ conda create -n probcomp --yes \
-    -c probcomp/label/edge -c cidermole -c fritzo -c ursusest \
-    python=2.7 --file /tmp/conda_python2.txt --file /tmp/conda_probcomp_edge.txt
+$ conda install --yes conda=4.6.14 conda-build
+$ conda create -n probcomp --yes --file /tmp/conda_python2.txt python=2.7
+$ conda install -n probcomp --quiet --yes \
+    -c probcomp -c cidermole -c fritzo -c ursusest \
+    --file /tmp/conda_probcomp.txt
 ```
 
 Optional: The line `. ${HOME}/miniconda/etc/profile.d/conda.sh` needs to be run
