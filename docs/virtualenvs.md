@@ -42,7 +42,7 @@ sudo apt-get update -qq && \
 $ virtualenv --system-site-packages /path/to/venv
 $ . /path/to/venv/bin/activate
 $ pip install --upgrade pip
-$ pip install ipykernel==4.8.2 notebook==5.2.1
+$ pip install setuptools==44.1.1 ipykernel==4.8.2 notebook==5.2.1
 ```
 
 #### Retrieve probcomp repositories from Github and build.
